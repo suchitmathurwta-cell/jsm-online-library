@@ -312,6 +312,7 @@ function MainApp() {
                 onSelectBook={(book) => setSelectedBook(book)}
                 onOpenReader={handleOpenReader}
                 onDownloadBook={handleDownloadBook}
+                onEditBook={(book) => setEditingBook(book)}
                 onRefreshCategories={fetchCategories}
               />
             }
@@ -328,6 +329,7 @@ function MainApp() {
                 onSelectBook={(book) => setSelectedBook(book)}
                 onOpenReader={handleOpenReader}
                 onDownloadBook={handleDownloadBook}
+                onEditBook={(book) => setEditingBook(book)}
                 onRefreshCategories={fetchCategories}
               />
             }
@@ -358,11 +360,11 @@ function MainApp() {
         </Routes>
       </main>
 
-      <Footer lang={lang} t={t} />
+      <Footer lang={lang} t={t} onOpenUpload={() => setIsUploadOpen(true)} onOpenAdmin={() => setIsAdminOpen(true)} />
 
       {/* Floating Admin Mode Toggle Badge & Shortcut Key Handler */}
-      <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} />
-      <AdminQuickChallengeModal />
+      <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} lang={lang} t={t} />
+      <AdminQuickChallengeModal lang={lang} t={t} />
 
       {/* Detail Modal */}
       {selectedBook && (
@@ -468,7 +470,9 @@ function MainApp() {
           } catch (e) {}
         }}
         onSuccess={handleAuthSuccess}
-        bookTitle={pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
+        bookTitle={pendingDownloadBook?.[ `title_${lang}` ] || pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
+        lang={lang}
+        t={t}
       />
 
       {/* Download Feedback Toast */}
@@ -492,11 +496,11 @@ function MainApp() {
             <p className="text-[11px] text-stone-300 mt-0.5">
               {downloadStatus.state === 'downloading' ? (
                 <span className="text-blue-300">
-                  PDF फ़ाइल डाउनलोड हो रही है...
+                  {t?.toast?.downloading || 'PDF downloading...'}
                 </span>
               ) : (
                 <span className="text-emerald-400 font-medium">
-                  ✓ PDF आपके डिवाइस में सफलतापूर्वक डाउनलोड हो गई!
+                  {t?.toast?.completed || '✓ PDF successfully downloaded!'}
                 </span>
               )}
             </p>

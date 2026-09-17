@@ -2,8 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 
-export default function Breadcrumbs({ items = [] }) {
+export default function Breadcrumbs({ items = [], lang = 'hi', t }) {
   if (!items || items.length === 0) return null;
+
+  const homeLabel = t?.breadcrumbs?.home || (lang === 'hi' ? 'मुख्य पृष्ठ' : (lang === 'ur' ? 'مرکزی صفحہ' : 'Home'));
 
   return (
     <nav className="flex items-center gap-1.5 text-xs text-stone-500 py-3 flex-wrap animate-fadeIn" aria-label="Breadcrumb">
@@ -12,7 +14,7 @@ export default function Breadcrumbs({ items = [] }) {
         className="flex items-center gap-1 hover:text-[#1d4ed8] transition-colors font-medium text-stone-600 hover:underline"
       >
         <Home className="w-3.5 h-3.5" />
-        <span>Home</span>
+        <span>{homeLabel}</span>
       </Link>
 
       {items.map((item, index) => {

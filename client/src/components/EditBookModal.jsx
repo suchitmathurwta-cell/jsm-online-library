@@ -14,6 +14,8 @@ export default function EditBookModal({
 }) {
   if (!isOpen || !book) return null;
 
+  const eb = t?.editBook || {};
+
   const [formData, setFormData] = useState({
     title_hi: book.title_hi || '',
     title_en: book.title_en || '',
@@ -104,7 +106,7 @@ export default function EditBookModal({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-stone-900 font-rekhta-serif">
-                Edit Book Metadata / रचना विवरण संपादन
+                {eb.title || 'Edit Book Metadata'}
               </h2>
               <p className="text-xs text-stone-500 font-medium truncate max-w-md">
                 {book.title_hi || book.title_en}
@@ -133,19 +135,19 @@ export default function EditBookModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Title (Hindi / Devnagari) *
+                {eb.titleHi || 'Title (Hindi) *'}
               </label>
               <input
                 type="text"
                 value={formData.title_hi}
                 onChange={(e) => handleInputChange('title_hi', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
                 required
               />
             </div>
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Title (English)
+                {eb.titleEn || 'Title (English)'}
               </label>
               <input
                 type="text"
@@ -156,7 +158,7 @@ export default function EditBookModal({
             </div>
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Title (Urdu)
+                {eb.titleUr || 'Title (Urdu)'}
               </label>
               <input
                 type="text"
@@ -172,7 +174,7 @@ export default function EditBookModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Author Name (Hindi) *
+                {eb.authorHi || 'Author Name (Hindi) *'}
               </label>
               <input
                 type="text"
@@ -184,7 +186,7 @@ export default function EditBookModal({
             </div>
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Author Name (English)
+                {eb.authorEn || 'Author Name (English)'}
               </label>
               <input
                 type="text"
@@ -195,7 +197,7 @@ export default function EditBookModal({
             </div>
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Author Name (Urdu)
+                {eb.authorUr || 'Author Name (Urdu)'}
               </label>
               <input
                 type="text"
@@ -211,7 +213,7 @@ export default function EditBookModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-stone-100">
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Category (Layer 1)
+                {eb.category || 'Category (Layer 1)'}
               </label>
               <select
                 value={formData.category}
@@ -220,7 +222,7 @@ export default function EditBookModal({
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name_hi || c.name_en} ({c.id})
+                    {c[`name_${lang}`] || c.name_hi || c.name_en}
                   </option>
                 ))}
               </select>
@@ -228,7 +230,7 @@ export default function EditBookModal({
 
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Genre (Layer 2)
+                {eb.genre || 'Genre (Layer 2)'}
               </label>
               <input
                 type="text"
@@ -240,14 +242,14 @@ export default function EditBookModal({
               />
               <datalist id="genre-options">
                 {availableGenres.map((g) => (
-                  <option key={g.id} value={g.name_hi || g.name_en} />
+                  <option key={g.id} value={g[`name_${lang}`] || g.name_hi || g.name_en} />
                 ))}
               </datalist>
             </div>
 
             <div>
               <label className="font-bold text-stone-700 block mb-1">
-                Sub-Genre (Layer 3)
+                {eb.subgenre || 'Sub-Genre (Layer 3)'}
               </label>
               <input
                 type="text"
@@ -259,7 +261,7 @@ export default function EditBookModal({
               />
               <datalist id="subgenre-options">
                 {availableSubgenres.map((sg) => (
-                  <option key={sg.id} value={sg.name_hi || sg.name_en} />
+                  <option key={sg.id} value={sg[`name_${lang}`] || sg.name_hi || sg.name_en} />
                 ))}
               </datalist>
             </div>
@@ -268,7 +270,7 @@ export default function EditBookModal({
           {/* Language, Era, Year, Pages */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Language</label>
+              <label className="font-bold text-stone-700 block mb-1">{eb.language || 'Language'}</label>
               <input
                 type="text"
                 value={formData.language}
@@ -277,7 +279,7 @@ export default function EditBookModal({
               />
             </div>
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Historical Era</label>
+              <label className="font-bold text-stone-700 block mb-1">{eb.era || 'Historical Era'}</label>
               <input
                 type="text"
                 value={formData.era}
@@ -287,7 +289,7 @@ export default function EditBookModal({
               />
             </div>
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Year</label>
+              <label className="font-bold text-stone-700 block mb-1">{eb.year || 'Year'}</label>
               <input
                 type="number"
                 value={formData.year}
@@ -297,7 +299,7 @@ export default function EditBookModal({
               />
             </div>
             <div>
-              <label className="font-bold text-stone-700 block mb-1">Pages</label>
+              <label className="font-bold text-stone-700 block mb-1">{eb.pages || 'Pages'}</label>
               <input
                 type="number"
                 value={formData.pages}
@@ -311,7 +313,7 @@ export default function EditBookModal({
           {/* Description */}
           <div>
             <label className="font-bold text-stone-700 block mb-1">
-              Description / Synopsis & Cultural Significance
+              {eb.description || 'Description / Synopsis & Cultural Significance'}
             </label>
             <textarea
               value={formData.description}
@@ -332,7 +334,7 @@ export default function EditBookModal({
               />
               <span className="font-bold text-stone-800 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-500" />
-                <span>Feature in prominent homepage collections</span>
+                <span>{eb.featureOnHome || 'Feature in prominent homepage collections'}</span>
               </span>
             </label>
 
@@ -344,7 +346,7 @@ export default function EditBookModal({
                   className="w-8 h-11 object-cover rounded shadow-xs border border-stone-200"
                 />
                 <span className="text-[11px] text-stone-500 truncate max-w-xs">
-                  Cover URL verified
+                  {eb.coverVerified || 'Cover URL verified'}
                 </span>
               </div>
             )}
@@ -355,21 +357,21 @@ export default function EditBookModal({
             <div>
               {showDeleteConfirm ? (
                 <div className="flex items-center gap-2 bg-red-50 p-1.5 rounded-xl border border-red-200">
-                  <span className="text-[11px] font-bold text-red-700 pl-1.5">Delete?</span>
+                  <span className="text-[11px] font-bold text-red-700 pl-1.5">{eb.deleteConfirm || 'Confirm delete?'}</span>
                   <button
                     type="button"
                     onClick={handleDelete}
                     disabled={isDeleting}
                     className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10.5px] transition"
                   >
-                    {isDeleting ? 'Deleting...' : 'Confirm'}
+                    {isDeleting ? (eb.deleting || '...') : (eb.confirmBtn || 'Confirm')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(false)}
                     className="px-2 py-1 bg-stone-200 text-stone-700 rounded-lg text-[10.5px]"
                   >
-                    Cancel
+                    {eb.cancelBtn || 'Cancel'}
                   </button>
                 </div>
               ) : (
@@ -379,7 +381,7 @@ export default function EditBookModal({
                   className="flex items-center gap-1.5 px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition cursor-pointer font-semibold"
                 >
                   <Trash2 className="w-4 h-4" />
-                  <span>Delete Book</span>
+                  <span>{eb.deleteBook || 'Delete Book'}</span>
                 </button>
               )}
             </div>
@@ -390,7 +392,7 @@ export default function EditBookModal({
                 onClick={onClose}
                 className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-semibold transition cursor-pointer"
               >
-                Cancel
+                {eb.cancelBtn || 'Cancel'}
               </button>
               <button
                 type="submit"
@@ -398,7 +400,7 @@ export default function EditBookModal({
                 className="px-5 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
               >
                 <Save className="w-4 h-4" />
-                <span>{isSaving ? 'Saving...' : 'Save Metadata'}</span>
+                <span>{isSaving ? (eb.saving || 'Saving...') : (eb.saveBtn || 'Save Metadata')}</span>
               </button>
             </div>
           </div>

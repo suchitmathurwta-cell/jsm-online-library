@@ -40,7 +40,7 @@ export default function AdminManageModal({
   onDownloadBook,
   onEditBook,
   onBookDeleted,
-  lang,
+  lang = 'hi',
   t
 }) {
   const [activeTab, setActiveTab] = useState('hierarchy'); // 'hierarchy' | 'books'
@@ -100,7 +100,7 @@ export default function AdminManageModal({
   };
 
   const handleDeleteCategory = async (catId) => {
-    if (!window.confirm('Are you sure you want to delete this Category?')) return;
+    if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteFormat(catId);
       fetchLibraryData();
@@ -110,7 +110,7 @@ export default function AdminManageModal({
   };
 
   const handleDeleteGenre = async (catId, genreId) => {
-    if (!window.confirm('Are you sure you want to delete this Genre?')) return;
+    if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteGenre(catId, genreId);
       fetchLibraryData();
@@ -120,7 +120,7 @@ export default function AdminManageModal({
   };
 
   const handleDeleteSubGenre = async (catId, genreId, subId) => {
-    if (!window.confirm('Are you sure you want to delete this Sub-Genre?')) return;
+    if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteSubgenre(catId, genreId, subId);
       fetchLibraryData();
@@ -229,7 +229,7 @@ export default function AdminManageModal({
                 {t.admin.title}
               </h2>
               <p className="text-xs text-stone-500 font-medium">
-                Manage Formats, Genres, Sub-Genres, and Digital Books Archive (Supabase Cloud)
+                {t.admin.subtitle}
               </p>
             </div>
           </div>
@@ -262,7 +262,7 @@ export default function AdminManageModal({
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>🗂️ Formats, Genres & Sub-Genres Hierarchy</span>
+            <span>🗂️ {t.admin.tabHierarchy}</span>
           </button>
           <button
             onClick={() => setActiveTab('books')}
@@ -273,7 +273,7 @@ export default function AdminManageModal({
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>📚 Digitized Books Archive ({books.length})</span>
+            <span>📚 {t.admin.tabBooks} ({books.length})</span>
           </button>
         </div>
 
@@ -283,16 +283,11 @@ export default function AdminManageModal({
           {/* TAB 1: Hierarchy Tree Manager */}
           {activeTab === 'hierarchy' && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-stone-500">
-                  Click on any format to view and manage its nested genres and sub-genres. You can create, rename, or delete any tier in real-time.
-                </span>
-              </div>
-
               <div className="space-y-3">
                 {categories.map((cat) => {
                   const isCatOpen = !!expandedCats[cat.id];
                   const genres = cat.genres || [];
+                  const catDisplayName = cat[`name_${lang}`] || cat.name_hi || cat.name_en;
 
                   return (
                     <div key={cat.id} className="border border-stone-200 rounded-2xl bg-white overflow-hidden shadow-2xs">
@@ -307,38 +302,35 @@ export default function AdminManageModal({
                             {isCatOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </span>
                           <span className="font-bold text-stone-900 text-sm font-rekhta-serif">
-                            {cat.name_hi || cat.name_en}
+                            {catDisplayName}
                           </span>
-                          {cat.name_en && cat.name_en !== cat.name_hi && (
-                            <span className="text-xs text-stone-500">({cat.name_en})</span>
-                          )}
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#1d4ed8]">
-                            {genres.length} Genres
+                            {genres.length} {t.admin.genresCount}
                           </span>
                           <span className="text-[10px] text-stone-500">
-                            {cat.count || 0} Works
+                            {cat.count || 0} {t.admin.worksCount}
                           </span>
                         </div>
 
                         <div className="flex items-center gap-1.5">
                           <button
                             onClick={() => setAddingUnder({ type: 'genre', catId: cat.id })}
-                            title="Add Genre to this Format"
+                            title={t.admin.addGenre}
                             className="px-2.5 py-1 text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] rounded-lg border border-blue-200 flex items-center gap-1 transition cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />
-                            <span>Add Genre</span>
+                            <span>{t.admin.addGenre}</span>
                           </button>
                           <button
                             onClick={() => openEdit('category', cat)}
-                            title="Edit Format Name"
+                            title={t.admin.editBtn}
                             className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-lg transition cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(cat.id)}
-                            title="Delete Format"
+                            title={t.admin.deleteBtn}
                             className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -356,12 +348,16 @@ export default function AdminManageModal({
                                 type="text"
                                 value={newItemName}
                                 onChange={(e) => setNewItemName(e.target.value)}
-                                placeholder="New Genre Name (e.g. Ghazal, Regional Novel)..."
+                                placeholder={lang === 'hi' ? 'नई विधा का नाम...' : (lang === 'ur' ? 'نئی صنف کا نام...' : 'New genre title...')}
                                 className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg"
                                 autoFocus
                               />
-                              <button type="submit" className="px-3 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">+ Add</button>
-                              <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1.5 text-xs text-stone-500 cursor-pointer">Cancel</button>
+                              <button type="submit" className="px-3 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">
+                                {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
+                              </button>
+                              <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1.5 text-xs text-stone-500 cursor-pointer">
+                                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                              </button>
                             </form>
                           )}
 
@@ -369,6 +365,7 @@ export default function AdminManageModal({
                             genres.map((g) => {
                               const isGenreOpen = !!expandedGenres[g.id];
                               const subgenres = g.subgenres || [];
+                              const gDisplayName = g[`name_${lang}`] || g.name_hi || g.name_en;
 
                               return (
                                 <div key={g.id} className="border border-stone-200/80 rounded-xl bg-white overflow-hidden">
@@ -380,13 +377,10 @@ export default function AdminManageModal({
                                     >
                                       <FolderTree className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                                       <span className="font-bold text-stone-800 text-xs font-hindi-serif">
-                                        {g.name_hi || g.name_en}
+                                        {gDisplayName}
                                       </span>
-                                      {g.name_en && g.name_en !== g.name_hi && (
-                                        <span className="text-[11px] text-stone-400">({g.name_en})</span>
-                                      )}
                                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-stone-100 text-stone-600">
-                                        {subgenres.length} Sub-Genres
+                                        {subgenres.length} {t.admin.genresCount}
                                       </span>
                                     </div>
 
@@ -396,7 +390,7 @@ export default function AdminManageModal({
                                         className="px-2 py-0.5 text-[10.5px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-md border border-amber-200 flex items-center gap-0.5 transition cursor-pointer"
                                       >
                                         <Plus className="w-2.5 h-2.5" />
-                                        <span>Add Sub-Genre</span>
+                                        <span>{t.admin.addSubgenre}</span>
                                       </button>
                                       <button
                                         onClick={() => openEdit('genre', g, cat.id)}
@@ -422,12 +416,16 @@ export default function AdminManageModal({
                                             type="text"
                                             value={newItemName}
                                             onChange={(e) => setNewItemName(e.target.value)}
-                                            placeholder="New Sub-Genre Name (e.g. Agrarian Struggles)..."
+                                            placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम...' : (lang === 'ur' ? 'نئی ذیلی صنف...' : 'New sub-genre name...')}
                                             className="flex-1 px-3 py-1 text-xs bg-white border border-stone-300 rounded-lg"
                                             autoFocus
                                           />
-                                          <button type="submit" className="px-3 py-1 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">+ Add</button>
-                                          <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1 text-xs text-stone-500 cursor-pointer">Cancel</button>
+                                          <button type="submit" className="px-3 py-1 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">
+                                            {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
+                                          </button>
+                                          <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1 text-xs text-stone-500 cursor-pointer">
+                                            {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                                          </button>
                                         </form>
                                       )}
 
@@ -436,10 +434,9 @@ export default function AdminManageModal({
                                           {subgenres.map((sg) => (
                                             <div key={sg.id} className="flex items-center justify-between p-2 rounded-lg bg-white border border-stone-200/90 text-xs">
                                               <div className="truncate mr-2">
-                                                <span className="font-semibold text-stone-800">{sg.name_hi || sg.name_en}</span>
-                                                {sg.name_en && sg.name_en !== sg.name_hi && (
-                                                  <span className="text-[10px] text-stone-400 block truncate">{sg.name_en}</span>
-                                                )}
+                                                <span className="font-semibold text-stone-800">
+                                                  {sg[`name_${lang}`] || sg.name_hi || sg.name_en}
+                                                </span>
                                               </div>
                                               <div className="flex items-center gap-0.5 shrink-0">
                                                 <button
@@ -459,7 +456,9 @@ export default function AdminManageModal({
                                           ))}
                                         </div>
                                       ) : (
-                                        <p className="text-[11px] text-stone-400 italic">No sub-genres yet. Click "+ Add Sub-Genre" above.</p>
+                                        <p className="text-[11px] text-stone-400 italic">
+                                          {lang === 'hi' ? 'कोई उप-विधा नहीं है। "+ उप-विधा जोड़ें" पर क्लिक करें।' : 'No sub-genres yet.'}
+                                        </p>
                                       )}
                                     </div>
                                   )}
@@ -467,7 +466,9 @@ export default function AdminManageModal({
                               );
                             })
                           ) : (
-                            <p className="text-xs text-stone-400 italic">No genres yet. Click "+ Add Genre" above.</p>
+                            <p className="text-xs text-stone-400 italic">
+                              {lang === 'hi' ? 'कोई विधा नहीं है। "+ विधा जोड़ें" पर क्लिक करें।' : 'No genres yet.'}
+                            </p>
                           )}
                         </div>
                       )}
@@ -489,7 +490,7 @@ export default function AdminManageModal({
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search books by title, author, category, genre..."
+                    placeholder={t.admin.searchTable}
                     className="w-full pl-9 pr-4 py-2 text-xs border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
                   />
                   <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5 pointer-events-none" />
@@ -501,23 +502,24 @@ export default function AdminManageModal({
                 <table className="w-full text-left text-xs text-stone-700">
                   <thead className="bg-stone-50 border-b border-stone-200 text-stone-500 uppercase tracking-wider font-semibold text-[10.5px]">
                     <tr>
-                      <th className="px-4 py-3">Book Title</th>
-                      <th className="px-4 py-3">Author</th>
-                      <th className="px-4 py-3">Category</th>
-                      <th className="px-4 py-3">Genre / Subgenre</th>
-                      <th className="px-4 py-3 text-right">Actions</th>
+                      <th className="px-4 py-3">{lang === 'hi' ? 'रचना का नाम' : (lang === 'ur' ? 'عنوان' : 'Book Title')}</th>
+                      <th className="px-4 py-3">{t.details.author}</th>
+                      <th className="px-4 py-3">{t.details.category}</th>
+                      <th className="px-4 py-3">{lang === 'hi' ? 'विधा' : (lang === 'ur' ? 'صنف' : 'Genre')}</th>
+                      <th className="px-4 py-3 text-right">{t.admin.actions}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
                     {filteredBooks.map((book) => (
                       <tr key={book.id} className="hover:bg-stone-50 transition">
                         <td className="px-4 py-3 font-medium text-stone-900">
-                          <div className="font-hindi-serif font-bold text-xs">{book.title_hi || book.title_en}</div>
-                          {book.title_en && book.title_en !== book.title_hi && (
-                            <div className="text-[10px] text-stone-400 font-normal">{book.title_en}</div>
-                          )}
+                          <div className="font-hindi-serif font-bold text-xs">
+                            {book[`title_${lang}`] || book.title_hi || book.title_en}
+                          </div>
                         </td>
-                        <td className="px-4 py-3 text-stone-600">{book.author_hi || book.author_en}</td>
+                        <td className="px-4 py-3 text-stone-600">
+                          {book[`author_${lang}`] || book.author_hi || book.author_en}
+                        </td>
                         <td className="px-4 py-3">
                           <span className="px-2 py-0.5 rounded-full bg-blue-50 text-[#1d4ed8] text-[10px] font-bold border border-blue-200">
                             {book.category}
@@ -531,7 +533,7 @@ export default function AdminManageModal({
                             {onEditBook && (
                               <button
                                 onClick={() => onEditBook(book)}
-                                title="Edit Book Metadata"
+                                title={t.admin.editBtn}
                                 className="p-1.5 text-stone-500 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition cursor-pointer"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
@@ -539,14 +541,14 @@ export default function AdminManageModal({
                             )}
                             <button
                               onClick={() => { onClose(); onOpenReader(book); }}
-                              title="Read Book"
+                              title={t.card.readOnline}
                               className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition cursor-pointer"
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => onDownloadBook(book)}
-                              title="Download PDF"
+                              title={t.card.downloadPdf}
                               className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition cursor-pointer"
                             >
                               <Download className="w-3.5 h-3.5" />
@@ -557,19 +559,19 @@ export default function AdminManageModal({
                                   onClick={() => handleDeleteBook(book.id)}
                                   className="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold cursor-pointer"
                                 >
-                                  Confirm
+                                  {t.admin.deleteBtn}
                                 </button>
                                 <button
                                   onClick={() => setDeleteConfirmId(null)}
                                   className="px-2 py-1 bg-stone-200 text-stone-700 rounded text-[10px] cursor-pointer"
                                 >
-                                  Cancel
+                                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
                                 </button>
                               </div>
                             ) : (
                               <button
                                 onClick={() => setDeleteConfirmId(book.id)}
-                                title="Delete Book"
+                                title={t.admin.deleteBtn}
                                 className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -589,12 +591,12 @@ export default function AdminManageModal({
 
         {/* Modal Footer */}
         <div className="flex items-center justify-between px-6 py-3.5 border-t border-stone-200 bg-stone-50 text-xs text-stone-500">
-          <span>Chetna Preservation & Archival Control System</span>
+          <span>{t.admin.footerNote}</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 bg-stone-800 text-white font-bold rounded-lg hover:bg-stone-900 transition cursor-pointer"
           >
-            Close
+            {t.admin.close}
           </button>
         </div>
 
@@ -605,12 +607,14 @@ export default function AdminManageModal({
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
             <h3 className="text-base font-bold text-stone-900 font-rekhta-serif mb-4 capitalize">
-              Edit {editingItem.type} Name
+              {t.admin.editBtn}
             </h3>
 
             <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Name (Hindi / Devnagari)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'नाम (हिंदी / देवनागरी)' : (lang === 'ur' ? 'نام (ہندی)' : 'Name (Hindi)')}
+                </label>
                 <input
                   type="text"
                   value={editNameHi}
@@ -621,7 +625,9 @@ export default function AdminManageModal({
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Name (English)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'نام (انگریزی)' : 'Name (English)')}
+                </label>
                 <input
                   type="text"
                   value={editNameEn}
@@ -637,14 +643,14 @@ export default function AdminManageModal({
                   onClick={() => setEditingItem(null)}
                   className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl cursor-pointer"
                 >
-                  Cancel
+                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEdit}
                   className="px-4 py-2 bg-[#1d4ed8] text-white font-bold rounded-xl shadow-xs cursor-pointer"
                 >
-                  {isSubmittingEdit ? 'Saving...' : 'Save Changes'}
+                  {isSubmittingEdit ? '...' : (lang === 'hi' ? 'सुरक्षित करें' : (lang === 'ur' ? 'محفوظ کریں' : 'Save Changes'))}
                 </button>
               </div>
             </form>

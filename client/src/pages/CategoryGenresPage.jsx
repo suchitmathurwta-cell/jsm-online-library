@@ -19,12 +19,13 @@ import { AdminOnly } from '../components/AdminGuard';
 
 export default function CategoryGenresPage({
   t,
-  lang,
+  lang = 'hi',
   categories = [],
   books = [],
   onSelectBook,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   onRefreshCategories
 }) {
   const { categorySlug } = useParams();
@@ -128,6 +129,8 @@ export default function CategoryGenresPage({
     setDeletingGenre(genre);
   };
 
+  const hl = t.hierarchyLayers || {};
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
       {/* Layer 2 Breadcrumb */}
@@ -140,29 +143,24 @@ export default function CategoryGenresPage({
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold border border-white/10">
               <Layers className="w-3.5 h-3.5" />
-              <span>LAYER 2 : PRIMARY GENRES (विधाएँ)</span>
+              <span>{hl.layer2Badge}</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold font-rekhta-serif tracking-tight text-white flex items-center gap-3">
               <span>{categoryTitle}</span>
-              {category.name_hi && category.name_hi !== categoryTitle && (
-                <span className="text-xl sm:text-2xl font-normal text-amber-300/80 font-hindi-serif">
-                  ({category.name_hi})
-                </span>
-              )}
             </h1>
             <p className="text-xs sm:text-sm text-stone-300 font-normal leading-relaxed">
-              {categorySub || 'Explore curated literary genres, classical canons, and cultural perspectives under this division.'}
+              {categorySub || hl.layer2Sub}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
             <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl text-center">
               <span className="text-lg font-bold text-amber-300">{genres.length}</span>
-              <span className="text-xs text-stone-300 block">Genres</span>
+              <span className="text-xs text-stone-300 block">{t.admin.genresCount}</span>
             </div>
             <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl text-center">
               <span className="text-lg font-bold text-white">{categoryBooks.length}</span>
-              <span className="text-xs text-stone-300 block">Works</span>
+              <span className="text-xs text-stone-300 block">{t.admin.worksCount}</span>
             </div>
             
             <AdminOnly>
@@ -171,7 +169,7 @@ export default function CategoryGenresPage({
                 className="px-4 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-2xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>+ Add Genre</span>
+                <span>{hl.addGenreBtn}</span>
               </button>
             </AdminOnly>
           </div>
@@ -185,7 +183,7 @@ export default function CategoryGenresPage({
                 type="text"
                 value={newGenreName}
                 onChange={(e) => setNewGenreName(e.target.value)}
-                placeholder="Enter new genre name (e.g. Regional Novels, Ghazal)..."
+                placeholder={lang === 'hi' ? 'नई विधा का नाम दर्ज करें...' : (lang === 'ur' ? 'نئی صنف کا نام درج کریں...' : 'Enter new genre name...')}
                 className="flex-1 px-4 py-2 text-xs bg-white text-stone-900 rounded-xl outline-hidden font-medium"
                 autoFocus
               />
@@ -194,14 +192,14 @@ export default function CategoryGenresPage({
                 disabled={isSubmitting || !newGenreName.trim()}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting ? 'Creating...' : '+ Create'}
+                {isSubmitting ? '...' : (lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Create'))}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreateGenre(false)}
-                className="px-3 py-2 text-stone-300 hover:text-white text-xs"
+                className="px-3 py-2 text-stone-300 hover:text-white text-xs cursor-pointer"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
               </button>
             </form>
           </AdminOnly>
@@ -214,11 +212,11 @@ export default function CategoryGenresPage({
           <div className="flex items-center gap-2.5">
             <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
             <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-rekhta-serif">
-              Available Genres under {categoryTitle}
+              {hl.layer2Heading} {categoryTitle}
             </h2>
           </div>
-          <span className="text-xs text-stone-500 font-medium">
-            Click any genre to explore its sub-genres & themes
+          <span className="text-xs text-stone-500 font-medium hidden sm:inline">
+            {hl.layer2Sub}
           </span>
         </div>
 
@@ -243,7 +241,7 @@ export default function CategoryGenresPage({
 
                       <div className="flex items-center gap-1.5">
                         <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
-                          {subCount} Sub-Genres
+                          {subCount} {lang === 'hi' ? 'उप-विधाएँ' : (lang === 'ur' ? 'ذیلی اصناف' : 'Sub-Genres')}
                         </span>
                         
                         {/* Admin Only Actions: Edit & Delete */}
@@ -252,16 +250,16 @@ export default function CategoryGenresPage({
                             <button
                               type="button"
                               onClick={(e) => openEditModal(g, e)}
-                              title="Edit Genre"
-                              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+                              title={t.admin.editBtn}
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
                               onClick={(e) => openDeleteModal(g, e)}
-                              title="Delete Genre"
-                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
+                              title={t.admin.deleteBtn}
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -273,23 +271,18 @@ export default function CategoryGenresPage({
                     <h3 className="text-base font-bold text-stone-900 font-hindi-serif group-hover:text-[#1d4ed8] transition-colors leading-snug">
                       {gTitle}
                     </h3>
-                    {g.name_en && g.name_en !== gTitle && (
-                      <p className="text-xs text-stone-400 font-medium mt-0.5">
-                        {g.name_en}
-                      </p>
-                    )}
 
                     <p className="text-xs text-stone-600 mt-2.5 leading-relaxed line-clamp-2">
-                      {gDesc || 'Curated literary treatises and thematic explorations in this genre.'}
+                      {gDesc}
                     </p>
                   </div>
 
                   <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between">
                     <span className="text-xs font-semibold text-stone-500">
-                      {g.count || 0} Works available
+                      {g.count || 0} {hl.layer2Works}
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs font-bold text-[#1d4ed8] group-hover:translate-x-1 transition-transform">
-                      <span>Explore Sub-Genres</span>
+                      <span>{hl.layer2Explore}</span>
                       <ArrowRight className="w-4 h-4" />
                     </span>
                   </div>
@@ -300,14 +293,14 @@ export default function CategoryGenresPage({
         ) : (
           <div className="py-16 text-center bg-white rounded-3xl border border-stone-200 p-8 max-w-lg mx-auto">
             <FolderTree className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-stone-700">No Genres Created Yet</p>
-            <p className="text-xs text-stone-500 mt-1 mb-4">No genres are currently available under this category.</p>
+            <p className="text-sm font-bold text-stone-700">{hl.noWorksFound}</p>
+            <p className="text-xs text-stone-500 mt-1 mb-4">{hl.noWorksDesc}</p>
             <AdminOnly>
               <button
                 onClick={() => setShowCreateGenre(true)}
-                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs"
+                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
               >
-                + Create Genre Now
+                {hl.addGenreBtn}
               </button>
             </AdminOnly>
           </div>
@@ -321,11 +314,11 @@ export default function CategoryGenresPage({
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
               <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-rekhta-serif">
-                Featured Works in {categoryTitle}
+                {hl.featuredTreatises} {categoryTitle}
               </h2>
             </div>
             <span className="text-xs text-stone-500 font-medium">
-              {categoryBooks.length} Total Treatises
+              {categoryBooks.length} {t.sections.worksUnit}
             </span>
           </div>
 
@@ -339,6 +332,7 @@ export default function CategoryGenresPage({
                 onSelectBook={onSelectBook}
                 onOpenReader={onOpenReader}
                 onDownloadBook={onDownloadBook}
+                onEditBook={onEditBook}
               />
             ))}
           </div>
@@ -351,11 +345,11 @@ export default function CategoryGenresPage({
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <h3 className="text-base font-bold text-stone-900 font-rekhta-serif">
-                Edit Genre Details
+                {t.admin.editBtn}
               </h3>
               <button
                 onClick={() => setEditingGenre(null)}
-                className="p-1 text-stone-400 hover:text-stone-700 rounded-lg"
+                className="p-1 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -363,7 +357,9 @@ export default function CategoryGenresPage({
 
             <form onSubmit={handleSaveEditGenre} className="mt-4 space-y-3.5 text-xs">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Genre Name (Hindi / Devnagari)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'विधा का नाम (हिंदी)' : (lang === 'ur' ? 'صنف کا نام (ہندی)' : 'Genre Name (Hindi)')}
+                </label>
                 <input
                   type="text"
                   value={editNameHi}
@@ -374,7 +370,9 @@ export default function CategoryGenresPage({
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Genre Name (English)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'विधा का नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'صنف کا نام (انگریزی)' : 'Genre Name (English)')}
+                </label>
                 <input
                   type="text"
                   value={editNameEn}
@@ -385,7 +383,9 @@ export default function CategoryGenresPage({
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Description / Blurb</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {t.details.description}
+                </label>
                 <textarea
                   value={editDescHi}
                   onChange={(e) => setEditDescHi(e.target.value)}
@@ -398,16 +398,16 @@ export default function CategoryGenresPage({
                 <button
                   type="button"
                   onClick={() => setEditingGenre(null)}
-                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-medium"
+                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-medium cursor-pointer"
                 >
-                  Cancel
+                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isEditing}
-                  className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-xs transition"
+                  className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-xs transition cursor-pointer"
                 >
-                  {isEditing ? 'Saving...' : 'Save Changes'}
+                  {isEditing ? '...' : (lang === 'hi' ? 'सुरक्षित करें' : (lang === 'ur' ? 'محفوظ کریں' : 'Save Changes'))}
                 </button>
               </div>
             </form>
@@ -423,26 +423,26 @@ export default function CategoryGenresPage({
               <Trash2 className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-stone-900 font-rekhta-serif mb-1">
-              Delete Genre?
+              {t.admin.deleteBtn}
             </h3>
             <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-              Are you sure you want to delete <span className="font-bold text-stone-900">"{deletingGenre.name_hi || deletingGenre.name_en}"</span>? This will also remove its sub-genres.
+              {t.admin.deleteConfirm}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingGenre(null)}
-                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
+                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition cursor-pointer"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleDeleteGenre}
                 disabled={isDeleting}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50"
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
               >
-                {isDeleting ? 'Deleting...' : 'Yes, Delete'}
+                {isDeleting ? '...' : t.admin.deleteBtn}
               </button>
             </div>
           </div>

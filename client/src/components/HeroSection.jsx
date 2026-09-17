@@ -14,7 +14,7 @@ import {
 
 export default function HeroSection({
   t,
-  lang,
+  lang = 'hi',
   searchQuery,
   setSearchQuery,
   onSearchSubmit,
@@ -229,10 +229,12 @@ export default function HeroSection({
               <div className="p-3.5 bg-stone-50/90 border-b border-stone-100 flex items-center justify-between text-xs font-bold text-stone-600">
                 <span className="flex items-center gap-1.5">
                   <Search className="w-3.5 h-3.5 text-[#1d4ed8]" />
-                  <span>Search results for "{localQuery}"</span>
+                  <span>
+                    {lang === 'hi' ? `"${localQuery}" के खोज परिणाम` : (lang === 'ur' ? `"${localQuery}" کے نتائج` : `Search results for "${localQuery}"`)}
+                  </span>
                 </span>
                 <span className="text-[11px] font-semibold text-stone-400 bg-white px-2 py-0.5 rounded-full border border-stone-200/60 shadow-2xs">
-                  {liveResults.length} {liveResults.length === 1 ? 'match' : 'matches'}
+                  {liveResults.length} {t.sections.worksUnit}
                 </span>
               </div>
 
@@ -242,16 +244,16 @@ export default function HeroSection({
                     {isSearchingLive ? (
                       <div className="flex items-center justify-center gap-2">
                         <Loader2 className="w-4 h-4 text-[#1d4ed8] animate-spin" />
-                        <span>Searching treatises and archives...</span>
+                        <span>{lang === 'hi' ? 'अभिलेखों और पांडुलिपियों में खोज हो रही है...' : (lang === 'ur' ? 'کتب خانے میں تلاش جاری ہے...' : 'Searching treatises and archives...')}</span>
                       </div>
                     ) : (
-                      <span>No direct title matches found for "{localQuery}". Press Enter to search entire archive texts.</span>
+                      <span>{t.sections.noResults}</span>
                     )}
                   </div>
                 ) : (
                   liveResults.map((book) => {
-                    const title = book[`title_${lang}`] || book.title_hi || book.title_en;
-                    const author = book[`author_${lang}`] || book.author_hi || book.author_en;
+                    const title = book['title_' + lang] || book.title_hi || book.title_en;
+                    const author = book['author_' + lang] || book.author_hi || book.author_en;
 
                     return (
                       <div
@@ -275,7 +277,7 @@ export default function HeroSection({
                               {title}
                             </h4>
                             <p className="text-[11px] text-stone-500 truncate mt-0.5 font-medium">
-                              {author} • <span className="font-semibold text-stone-700">{book.year || 'Archive'}</span>
+                              {author} • <span className="font-semibold text-stone-700">{book.year || ''}</span>
                             </p>
                           </div>
                         </div>
@@ -292,7 +294,7 @@ export default function HeroSection({
                               className="px-3.5 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[11px] font-bold rounded-xl shadow-2xs flex items-center gap-1 transition cursor-pointer hover:-translate-y-0.5"
                             >
                               <BookOpen className="w-3 h-3" />
-                              <span>Read</span>
+                              <span>{t.card.readOnline}</span>
                             </button>
                           )}
                         </div>
@@ -308,7 +310,7 @@ export default function HeroSection({
                 onClick={handleFormSubmit}
                 className="w-full py-3 px-4 bg-stone-50 hover:bg-stone-100/90 border-t border-stone-200/70 text-xs font-bold text-[#1d4ed8] flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
-                <span>Press Enter or click to filter catalog results for "{localQuery}"</span>
+                <span>{lang === 'hi' ? `संपूर्ण अभिलेखागार में "${localQuery}" के परिणाम देखें` : (lang === 'ur' ? `"${localQuery}" کے تمام نتائج دیکھیں` : `Press Enter or click to filter catalog results for "${localQuery}"`)}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
 

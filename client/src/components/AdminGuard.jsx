@@ -14,21 +14,22 @@ export function VisitorOnly({ children, fallback = null }) {
   return <>{children}</>;
 }
 
-export function AdminToggleFloatingBadge({ onOpenAdminModal }) {
+export function AdminToggleFloatingBadge({ onOpenAdminModal, lang = 'hi', t }) {
   const { isAdmin, toggleAdminRole, setIsPasscodeModalOpen } = useAuth();
+  const ag = t?.adminGuard || {};
 
   if (!isAdmin) {
     return (
       <div className="fixed bottom-4 left-4 z-40">
         <button
           onClick={() => setIsPasscodeModalOpen(true)}
-          title="Admin Challenge / Access (Shortcut: Ctrl + Shift + A)"
+          title={ag.adminMode || "Admin Access"}
           className="group flex items-center gap-1.5 px-3 py-1.5 bg-stone-900/90 hover:bg-stone-900 text-stone-300 hover:text-amber-300 text-[11px] font-semibold rounded-full shadow-lg border border-stone-700/80 backdrop-blur-md transition-all duration-200 cursor-pointer opacity-40 hover:opacity-100 hover:scale-105"
         >
           <KeyRound className="w-3 h-3 text-amber-400 group-hover:rotate-12 transition-transform" />
-          <span className="hidden sm:inline">Admin Mode</span>
+          <span className="hidden sm:inline">{ag.adminMode || 'Admin Mode'}</span>
           <span className="text-[9px] bg-stone-800 text-stone-400 px-1 py-0.5 rounded border border-stone-700 font-mono">
-            Ctrl+⇧+A
+            {ag.shortcut || 'Ctrl+⇧+A'}
           </span>
         </button>
       </div>
@@ -41,8 +42,8 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal }) {
         <div className="w-6 h-6 rounded-full bg-amber-500 text-stone-950 flex items-center justify-center font-bold text-xs shadow-xs">
           <ShieldCheck className="w-3.5 h-3.5" />
         </div>
-        <span className="text-[11px] font-bold text-amber-300 tracking-wide">
-          ADMIN MODE
+        <span className="text-[11px] font-bold text-amber-300 tracking-wide uppercase">
+          {ag.adminMode || 'ADMIN MODE'}
         </span>
         <span className="text-stone-600">|</span>
         {onOpenAdminModal && (
@@ -50,28 +51,30 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal }) {
             onClick={onOpenAdminModal}
             className="text-[11px] text-stone-300 hover:text-white hover:underline cursor-pointer transition font-medium"
           >
-            CMS ⚙️
+            {ag.cms || 'CMS ⚙️'}
           </button>
         )}
         <span className="text-stone-600">|</span>
         <button
           onClick={toggleAdminRole}
-          title="Switch to Visitor View"
+          title={ag.visitorView || "Switch to Visitor View"}
           className="flex items-center gap-1 text-[11px] text-stone-300 hover:text-amber-400 bg-stone-800/80 hover:bg-stone-700/90 px-2 py-0.5 rounded-full border border-stone-700 cursor-pointer transition font-medium"
         >
           <Eye className="w-3 h-3 text-amber-400" />
-          <span>Visitor View</span>
+          <span>{ag.visitorView || 'Visitor View'}</span>
         </button>
       </div>
     </div>
   );
 }
 
-export function AdminQuickChallengeModal() {
+export function AdminQuickChallengeModal({ lang = 'hi', t }) {
   const { isPasscodeModalOpen, setIsPasscodeModalOpen, isAdmin, loginAsAdmin, logoutAdmin, toggleAdminRole } = useAuth();
   const [inputVal, setInputVal] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const ag = t?.adminGuard || {};
 
   if (!isPasscodeModalOpen) return null;
 
@@ -82,14 +85,14 @@ export function AdminQuickChallengeModal() {
 
     const res = loginAsAdmin(inputVal);
     if (res.success) {
-      setSuccessMsg('✓ Admin Mode Activated!');
+      setSuccessMsg(ag.activated || '✓ Admin Mode Activated!');
       setInputVal('');
       setTimeout(() => {
         setIsPasscodeModalOpen(false);
         setSuccessMsg('');
       }, 700);
     } else {
-      setErrorMsg(res.error || 'Invalid admin passcode');
+      setErrorMsg(res.error || (ag.invalidPasscode || 'Invalid admin passcode'));
     }
   };
 
@@ -121,10 +124,10 @@ export function AdminQuickChallengeModal() {
           </div>
           <div>
             <h3 className="text-lg font-bold text-stone-900 font-rekhta-serif">
-              Chetna RBAC Security Gate
+              {ag.gateTitle || 'Chetna RBAC Security Gate'}
             </h3>
             <p className="text-xs text-stone-500">
-              Role-Based Access Control & Quick Mode Switcher
+              {ag.gateSubtitle || 'Role-Based Access Control'}
             </p>
           </div>
         </div>
@@ -134,9 +137,9 @@ export function AdminQuickChallengeModal() {
             <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-3">
               <ShieldCheck className="w-5 h-5 text-amber-600 shrink-0" />
               <div>
-                <p className="font-bold">You are currently in Admin Mode</p>
+                <p className="font-bold">{ag.currentAdmin || 'You are currently in Admin Mode'}</p>
                 <p className="text-amber-800/80 mt-0.5">
-                  You have full CRUD access over taxonomy, categories, genres, sub-genres, and book records.
+                  {ag.currentAdminDesc || 'You have full CRUD access over taxonomy, categories, genres, sub-genres, and book records.'}
                 </p>
               </div>
             </div>
@@ -148,7 +151,7 @@ export function AdminQuickChallengeModal() {
                 className="flex-1 py-2.5 px-4 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Eye className="w-4 h-4 text-amber-400" />
-                <span>Switch to Visitor View</span>
+                <span>{ag.switchToVisitor || 'Switch to Visitor View'}</span>
               </button>
               <button
                 type="button"
@@ -159,7 +162,7 @@ export function AdminQuickChallengeModal() {
                 className="py-2.5 px-4 bg-stone-100 hover:bg-red-50 text-stone-700 hover:text-red-700 text-xs font-semibold rounded-xl border border-stone-200 transition flex items-center gap-1.5 cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Log Out</span>
+                <span>{ag.logout || 'Log Out'}</span>
               </button>
             </div>
           </div>
@@ -167,22 +170,22 @@ export function AdminQuickChallengeModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 text-xs text-stone-600">
               <p className="font-semibold text-stone-800 mb-1">
-                Enter Master Admin Passcode
+                {ag.enterPasscodeTitle || 'Enter Master Admin Passcode'}
               </p>
               <p className="text-[11.5px] text-stone-500 leading-relaxed">
-                Authorized administrators can enter their admin passcode or credentials to reveal taxonomy management and document editing tools.
+                {ag.enterPasscodeDesc || 'Authorized administrators can enter their admin passcode to reveal taxonomy management tools.'}
               </p>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                Admin Passcode / Master Key
+                {ag.passcodeLabel || 'Admin Passcode'}
               </label>
               <input
                 type="password"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder="Enter passcode (e.g. chetna2026)..."
+                placeholder={ag.passcodePlaceholder || 'Enter passcode...'}
                 autoFocus
                 className="w-full px-4 py-2.5 text-xs bg-stone-50 hover:bg-white focus:bg-white border border-stone-300 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 rounded-xl outline-hidden transition font-medium"
               />
@@ -208,13 +211,13 @@ export function AdminQuickChallengeModal() {
                 onClick={() => setIsPasscodeModalOpen(false)}
                 className="px-4 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 rounded-xl transition cursor-pointer"
               >
-                Cancel
+                {ag.cancel || 'Cancel'}
               </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
               >
-                <span>Unlock Admin Mode</span>
+                <span>{ag.unlockBtn || 'Unlock Admin Mode'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -222,7 +225,7 @@ export function AdminQuickChallengeModal() {
         )}
 
         <div className="mt-5 pt-3.5 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
-          <span>Toggle shortcut: <span className="font-mono font-bold text-stone-600">Ctrl + Shift + A</span></span>
+          <span>{ag.shortcut ? `${ag.shortcut}` : 'Ctrl + Shift + A'}</span>
           <span className="text-[10px]">Chetna RBAC Engine</span>
         </div>
       </div>

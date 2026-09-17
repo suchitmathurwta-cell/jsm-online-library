@@ -5,7 +5,8 @@ export default function DownloadReadyModal({
   book,
   onClose,
   onDownloadAgain,
-  lang = 'hi'
+  lang = 'hi',
+  t
 }) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -14,6 +15,8 @@ export default function DownloadReadyModal({
 
   const title = book['title_' + lang] || book.title_hi || book.title_en || 'ई-पुस्तक';
   const author = book['author_' + lang] || book.author_hi || book.author_en || '';
+
+  const dr = t?.downloadReady || {};
 
   const handleDownloadClick = async () => {
     setIsDownloading(true);
@@ -47,14 +50,14 @@ export default function DownloadReadyModal({
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold border border-emerald-500/30 mb-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span>लॉगिन सफल / AUTHENTICATION COMPLETE</span>
+            <span>{dr.badge || 'AUTHENTICATION COMPLETE'}</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-extrabold font-rekhta-serif text-white tracking-tight">
-            आपकी पुस्तक तैयार है
+            {dr.title || 'Your Book is Ready'}
           </h2>
           <p className="text-xs text-stone-300 mt-1">
-            डाउनलोड गेटवे अनलॉक हो गया है।
+            {dr.subtitle || 'Download access has been unlocked.'}
           </p>
         </div>
 
@@ -90,30 +93,30 @@ export default function DownloadReadyModal({
             {isDownloading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                <span>PDF डाउनलोड हो रही है...</span>
+                <span>{dr.downloading || 'Downloading...'}</span>
               </>
             ) : downloaded ? (
               <>
                 <CheckCircle2 className="w-5 h-5 text-emerald-200" />
-                <span>पुनः डाउनलोड करें (Download Again)</span>
+                <span>{dr.downloadAgain || 'Download Again'}</span>
               </>
             ) : (
               <>
                 <Download className="w-5 h-5 animate-bounce" />
-                <span>📥 PDF अभी डाउनलोड करें (Click to Download PDF)</span>
+                <span>{dr.downloadNow || 'Download PDF'}</span>
               </>
             )}
           </button>
 
           <p className="text-[11.5px] text-stone-500 leading-relaxed font-normal">
-            यदि डाउनलोड अपने आप शुरू न हुआ हो, तो ऊपर दिए गए हरे बटन पर क्लिक करें।
+            {dr.autoDownloadNote || 'If download does not start automatically, please click the button above.'}
           </p>
 
           <button
             onClick={onClose}
             className="text-xs text-stone-400 hover:text-stone-700 font-semibold transition cursor-pointer pt-1"
           >
-            पुस्तकालय में वापस जाएँ / Return to Library
+            {dr.returnLibrary || 'Return to Library'}
           </button>
         </div>
       </div>

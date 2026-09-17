@@ -136,7 +136,7 @@ const categoryThemes = {
 
 export default function CategoryTiles({
   t,
-  lang,
+  lang = 'hi',
   categories = [],
   selectedCategory,
   onSelectCategory,
@@ -264,8 +264,8 @@ export default function CategoryTiles({
             };
 
             const isSelected = selectedCategory === cat.id;
-            const title = cat[`name_${lang}`] || cat.name_hi || cat.name_en;
-            const subtitle = cat[`subtitle_${lang}`] || cat.subtitle_hi || cat.subtitle_en;
+            const title = cat['name_' + lang] || cat.name_hi || cat.name_en;
+            const subtitle = cat['subtitle_' + lang] || cat.subtitle_hi || cat.subtitle_en;
 
             return (
               <div key={cat.id} className="flex flex-col">
@@ -325,10 +325,10 @@ export default function CategoryTiles({
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-[#1d4ed8]"></div>
                   <span className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>{lang === 'hi' ? 'उप-विधाएँ व विशिष्ट उप-खंड' : (lang === 'ur' ? 'ذیلی اصناف و ابواب' : 'Sub-Genres & Dedicated Sub-Sections')}</span>
+                    <span>{t.hierarchyLayers.subGenresAndSections}</span>
                     <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
                     <span className="text-[#1d4ed8] font-bold normal-case">
-                      {activeCategoryObj[`name_${lang}`] || activeCategoryObj.name_hi || activeCategoryObj.name_en}
+                      {activeCategoryObj['name_' + lang] || activeCategoryObj.name_hi || activeCategoryObj.name_en}
                     </span>
                   </span>
                 </div>
@@ -341,7 +341,7 @@ export default function CategoryTiles({
                       className="text-xs font-bold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl border border-blue-200 flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      <span>{lang === 'hi' ? '+ नया उप-वर्ग जोड़ें' : '+ Create New Sub-Genre'}</span>
+                      <span>{t.hierarchyLayers.createSubgenre}</span>
                     </button>
                   </div>
                 </AdminOnly>
@@ -355,7 +355,7 @@ export default function CategoryTiles({
                       type="text"
                       value={newSubName}
                       onChange={(e) => setNewSubName(e.target.value)}
-                      placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम टाइप करें...' : 'Type new sub-genre name (e.g. Marsiya, Ghazal)...'}
+                      placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम लिखें...' : (lang === 'ur' ? 'نئی ذیلی صنف کا نام لکھیں...' : 'Type new sub-genre name...')}
                       className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]"
                       autoFocus
                     />
@@ -364,14 +364,14 @@ export default function CategoryTiles({
                       disabled={isSubmittingSub || !newSubName.trim()}
                       className="px-4 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-lg transition cursor-pointer disabled:opacity-50"
                     >
-                      {isSubmittingSub ? 'Creating...' : '+ Create & Save'}
+                      {isSubmittingSub ? '...' : (lang === 'hi' ? 'सहेजें' : (lang === 'ur' ? 'محفوظ کریں' : 'Save'))}
                     </button>
                     <button
                       type="button"
                       onClick={() => { setShowSubGenrePrompt(false); setNewSubName(''); }}
                       className="px-2.5 py-1.5 text-stone-500 hover:text-stone-800 text-xs rounded-lg transition"
                     >
-                      Cancel
+                      {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ کریں' : 'Cancel')}
                     </button>
                   </form>
                 </AdminOnly>
@@ -392,15 +392,15 @@ export default function CategoryTiles({
                 >
                   <FolderOpen className="w-3.5 h-3.5" />
                   <span>
-                    {lang === 'hi'
-                      ? `समग्र ${activeCategoryObj.name_hi || activeCategoryObj.name_en}`
-                      : `All ${activeCategoryObj.name_en || activeCategoryObj.name_hi}`}
+                    {t.hierarchyLayers.allInCategory
+                      ? t.hierarchyLayers.allInCategory.replace('{name}', activeCategoryObj['name_' + lang] || activeCategoryObj.name_hi || activeCategoryObj.name_en)
+                      : (activeCategoryObj['name_' + lang] || activeCategoryObj.name_en)}
                   </span>
                 </button>
 
                 {/* Individual Sub-Genre Pills */}
                 {activeSubGenres.map((sg) => {
-                  const sgTitle = sg[`name_${lang}`] || sg.name_hi || sg.name_en || sg.name;
+                  const sgTitle = sg['name_' + lang] || sg.name_hi || sg.name_en || sg.name;
                   const isSgActive = selectedSubGenre === sg.id || selectedSubGenre === sg.name_hi || selectedSubGenre === sg.name_en;
 
                   return (
@@ -423,7 +423,7 @@ export default function CategoryTiles({
                 {/* If no subgenres yet */}
                 {activeSubGenres.length === 0 && (
                   <span className="text-xs text-stone-400 italic">
-                    {lang === 'hi' ? 'कोई उप-वर्ग उपलब्ध नहीं है।' : 'No sub-genres yet.'}
+                    {t.hierarchyLayers.noSubgenresYet}
                   </span>
                 )}
 

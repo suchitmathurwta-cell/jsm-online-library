@@ -20,19 +20,20 @@ import {
 } from 'lucide-react';
 import SearchableCombobox from './SearchableCombobox';
 import { getCategoriesWithHierarchy, uploadBookFile, createBookRecord, createFormat, deleteFormat, createGenre, deleteGenre, createSubgenre, deleteSubgenre } from '../services/supabaseApi';
+import { translations, getLocalizedEra } from '../locales/translations';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
-const HISTORICAL_ERAS = [
-  "Contemporary Era (2000–Present) / समकालीन युग",
-  "Post-Independence Era (1947–1980) / स्वातंत्र्योत्तर काल",
-  "Progressive Era (1930–1947) / प्रगतिशील दौर",
-  "Chhayavad Era (1918–1936) / छायावाद युग",
-  "Dwivedi Era (1900–1918) / द्विवेदी युग",
-  "Bharatendu Era (1868–1900) / भारतेंदु युग",
-  "Late Mughal & British Colonial (1800–1857) / उत्तर मुग़ल काल",
-  "Bhakti & Sufi Movement (1400–1750) / भक्ति व सूफ़ी काल",
-  "Classical & Ancient Heritage / प्राचीन व शास्त्रीय काल"
+const HISTORICAL_ERA_KEYS = [
+  "contemporary",
+  "post-independence",
+  "progressive",
+  "chhayavad",
+  "dwivedi",
+  "bharatendu",
+  "late mughal",
+  "bhakti",
+  "classical"
 ];
 
 export default function UploadBookModal({
@@ -42,9 +43,13 @@ export default function UploadBookModal({
   onCategoryCreated,
   onSubGenreCreated,
   categories = [],
-  lang,
+  lang = 'hi',
   t
 }) {
+  const tr = t || translations[lang] || translations.hi;
+  const u = tr.upload;
+  const a = tr.admin;
+
   const [fileQueue, setFileQueue] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -98,11 +103,11 @@ export default function UploadBookModal({
       author_en: '',
       author_ur: '',
       category: defaultFormat.id, // Format
-      genre: defaultGenre.id, // Genre (conditional on format)
-      subgenre: defaultSub.id, // Subgenre (conditional on genre)
-      era: 'Contemporary Era (2000–Present) / समकालीन युग',
+      genre: defaultGenre.id, // Genre
+      subgenre: defaultSub.id, // Subgenre
+      era: 'contemporary',
       year: new Date().getFullYear().toString(),
-      publisher: 'चेतना डिजिटल अभिलेखागार',
+      publisher: lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : (lang === 'ur' ? 'چیتنا ڈیجیٹل آرکائیوز' : 'Chetna Digital Archives'),
       description: '',
       description_en: '',
       coverFile: null,
@@ -148,257 +153,41 @@ export default function UploadBookModal({
     return item;
   };
 
-  const handleFilesAdded = async (files) => {
-    const pdfFiles = Array.from(files).filter(
-      f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')
-    );
+  const handleSelectFiles = async (e) => {
+    const files = Array.from(e.target.files || []).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (files.length === 0) return;
 
-    if (pdfFiles.length === 0) {
-      setStatusMessage({ type: 'error', text: 'Please select valid PDF files.' });
-      return;
-    }
-
-    setStatusMessage({ type: 'info', text: 'Analyzing ' + pdfFiles.length + ' PDF file(s)...' });
-    
+    setStatusMessage({ type: 'info', text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`) });
     const newItems = [];
-    for (const file of pdfFiles) {
-      const item = await processSinglePdf(file);
-      newItems.push(item);
+    for (const file of files) {
+      const itm = await processSinglePdf(file);
+      newItems.push(itm);
     }
 
     setFileQueue(prev => [...prev, ...newItems]);
-    setStatusMessage({ type: 'success', text: 'Added ' + pdfFiles.length + ' file(s) to queue.' });
+    setStatusMessage({ type: '', text: '' });
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFilesAdded(e.dataTransfer.files);
-    }
-  };
+    const files = Array.from(e.dataTransfer.files || []).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (files.length === 0) return;
 
-  const handleSelectFiles = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      handleFilesAdded(e.target.files);
-    }
-  };
-
-  const currentItem = fileQueue[selectedIndex] || null;
-
-  const updateCurrentItem = (fields) => {
-    setFileQueue(prev => {
-      if (!prev || !prev[selectedIndex]) return prev;
-      const next = [...prev];
-      next[selectedIndex] = { ...next[selectedIndex], ...fields };
-      return next;
-    });
-  };
-
-  const handleAutoTranslateField = (fieldGroup, text, sourceLang) => {
-    if (translationTimeoutRef.current) {
-      clearTimeout(translationTimeoutRef.current);
+    setStatusMessage({ type: 'info', text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`) });
+    const newItems = [];
+    for (const file of files) {
+      const itm = await processSinglePdf(file);
+      newItems.push(itm);
     }
 
-    if (!text || !text.trim()) return;
-
-    setTranslatingField(fieldGroup);
-
-    translationTimeoutRef.current = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text.trim(), sourceLang })
-        });
-        const data = await res.json();
-        if (data && data.success && data.translations) {
-          setFileQueue(prev => {
-            if (!prev || !prev[selectedIndex]) return prev;
-            const next = [...prev];
-            const item = next[selectedIndex];
-            if (fieldGroup === 'title') {
-              next[selectedIndex] = {
-                ...item,
-                title_hi: sourceLang === 'hi' ? text : (data.translations.hi || item.title_hi),
-                title_en: sourceLang === 'en' ? text : (data.translations.en || item.title_en),
-                title_ur: sourceLang === 'ur' ? text : (data.translations.ur || item.title_ur)
-              };
-            } else if (fieldGroup === 'author') {
-              next[selectedIndex] = {
-                ...item,
-                author_hi: sourceLang === 'hi' ? text : (data.translations.hi || item.author_hi),
-                author_en: sourceLang === 'en' ? text : (data.translations.en || item.author_en),
-                author_ur: sourceLang === 'ur' ? text : (data.translations.ur || item.author_ur)
-              };
-            }
-            return next;
-          });
-        }
-      } catch (err) {
-        console.warn('Auto translation warning:', err);
-      } finally {
-        setTranslatingField(null);
-      }
-    }, 350);
+    setFileQueue(prev => [...prev, ...newItems]);
+    setStatusMessage({ type: '', text: '' });
   };
-
-  // 1. Create New Format (Level 1)
-  const handleCreateFormat = async (typedName) => {
-    try {
-      setStatusMessage({ type: 'info', text: 'Creating new Format "' + typedName + '"...' });
-      const res = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: typedName })
-      });
-      const data = await res.json();
-      if (data.success && data.category) {
-        await fetchUpdatedCategories();
-        updateCurrentItem({
-          category: data.category.id,
-          genre: '',
-          subgenre: ''
-        });
-        if (onCategoryCreated) onCategoryCreated(data.category);
-        setStatusMessage({ type: 'success', text: 'Created & selected new format: "' + (data.category.name_hi || data.category.name_en) + '"' });
-      }
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: 'Error creating format: ' + err.message });
-    }
-  };
-
-  // 1b. Delete Format (Level 1)
-  const handleDeleteFormat = async (formatId) => {
-    try {
-      const res = await fetch('/api/categories/' + formatId, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        await fetchUpdatedCategories();
-        setStatusMessage({ type: 'success', text: 'Deleted format successfully.' });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // 2. Create New Genre (Level 2 - under active Format)
-  const handleCreateGenre = async (typedName) => {
-    const activeFormatId = currentItem?.category || 'novel';
-    try {
-      setStatusMessage({ type: 'info', text: 'Creating new genre "' + typedName + '" under ' + activeFormatId + '...' });
-      const res = await fetch('/api/categories/' + activeFormatId + '/genres', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: typedName })
-      });
-      const data = await res.json();
-      if (data.success && data.genre) {
-        await fetchUpdatedCategories();
-        updateCurrentItem({
-          genre: data.genre.id,
-          subgenre: ''
-        });
-        setStatusMessage({ type: 'success', text: 'Created & selected new genre: "' + (data.genre.name_hi || data.genre.name_en) + '"' });
-      }
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: 'Error creating genre: ' + err.message });
-    }
-  };
-
-  // 2b. Delete Genre (Level 2)
-  const handleDeleteGenre = async (genreId) => {
-    const activeFormatId = currentItem?.category || 'novel';
-    try {
-      const res = await fetch('/api/categories/' + activeFormatId + '/genres/' + genreId, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        await fetchUpdatedCategories();
-        setStatusMessage({ type: 'success', text: 'Deleted genre successfully.' });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // 3. Create New Subgenre (Level 3 - under active Genre)
-  const handleCreateSubGenre = async (typedName) => {
-    const activeFormatId = currentItem?.category || 'novel';
-    const activeGenreId = currentItem?.genre || 'social-realism';
-    try {
-      setStatusMessage({ type: 'info', text: 'Creating new sub-genre "' + typedName + '"...' });
-      const res = await fetch('/api/categories/' + activeFormatId + '/genres/' + activeGenreId + '/subgenres', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: typedName })
-      });
-      const data = await res.json();
-      if (data.success && data.subgenre) {
-        await fetchUpdatedCategories();
-        updateCurrentItem({ subgenre: data.subgenre.id });
-        if (onSubGenreCreated) onSubGenreCreated(data.subgenre);
-        setStatusMessage({ type: 'success', text: 'Created & selected new sub-genre: "' + (data.subgenre.name_hi || data.subgenre.name_en) + '"' });
-      }
-    } catch (err) {
-      setStatusMessage({ type: 'error', text: 'Error creating sub-genre: ' + err.message });
-    }
-  };
-
-  // 3b. Delete Subgenre (Level 3)
-  const handleDeleteSubGenre = async (subId) => {
-    const activeFormatId = currentItem?.category || 'novel';
-    const activeGenreId = currentItem?.genre || 'social-realism';
-    try {
-      const res = await fetch('/api/categories/' + activeFormatId + '/genres/' + activeGenreId + '/subgenres/' + subId, {
-        method: 'DELETE'
-      });
-      const data = await res.json();
-      if (data.success) {
-        await fetchUpdatedCategories();
-        setStatusMessage({ type: 'success', text: 'Deleted sub-genre successfully.' });
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // 1. Format Options
-  const formatOptions = allCategories.map(c => ({
-    id: c.id,
-    label: (c.name_hi || c.name_en) + (c.name_en && c.name_en !== c.name_hi ? ' (' + c.name_en + ')' : ''),
-    name_hi: c.name_hi || '',
-    name_en: c.name_en || '',
-    name_ur: c.name_ur || '',
-    raw: c
-  }));
-
-  // 2. Genre Options (CONDITIONAL based on selected Format)
-  const activeFormatObj = allCategories.find(c => c.id === currentItem?.category) || allCategories[0];
-  const genreOptions = (activeFormatObj?.genres || []).map(g => ({
-    id: g.id,
-    label: (g.name_hi || g.name_en) + (g.name_en && g.name_en !== g.name_hi ? ' (' + g.name_en + ')' : ''),
-    name_hi: g.name_hi || '',
-    name_en: g.name_en || '',
-    name_ur: g.name_ur || '',
-    raw: g
-  }));
-
-  // 3. Subgenre Options (CONDITIONAL based on selected Genre)
-  const activeGenreObj = (activeFormatObj?.genres || []).find(
-    g => g.id === currentItem?.genre || g.name_en?.toLowerCase() === currentItem?.genre?.toLowerCase() || g.name_hi === currentItem?.genre
-  ) || activeFormatObj?.genres?.[0];
-
-  const subgenreOptions = (activeGenreObj?.subgenres || []).map(sg => ({
-    id: sg.id,
-    label: (sg.name_hi || sg.name_en) + (sg.name_en && sg.name_en !== sg.name_hi ? ' (' + sg.name_en + ')' : ''),
-    name_hi: sg.name_hi || '',
-    name_en: sg.name_en || '',
-    name_ur: sg.name_ur || '',
-    raw: sg
-  }));
 
   const handleRemoveFromQueue = (index, e) => {
-    e?.stopPropagation();
+    e.stopPropagation();
     setFileQueue(prev => {
       const next = prev.filter((_, i) => i !== index);
       if (selectedIndex >= next.length) {
@@ -408,107 +197,244 @@ export default function UploadBookModal({
     });
   };
 
-  const handleCustomCover = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    updateCurrentItem({
-      coverFile: file,
-      coverPreview: URL.createObjectURL(file)
+  const updateCurrentItem = (updates) => {
+    setFileQueue(prev => {
+      const next = [...prev];
+      if (next[selectedIndex]) {
+        next[selectedIndex] = { ...next[selectedIndex], ...updates };
+      }
+      return next;
     });
   };
 
+  const currentItem = fileQueue[selectedIndex];
+
+  const handleAutoTranslateField = (fieldName, text, sourceLanguage) => {
+    if (!text || text.trim().length < 2) return;
+    if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current);
+
+    setTranslatingField(fieldName);
+    translationTimeoutRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/translate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text.trim(), sourceLang: sourceLanguage })
+        });
+        const data = await res.json();
+        if (data && data.translations) {
+          const updates = {};
+          if (fieldName === 'title') {
+            if (sourceLanguage !== 'hi' && data.translations.hi) updates.title_hi = data.translations.hi;
+            if (sourceLanguage !== 'en' && data.translations.en) updates.title_en = data.translations.en;
+            if (sourceLanguage !== 'ur' && data.translations.ur) updates.title_ur = data.translations.ur;
+          } else if (fieldName === 'author') {
+            if (sourceLanguage !== 'hi' && data.translations.hi) updates.author_hi = data.translations.hi;
+            if (sourceLanguage !== 'en' && data.translations.en) updates.author_en = data.translations.en;
+            if (sourceLanguage !== 'ur' && data.translations.ur) updates.author_ur = data.translations.ur;
+          }
+          updateCurrentItem(updates);
+        }
+      } catch (e) {
+        console.warn('Auto-translation notice:', e);
+      } finally {
+        setTranslatingField(null);
+      }
+    }, 650);
+  };
+
+  const handleCustomCover = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      updateCurrentItem({
+        coverFile: file,
+        coverPreview: ev.target?.result
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Format options
+  const formatOptions = allCategories.map(c => ({
+    id: c.id,
+    label: c['name_' + lang] || c.name_hi || c.name_en || c.id,
+    name_hi: c.name_hi,
+    name_en: c.name_en,
+    raw: c
+  }));
+
+  // Active format object
+  const activeFormatObj = allCategories.find(c => c.id === currentItem?.category) || allCategories[0];
+
+  // Genre options conditional on active format
+  const genreOptions = (activeFormatObj?.genres || []).map(g => ({
+    id: g.id,
+    label: g['name_' + lang] || g.name_hi || g.name_en || g.id,
+    name_hi: g.name_hi,
+    name_en: g.name_en,
+    raw: g
+  }));
+
+  // Active genre object
+  const activeGenreObj = (activeFormatObj?.genres || []).find(g => g.id === currentItem?.genre);
+
+  // Subgenre options conditional on active genre
+  const subgenreOptions = (activeGenreObj?.subgenres || []).map(sg => ({
+    id: sg.id,
+    label: sg['name_' + lang] || sg.name_hi || sg.name_en || sg.name || sg.id,
+    name_hi: sg.name_hi,
+    name_en: sg.name_en,
+    raw: sg
+  }));
+
+  // Hierarchy Handlers
+  const handleCreateFormat = async (name) => {
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fmt-' + Date.now());
+    await createFormat({ id, name_hi: name, name_en: name });
+    await fetchUpdatedCategories();
+    updateCurrentItem({ category: id, genre: '', subgenre: '' });
+  };
+
+  const handleDeleteFormat = async (id) => {
+    await deleteFormat(id);
+    await fetchUpdatedCategories();
+  };
+
+  const handleCreateGenre = async (name) => {
+    if (!currentItem?.category) return;
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('gnr-' + Date.now());
+    await createGenre({ id, category_id: currentItem.category, name_hi: name, name_en: name });
+    await fetchUpdatedCategories();
+    updateCurrentItem({ genre: id, subgenre: '' });
+  };
+
+  const handleDeleteGenre = async (id) => {
+    await deleteGenre(id);
+    await fetchUpdatedCategories();
+  };
+
+  const handleCreateSubGenre = async (name) => {
+    if (!currentItem?.category) return;
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sub-' + Date.now());
+    await createSubgenre({
+      id,
+      category_id: currentItem.category,
+      genre_id: currentItem.genre || 'general',
+      name_hi: name,
+      name_en: name
+    });
+    await fetchUpdatedCategories();
+    updateCurrentItem({ subgenre: id });
+  };
+
+  const handleDeleteSubGenre = async (id) => {
+    await deleteSubgenre(id);
+    await fetchUpdatedCategories();
+  };
+
+  // Submission handler
   const handleSubmitAll = async () => {
-    if (fileQueue.length === 0) {
-      setStatusMessage({ type: 'error', text: 'Queue is empty. Please add PDF files to upload.' });
-      return;
+    if (fileQueue.length === 0) return;
+
+    for (let i = 0; i < fileQueue.length; i++) {
+      const item = fileQueue[i];
+      if (!item.title_hi && !item.title_en && !item.title_ur) {
+        setStatusMessage({
+          type: 'error',
+          text: lang === 'hi' ? `फ़ाइल #${i + 1} (${item.fileName}) में शीर्षक भरना आवश्यक है!` : (lang === 'ur' ? `فائل نمبر ${i + 1} کے لیے عنوان درکار ہے!` : `File #${i + 1} (${item.fileName}) is missing a title!`)
+        });
+        setSelectedIndex(i);
+        return;
+      }
     }
 
     setIsSubmitting(true);
-    setUploadProgress(0);
-    setStatusMessage({ type: 'info', text: 'Uploading ' + fileQueue.length + ' book(s) into Chetna Digital Library...' });
+    setUploadProgress(5);
+    setStatusMessage({ type: 'info', text: u.uploading });
 
     let successCount = 0;
 
     for (let i = 0; i < fileQueue.length; i++) {
       const item = fileQueue[i];
-      setUploadProgress(Math.round(((i + 1) / fileQueue.length) * 100));
-
-      const formData = new FormData();
-      formData.append('pdf', item.file);
-      if (item.coverFile) {
-        formData.append('cover', item.coverFile);
-      }
-      formData.append('title_hi', item.title_hi || item.title_en || 'अनाम कृति');
-      formData.append('title_en', item.title_en || item.title_hi || 'Untitled Literary Work');
-      formData.append('title_ur', item.title_ur || item.title_hi || 'نامعلوم کتاب');
-      formData.append('author_hi', item.author_hi || item.author_en || 'अज्ञात रचनाकार');
-      formData.append('author_en', item.author_en || item.author_hi || 'Unknown Author');
-      formData.append('author_ur', item.author_ur || item.author_hi || 'نامعلوم مصنف');
-      formData.append('category', item.category || 'novel');
-      formData.append('genre', item.genre || 'social-realism');
-      formData.append('subgenre', item.subgenre || 'general');
-      formData.append('era', item.era || 'Contemporary Era (2000–Present) / समकालीन युग');
-      formData.append('year', item.year || new Date().getFullYear().toString());
-      formData.append('publisher', item.publisher || 'चेतना डिजिटल अभिलेखागार');
-      formData.append('pages', item.pages || 50);
-      formData.append('description', item.description || '');
-      formData.append('description_en', item.description_en || '');
-      formData.append('is_featured', item.is_featured ? 'true' : 'false');
-      formData.append('language', 'Hindi / English / Urdu');
-      formData.append('tag', 'साहित्य');
-
       try {
-        let pdfUrl = '';
-        let coverUrl = '';
-        if (item.file) {
-          pdfUrl = await uploadBookFile(item.file, 'books');
-        }
-        if (item.coverFile) {
-          coverUrl = await uploadBookFile(item.coverFile, 'covers');
+        let pdfPublicUrl = '';
+        let coverPublicUrl = '';
+
+        try {
+          const pdfRes = await uploadBookFile(item.file, 'books', 'pdf');
+          pdfPublicUrl = pdfRes.publicUrl;
+        } catch (storageErr) {
+          console.warn('Storage upload fallback:', storageErr);
         }
 
-        const bookRecord = await createBookRecord({
-          title_hi: item.title_hi || item.title_en || 'अनाम कृति',
-          title_en: item.title_en || item.title_hi || 'Untitled Literary Work',
-          title_ur: item.title_ur || item.title_hi || '',
-          author_hi: item.author_hi || item.author_en || 'अज्ञात रचनाकार',
-          author_en: item.author_en || item.author_hi || 'Unknown Author',
+        if (item.coverFile) {
+          try {
+            const coverRes = await uploadBookFile(item.coverFile, 'covers', 'image');
+            coverPublicUrl = coverRes.publicUrl;
+          } catch (covErr) {
+            console.warn('Cover upload notice:', covErr);
+          }
+        } else if (item.coverPreview && item.coverPreview.startsWith('data:')) {
+          try {
+            const blobRes = await fetch(item.coverPreview);
+            const blob = await blobRes.blob();
+            const coverFileFromBlob = new File([blob], `cover_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const coverRes = await uploadBookFile(coverFileFromBlob, 'covers', 'image');
+            coverPublicUrl = coverRes.publicUrl;
+          } catch (bErr) {
+            console.warn('Blob thumbnail upload notice:', bErr);
+          }
+        }
+
+        const bookPayload = {
+          title_hi: item.title_hi || item.title_en || item.fileName,
+          title_en: item.title_en || item.title_hi || item.fileName,
+          title_ur: item.title_ur || item.title_hi || item.title_en,
+          author_hi: item.author_hi || item.author_en || '',
+          author_en: item.author_en || item.author_hi || '',
           author_ur: item.author_ur || item.author_hi || '',
           category: item.category || 'novel',
-          genre: item.genre || 'social-realism',
+          genre: item.genre || 'general',
           subgenre: item.subgenre || 'general',
-          era: item.era || 'Contemporary Era (2000–Present) / समकालीन युग',
-          year: String(item.year || new Date().getFullYear()),
-          publisher: item.publisher || 'चेतना डिजिटल अभिलेखागार',
+          era: getLocalizedEra(item.era, 'en'),
+          year: item.year || new Date().getFullYear().toString(),
+          publisher: item.publisher || 'Chetna Digital Library',
           pages: parseInt(item.pages) || 50,
           description: item.description || '',
-          description_en: item.description_en || '',
-          is_featured: !!item.is_featured,
-          language: 'Hindi / English / Urdu',
-          tag: 'साहित्य',
-          file_url: pdfUrl,
-          cover_url: coverUrl
-        });
+          description_en: item.description_en || item.description || '',
+          language: 'Hindi & Urdu',
+          file_url: pdfPublicUrl || '',
+          cover_url: coverPublicUrl || '',
+          is_featured: Boolean(item.is_featured),
+          downloads_count: 0,
+          views_count: 0
+        };
 
-        if (bookRecord) {
-          successCount++;
-          if (onBookUploaded) onBookUploaded(bookRecord);
-        }
-      } catch (err) {
-        console.error('Failed to upload ' + item.fileName + ' to Supabase:', err);
+        const createdBook = await createBookRecord(bookPayload);
+        successCount++;
+        if (onBookUploaded) onBookUploaded(createdBook);
+      } catch (itemErr) {
+        console.error(`Failed to upload item ${i}:`, itemErr);
       }
+
+      setUploadProgress(Math.round(((i + 1) / fileQueue.length) * 100));
     }
 
     setUploadProgress(100);
     setIsSubmitting(false);
 
     if (successCount === fileQueue.length) {
-      setStatusMessage({ type: 'success', text: 'Successfully uploaded all ' + successCount + ' e-books to Chetna Library!' });
+      setStatusMessage({ type: 'success', text: u.successMsg });
       setTimeout(() => {
         onClose();
       }, 1400);
     } else {
-      setStatusMessage({ type: 'warning', text: 'Uploaded ' + successCount + ' of ' + fileQueue.length + ' files. Check console for errors.' });
+      setStatusMessage({
+        type: 'warning',
+        text: lang === 'hi' ? `${successCount}/${fileQueue.length} फ़ाइलें अपलोड हुईं।` : (lang === 'ur' ? `${successCount}/${fileQueue.length} فائلیں محفوظ ہوئیں۔` : `Uploaded ${successCount} of ${fileQueue.length} files.`)
+      });
     }
   };
 
@@ -524,10 +450,10 @@ export default function UploadBookModal({
             </div>
             <div>
               <h3 className="font-extrabold text-stone-900 text-lg font-rekhta-serif tracking-tight">
-                Upload E-Books (Multi-File Batch Uploader)
+                {u.modalTitle}
               </h3>
               <p className="text-xs text-stone-500 font-medium">
-                3-Tier Hierarchy: Select Format ➔ Conditional Genre ➔ Conditional Subgenre
+                {u.modalSubtitle}
               </p>
             </div>
           </div>
@@ -539,7 +465,7 @@ export default function UploadBookModal({
           </button>
         </div>
 
-        {/* Status Message Notification Bar */}
+        {/* Status Notification Bar */}
         {statusMessage.text && (
           <div className={"px-6 py-2.5 text-xs font-semibold flex items-center justify-between border-b " + (
             statusMessage.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
@@ -565,8 +491,8 @@ export default function UploadBookModal({
           {/* Left Column: Upload Queue & File Dropzone */}
           <div className="w-full md:w-72 lg:w-80 border-r border-stone-200 bg-stone-50/60 flex flex-col shrink-0">
             <div className="p-3.5 border-b border-stone-200 flex items-center justify-between bg-white">
-              <span className="text-xs font-bold text-stone-700 tracking-wider">
-                UPLOAD QUEUE ({fileQueue.length})
+              <span className="text-xs font-bold text-stone-700 tracking-wider uppercase">
+                {u.queueHeader} ({fileQueue.length})
               </span>
               <button
                 type="button"
@@ -574,7 +500,7 @@ export default function UploadBookModal({
                 className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] text-xs font-bold rounded-lg border border-blue-200/80 flex items-center gap-1 transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>Add PDFs</span>
+                <span>{u.addMoreFiles}</span>
               </button>
             </div>
 
@@ -592,10 +518,10 @@ export default function UploadBookModal({
             >
               <Upload className="w-7 h-7 text-[#1d4ed8]/70" />
               <div className="text-xs font-bold text-stone-700">
-                Drag & Drop PDF Files Here
+                {u.dragDrop}
               </div>
               <div className="text-[10.5px] text-stone-400 font-medium">
-                Supports multiple simultaneous e-books
+                {u.dragDropSub}
               </div>
             </div>
 
@@ -603,7 +529,7 @@ export default function UploadBookModal({
             <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 divide-y divide-stone-100">
               {fileQueue.length === 0 ? (
                 <div className="text-center py-8 text-xs text-stone-400 italic">
-                  No files added yet. Drop PDF files above.
+                  {u.queueEmpty}
                 </div>
               ) : (
                 fileQueue.map((item, idx) => {
@@ -628,10 +554,10 @@ export default function UploadBookModal({
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-xs text-stone-900 font-hindi-serif">
-                            {item.title_hi || item.title_en || item.fileName}
+                            {item['title_' + lang] || item.title_hi || item.title_en || item.fileName}
                           </p>
                           <span className="text-[10px] text-stone-400 block truncate">
-                            {item.pages} pgs • {item.author_hi || item.author_en || 'Unknown'}
+                            {item.pages} {tr.card.pagesUnit} • {item['author_' + lang] || item.author_hi || item.author_en || ''}
                           </span>
                         </div>
                       </div>
@@ -667,7 +593,7 @@ export default function UploadBookModal({
                 <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl px-4 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs font-bold text-[#1d4ed8]">
                     <FileText className="w-4 h-4" />
-                    <span>File {selectedIndex + 1} of {fileQueue.length}: {currentItem.fileName}</span>
+                    <span>{selectedIndex + 1} / {fileQueue.length}: {currentItem.fileName}</span>
                   </div>
                   <div className="flex items-center gap-1 text-stone-400">
                     <button
@@ -691,7 +617,7 @@ export default function UploadBookModal({
                 <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900">
                   <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div className="leading-relaxed">
-                    <span className="font-bold">Auto-Translation Active:</span> Typing Title or Author in any one language automatically transliterates & populates the other languages.
+                    {u.autoTranslateNotice}
                   </div>
                 </div>
 
@@ -705,9 +631,9 @@ export default function UploadBookModal({
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h5 className="text-xs font-bold text-stone-800">Cover Image (Optional)</h5>
+                    <h5 className="text-xs font-bold text-stone-800">{u.coverFileLabel}</h5>
                     <p className="text-[11px] text-stone-500">
-                      If omitted, Page 1 thumbnail is extracted automatically
+                      {u.coverHelp}
                     </p>
                     <div className="flex items-center gap-2 pt-1.5">
                       <input
@@ -722,7 +648,7 @@ export default function UploadBookModal({
                         onClick={() => coverInputRef.current?.click()}
                         className="px-3.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-2xs transition cursor-pointer"
                       >
-                        Choose File
+                        {u.chooseFile}
                       </button>
                     </div>
                   </div>
@@ -731,18 +657,18 @@ export default function UploadBookModal({
                 {/* 4. Multi-Script Title Inputs */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
-                    <span>Book Title (पुस्तक का नाम) *</span>
+                    <span>{u.titleHi}</span>
                     {translatingField === 'title' && (
                       <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Transliterating...</span>
+                        <span>{u.transliterating}</span>
                       </span>
                     )}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <input
                       type="text"
-                      placeholder="Title (हिंदी / देवनागरी)"
+                      placeholder={u.titleHi}
                       value={currentItem.title_hi}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -753,7 +679,7 @@ export default function UploadBookModal({
                     />
                     <input
                       type="text"
-                      placeholder="Title (English)"
+                      placeholder={u.titleEn}
                       value={currentItem.title_en}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -765,7 +691,7 @@ export default function UploadBookModal({
                     <input
                       type="text"
                       dir="rtl"
-                      placeholder="کتاب کا نام (اردو)"
+                      placeholder={u.titleUr}
                       value={currentItem.title_ur}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -780,18 +706,18 @@ export default function UploadBookModal({
                 {/* 5. Multi-Script Author Inputs */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
-                    <span>Author / Creator (रचनाकार / लेखक) *</span>
+                    <span>{u.authorHi}</span>
                     {translatingField === 'author' && (
                       <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>Transliterating...</span>
+                        <span>{u.transliterating}</span>
                       </span>
                     )}
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <input
                       type="text"
-                      placeholder="Author (हिंदी / देवनागरी)"
+                      placeholder={u.authorHi}
                       value={currentItem.author_hi}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -802,7 +728,7 @@ export default function UploadBookModal({
                     />
                     <input
                       type="text"
-                      placeholder="Author (English)"
+                      placeholder={u.authorEn}
                       value={currentItem.author_en}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -814,7 +740,7 @@ export default function UploadBookModal({
                     <input
                       type="text"
                       dir="rtl"
-                      placeholder="مصنف کا نام (اردو)"
+                      placeholder={u.authorUr}
                       value={currentItem.author_ur}
                       onChange={(e) => {
                         const v = e.target.value;
@@ -826,12 +752,12 @@ export default function UploadBookModal({
                   </div>
                 </div>
 
-                {/* 6. 3-TIER HIERARCHY: Format -> Conditional Genre -> Conditional Subgenre */}
+                {/* 6. 3-TIER HIERARCHY */}
                 <div className="space-y-3 p-4 bg-stone-50/90 rounded-2xl border border-stone-200">
                   <div className="flex items-center gap-2 pb-1 border-b border-stone-200/80">
                     <FolderTree className="w-4 h-4 text-[#1d4ed8]" />
                     <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                      3-Tier Classification Hierarchy
+                      {u.tierHeader}
                     </span>
                   </div>
 
@@ -839,11 +765,11 @@ export default function UploadBookModal({
                     {/* Level 1: Format */}
                     <div>
                       <SearchableCombobox
-                        label="1. Format / प्रारूप *"
+                        label={u.formatLabel}
                         type="format"
                         value={currentItem.category}
                         options={formatOptions}
-                        searchPlaceholder="Search or create format..."
+                        searchPlaceholder={u.category}
                         onChange={(catId, opt) => {
                           const targetCat = allCategories.find(c => c.id === catId);
                           const firstGenre = targetCat?.genres?.[0];
@@ -859,14 +785,14 @@ export default function UploadBookModal({
                       />
                     </div>
 
-                    {/* Level 2: Genre (CONDITIONAL on Format) */}
+                    {/* Level 2: Genre */}
                     <div>
                       <SearchableCombobox
-                        label="2. Genre / विधा *"
+                        label={u.genreLabel}
                         type="genre"
                         value={currentItem.genre}
                         options={genreOptions}
-                        searchPlaceholder="Search or create genre under this format..."
+                        searchPlaceholder={u.genre}
                         onChange={(genreId, opt) => {
                           const targetGenre = (activeFormatObj?.genres || []).find(g => g.id === genreId);
                           const firstSub = targetGenre?.subgenres?.[0];
@@ -880,14 +806,14 @@ export default function UploadBookModal({
                       />
                     </div>
 
-                    {/* Level 3: Subgenre (CONDITIONAL on Genre) */}
+                    {/* Level 3: Subgenre */}
                     <div>
                       <SearchableCombobox
-                        label="3. Subgenre / उप-विधा *"
+                        label={u.subgenreLabel}
                         type="subgenre"
                         value={currentItem.subgenre}
                         options={subgenreOptions}
-                        searchPlaceholder="Search or create subgenre under this genre..."
+                        searchPlaceholder={u.subgenre}
                         onChange={(subId, opt) => {
                           updateCurrentItem({ subgenre: subId });
                         }}
@@ -902,22 +828,22 @@ export default function UploadBookModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-stone-800 block mb-1">
-                      Historical Era / Epoch (Dropdown)
+                      {u.era}
                     </label>
                     <select
                       value={currentItem.era}
                       onChange={(e) => updateCurrentItem({ era: e.target.value })}
                       className="w-full px-3 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs cursor-pointer"
                     >
-                      {HISTORICAL_ERAS.map(he => (
-                        <option key={he} value={he}>{he}</option>
+                      {HISTORICAL_ERA_KEYS.map(k => (
+                        <option key={k} value={k}>{getLocalizedEra(k, lang)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
                     <label className="text-xs font-bold text-stone-800 block mb-1">
-                      Year (CE)
+                      {u.year}
                     </label>
                     <input
                       type="text"
@@ -933,11 +859,11 @@ export default function UploadBookModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-stone-800 block mb-1">
-                      Publisher / Source (प्रकाशक / स्रोत)
+                      {u.publisher}
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. सरस्वती प्रेस, इलाहाबाद"
+                      placeholder={u.publisher}
                       value={currentItem.publisher}
                       onChange={(e) => updateCurrentItem({ publisher: e.target.value })}
                       className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs"
@@ -946,7 +872,7 @@ export default function UploadBookModal({
 
                   <div>
                     <label className="text-xs font-bold text-stone-800 block mb-1">
-                      Page Count (पृष्ठ संख्या)
+                      {u.pages}
                     </label>
                     <input
                       type="number"
@@ -960,11 +886,11 @@ export default function UploadBookModal({
                 {/* 9. Description */}
                 <div>
                   <label className="text-xs font-bold text-stone-800 block mb-1">
-                    Book Synopsis & Cultural Significance (सार व महत्व)
+                    {u.description}
                   </label>
                   <textarea
                     rows={2}
-                    placeholder="Enter short description of the book..."
+                    placeholder={u.description}
                     value={currentItem.description}
                     onChange={(e) => updateCurrentItem({ description: e.target.value })}
                     className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs resize-none"
@@ -981,15 +907,15 @@ export default function UploadBookModal({
                     className="w-4 h-4 text-[#1d4ed8] rounded border-stone-300 focus:ring-[#1d4ed8] cursor-pointer"
                   />
                   <label htmlFor="featuredCheckbox" className="text-xs font-semibold text-stone-700 cursor-pointer">
-                    Highlight as Landmark Masterpiece (Feature on Homepage Shelves)
+                    {u.highlightLandmark}
                   </label>
                 </div>
               </>
             ) : (
               <div className="flex flex-col items-center justify-center h-64 text-center text-stone-400 space-y-2">
                 <FileText className="w-12 h-12 stroke-[1.5]" />
-                <p className="text-sm font-semibold">No file selected from queue</p>
-                <p className="text-xs">Select or add a PDF file from the left sidebar to edit details.</p>
+                <p className="text-sm font-semibold">{u.noFileSelected}</p>
+                <p className="text-xs">{u.noFileSelectedSub}</p>
               </div>
             )}
           </div>
@@ -1000,9 +926,9 @@ export default function UploadBookModal({
         <div className="px-6 py-3.5 border-t border-stone-200 bg-stone-50 flex items-center justify-between shrink-0">
           <div className="text-xs text-stone-500 font-medium">
             {fileQueue.length > 0 ? (
-              <span>Queue: <strong>{fileQueue.length}</strong> file(s) ready to preserve</span>
+              <span><strong>{fileQueue.length}</strong> {u.readyToPreserve}</span>
             ) : (
-              <span>Upload queue is empty</span>
+              <span>{u.queueEmpty}</span>
             )}
           </div>
 
@@ -1012,7 +938,7 @@ export default function UploadBookModal({
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-200/60 rounded-xl transition cursor-pointer"
             >
-              Cancel
+              {u.cancel}
             </button>
             <button
               type="button"
@@ -1023,12 +949,12 @@ export default function UploadBookModal({
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Uploading ({uploadProgress}%)...</span>
+                  <span>{u.uploading} ({uploadProgress}%)</span>
                 </>
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  <span>Upload & Preserve All ({fileQueue.length})</span>
+                  <span>{u.uploadAll} ({fileQueue.length})</span>
                 </>
               )}
             </button>

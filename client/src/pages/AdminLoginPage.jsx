@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ShieldCheck, Lock, Mail, Key, ArrowRight, BookOpen, AlertCircle, ArrowLeft } from 'lucide-react';
-import Breadcrumbs from '../components/Breadcrumbs';
 
 export default function AdminLoginPage({ lang = 'hi', t }) {
   const navigate = useNavigate();
@@ -18,6 +17,8 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
 
   const from = location.state?.from?.pathname || '/';
 
+  const al = t.adminLogin || {};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -29,14 +30,14 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
         if (res.success) {
           navigate(from, { replace: true });
         } else {
-          setError(res.error || 'Invalid admin passcode');
+          setError(res.error || (lang === 'hi' ? 'अमान्य एडमिन पासकोड' : (lang === 'ur' ? 'غلط ایڈمن پاس کوڈ' : 'Invalid admin passcode')));
         }
       } else {
         const res = await loginAsAdmin(email, password);
         if (res.success) {
           navigate(from, { replace: true });
         } else {
-          setError(res.error || 'Invalid credentials');
+          setError(res.error || (lang === 'hi' ? 'अमान्य क्रेडेंशियल' : (lang === 'ur' ? 'غلط اسناد' : 'Invalid credentials')));
         }
       }
     } catch (err) {
@@ -56,7 +57,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-stone-800 mb-6 transition"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          <span>मुख्य पृष्ठ पर वापस जाएँ / Return to Library</span>
+          <span>{al.returnLink}</span>
         </Link>
 
         {/* Card */}
@@ -72,16 +73,16 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
             </div>
             <div>
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/70">
-                Security Administration
+                {al.badge}
               </span>
               <h1 className="text-xl sm:text-2xl font-extrabold text-stone-900 font-rekhta-serif tracking-tight mt-1">
-                प्रशासक लॉगिन / Admin Portal
+                {al.title}
               </h1>
             </div>
           </div>
 
           <p className="text-xs text-stone-500 mb-6 leading-relaxed">
-            प्रबंधन एवं संपादकीय नियंत्रण हेतु अपनी क्रेडेंशियल या मास्टर पासकोड दर्ज करें।
+            {al.subtitle}
           </p>
 
           {/* Auth Method Selector */}
@@ -95,7 +96,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              🔑 Master Passcode
+              🔑 {al.tabPasscode}
             </button>
             <button
               type="button"
@@ -106,7 +107,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
                   : 'text-stone-500 hover:text-stone-800'
               }`}
             >
-              ✉️ Email & Password
+              ✉️ {al.tabCredentials}
             </button>
           </div>
 
@@ -122,14 +123,14 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
             {authType === 'passcode' ? (
               <div>
                 <label className="font-bold text-stone-700 block mb-1.5">
-                  Master Admin Key / पासकोड
+                  {al.passcodeLabel}
                 </label>
                 <div className="relative">
                   <input
                     type="password"
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    placeholder="Enter admin passcode (e.g. chetna2026)..."
+                    placeholder={al.passcodePlaceholder}
                     autoFocus
                     required
                     className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-medium"
@@ -141,7 +142,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
               <>
                 <div>
                   <label className="font-bold text-stone-700 block mb-1.5">
-                    Admin Email Address
+                    {al.emailLabel}
                   </label>
                   <div className="relative">
                     <input
@@ -158,7 +159,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
 
                 <div>
                   <label className="font-bold text-stone-700 block mb-1.5">
-                    Password
+                    {al.passwordLabel}
                   </label>
                   <div className="relative">
                     <input
@@ -180,14 +181,14 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
               disabled={isLoading}
               className="w-full mt-2 py-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5"
             >
-              <span>{isLoading ? 'सत्यापित हो रहा है...' : 'प्रशासक पोर्टल में प्रवेश करें / Enter Portal'}</span>
+              <span>{isLoading ? (al.verifying || '...') : al.enterBtn}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
 
           {/* Info note */}
           <div className="mt-6 pt-4 border-t border-stone-100 text-center text-[11px] text-stone-400">
-            <span>सुरक्षित भूमिका-आधारित पहुँच नियंत्रण प्रणाली (RBAC)</span>
+            <span>{al.footerNote}</span>
           </div>
 
         </div>

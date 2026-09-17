@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   BookOpen,
@@ -7,13 +7,14 @@ import {
   Quote,
   Check
 } from 'lucide-react';
+import { getLocalizedEra, getLocalizedLanguage } from '../locales/translations';
 
 export default function BookDetailModal({
   book,
   onClose,
   onOpenReader,
   onDownloadBook,
-  lang,
+  lang = 'hi',
   t
 }) {
   const [copiedLink, setCopiedLink] = useState(false);
@@ -24,6 +25,8 @@ export default function BookDetailModal({
 
   const title = book[`title_${lang}`] || book.title_hi || book.title_en;
   const author = book[`author_${lang}`] || book.author_hi || book.author_en;
+  const localizedEra = getLocalizedEra(book.era, lang);
+  const localizedLang = getLocalizedLanguage(book.language, lang);
 
   const handleShare = () => {
     if (navigator.clipboard) {
@@ -34,10 +37,10 @@ export default function BookDetailModal({
   };
 
   const citations = {
-    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || 'Chetna Digital Preservation Library'}, ${book.year || 'n.d.'}.`,
-    apa: `${book.author_en || book.author_hi} (${book.year || 'n.d.'}). ${book.title_en || book.title_hi}. ${book.publisher || 'Chetna Digital Archive'}.`,
-    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || 'Chetna Digital Archive'}, ${book.year || 'n.d.'}.`,
-    humanities: `[${book.year} CE] ${book.author_hi} (${book.author_en}). ${book.title_hi}. Digitized & Preserved by Chetna Open Free Library.`
+    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
+    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}.`,
+    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
+    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'चेतना मुक्त पुस्तकालय द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved by Chetna Open Digital Library.'}`
   };
 
   const handleCopyCitation = () => {
@@ -118,7 +121,7 @@ export default function BookDetailModal({
                   className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition cursor-pointer border border-stone-200"
                 >
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? (lang === 'hi' ? 'लिंक कॉपी हो गया!' : 'Link Copied!') : t.details.share}</span>
+                  <span>{copiedLink ? t.details.linkCopied : t.details.share}</span>
                 </button>
               </div>
             </div>
@@ -147,31 +150,31 @@ export default function BookDetailModal({
                 {/* Metadata Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-4 text-xs">
                   <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">प्रकाशन वर्ष / Year</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.year} CE</span>
+                    <span className="text-stone-500 block font-medium">{t.details.pubYear}</span>
+                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.year ? `${book.year} CE` : '—'}</span>
                   </div>
 
                   <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">भाषा / Language</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block truncate">{book.language || 'Hindi/English'}</span>
+                    <span className="text-stone-500 block font-medium">{t.details.language}</span>
+                    <span className="font-bold text-stone-800 text-xs mt-0.5 block truncate">{localizedLang}</span>
                   </div>
 
                   <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">पृष्ठ / Pages</span>
+                    <span className="text-stone-500 block font-medium">{t.details.pageCount}</span>
                     <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.pages || 150} {t.card.pages}</span>
                   </div>
 
                   <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">डाउनलोड्स / Downloads</span>
+                    <span className="text-stone-500 block font-medium">{t.details.totalDownloads}</span>
                     <span className="font-bold text-emerald-700 text-xs mt-0.5 block">{(book.downloads_count || 0).toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Era & Genre */}
                 <div className="mb-3 text-xs flex flex-wrap items-center gap-2 text-stone-600">
-                  {book.era && (
+                  {localizedEra && (
                     <span className="px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-md font-medium border border-blue-200">
-                      {book.era}
+                      {localizedEra}
                     </span>
                   )}
                   {book.genre && (
@@ -187,7 +190,7 @@ export default function BookDetailModal({
                     {t.details.description}
                   </h3>
                   <p className="text-xs sm:text-sm text-stone-700 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200">
-                    {book.description || book.description_en}
+                    {book[`description_${lang}`] || book.description || book.description_en}
                   </p>
                 </div>
 
@@ -225,7 +228,7 @@ export default function BookDetailModal({
                       className="inline-flex items-center gap-1 px-3 py-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[11px] font-semibold rounded cursor-pointer transition"
                     >
                       {copiedCitation ? <Check className="w-3 h-3 text-white" /> : <Quote className="w-3 h-3 text-white" />}
-                      <span>{copiedCitation ? 'Copied!' : 'Copy Citation'}</span>
+                      <span>{copiedCitation ? t.details.citationCopied : t.details.copyCitation}</span>
                     </button>
                   </div>
                 </div>
@@ -234,7 +237,7 @@ export default function BookDetailModal({
 
               {/* Bottom Note */}
               <div className="mt-4 pt-2 border-t border-stone-200 text-[11px] text-stone-400 flex items-center justify-between">
-                <span>चेतना सांस्कृतिक एवं साहित्यिक विकास मंच • Open Access</span>
+                <span>{t.details.footerNote}</span>
                 <span>ID: {book.id}</span>
               </div>
             </div>

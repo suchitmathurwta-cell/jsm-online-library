@@ -63,7 +63,7 @@ export default function BookCard({
         {isUserUploaded ? (
           <div className="absolute top-2.5 left-2.5 bg-emerald-600 text-white font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
             <FileCheck className="w-2.5 h-2.5" />
-            <span>Uploaded Edition</span>
+            <span>{t.card.uploadedEdition}</span>
           </div>
         ) : book.is_featured ? (
           <div className="absolute top-2.5 left-2.5 bg-amber-500 text-stone-950 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
@@ -80,7 +80,7 @@ export default function BookCard({
                 e.stopPropagation();
                 onEditBook(book);
               }}
-              title="Edit Book Metadata (Admin)"
+              title={t.admin.editBtn}
               className="absolute top-2.5 right-2.5 p-1.5 bg-stone-900/90 hover:bg-stone-900 text-amber-400 rounded-lg shadow-md border border-stone-700 transition cursor-pointer"
             >
               <Edit3 className="w-3 h-3" />
@@ -121,11 +121,11 @@ export default function BookCard({
         {/* Stats & Actions */}
         <div className="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
           <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-0.5" title={`${book.views_count || 0} views`}>
+            <span className="flex items-center gap-0.5" title={`${book.views_count || 0} ${t.card.views}`}>
               <Eye className="w-3 h-3 text-stone-400" />
               <span>{(book.views_count || 0).toLocaleString()}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-emerald-700 font-medium" title={`${book.downloads_count || 0} downloads`}>
+            <span className="flex items-center gap-0.5 text-emerald-700 font-medium" title={`${book.downloads_count || 0} ${t.card.downloads}`}>
               <Download className="w-3 h-3" />
               <span>{(book.downloads_count || 0).toLocaleString()}</span>
             </span>

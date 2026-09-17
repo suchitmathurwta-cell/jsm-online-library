@@ -9,6 +9,8 @@ export default function SuggestBookModal({
 }) {
   if (!isOpen) return null;
 
+  const s = t?.suggest || {};
+
   const [bookTitle, setBookTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [category, setCategory] = useState('novel');
@@ -22,7 +24,6 @@ export default function SuggestBookModal({
     if (!bookTitle.trim()) return;
 
     setIsSubmitting(true);
-    // Simulate submission / log request to storage
     setTimeout(() => {
       try {
         const storedSuggestions = JSON.parse(localStorage.getItem('chetna_book_suggestions') || '[]');
@@ -65,10 +66,10 @@ export default function SuggestBookModal({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold font-rekhta-serif tracking-tight text-white">
-                {lang === 'hi' ? 'पुस्तकालय हेतु पुस्तक का सुझाव दें' : (lang === 'ur' ? 'کتاب کی شمولیت کے لیے تجویز دیں' : 'Suggest a Book / Request Digitization')}
+                {s.title || 'Suggest a Book for Digitization'}
               </h2>
               <p className="text-[11.5px] text-stone-300 font-normal">
-                {lang === 'hi' ? 'दुर्लभ पाण्डुलिपियों एवं साहित्यिक कृतियों की सिफ़ारिश करें' : 'Recommend rare manuscripts, novels, or treatises for public access'}
+                {s.subtitle || 'Recommend rare manuscripts and literary works'}
               </p>
             </div>
           </div>
@@ -88,31 +89,29 @@ export default function SuggestBookModal({
               <CheckCircle2 className="w-9 h-9" />
             </div>
             <h3 className="text-xl font-bold text-stone-900 font-rekhta-serif">
-              {lang === 'hi' ? 'आपका सुझाव प्राप्त हुआ!' : 'Thank you for your suggestion!'}
+              {s.successTitle || 'Suggestion Received!'}
             </h3>
             <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
-              {lang === 'hi'
-                ? 'चेतना पुस्तकालय की शोध एवं डिजिटाइजेशन टीम आपकी सुझाई गई कृति की उपलब्धता व कॉपीराइट स्थिति की समीक्षा करेगी।'
-                : 'Our archival digitization team will review the availability and public-domain status of the recommended treatise.'}
+              {s.successDesc || 'Our archival digitization team will review the recommended treatise.'}
             </p>
             <button
               onClick={handleReset}
               className="px-6 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer"
             >
-              {lang === 'hi' ? 'समाप्त करें' : 'Done'}
+              {s.done || 'Done'}
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
             <div>
               <label className="font-bold text-stone-700 block mb-1.5">
-                {lang === 'hi' ? 'पुस्तक / रचना का नाम *' : 'Book / Treatise Title *'}
+                {s.bookTitleLabel || 'Book / Treatise Title *'}
               </label>
               <input
                 type="text"
                 value={bookTitle}
                 onChange={(e) => setBookTitle(e.target.value)}
-                placeholder={lang === 'hi' ? 'रचना का नाम लिखें (उदा. गोदान, राग दरबारी)...' : 'Enter title of the work...'}
+                placeholder={s.bookTitlePlaceholder || 'Enter title of the work...'}
                 className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition"
                 required
                 autoFocus
@@ -122,55 +121,55 @@ export default function SuggestBookModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="font-bold text-stone-700 block mb-1.5">
-                  {lang === 'hi' ? 'रचनाकार / लेखक' : 'Author / Creator'}
+                  {s.authorLabel || 'Author / Creator'}
                 </label>
                 <input
                   type="text"
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
-                  placeholder={lang === 'hi' ? 'उदा. प्रेमचंद, टैगोर...' : 'Author name...'}
+                  placeholder={s.authorPlaceholder || 'Author name...'}
                   className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden transition"
                 />
               </div>
 
               <div>
                 <label className="font-bold text-stone-700 block mb-1.5">
-                  {lang === 'hi' ? 'साहित्यिक प्रारूप' : 'Category / Format'}
+                  {s.categoryLabel || 'Category / Format'}
                 </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer"
                 >
-                  <option value="novel">उपन्यास (Novel)</option>
-                  <option value="story">कहानी (Story)</option>
-                  <option value="poetry">कविता व शायरी (Poetry)</option>
-                  <option value="magazines">पत्रिकाएँ (Magazines)</option>
-                  <option value="vimarsh">विमर्श (Discourse)</option>
-                  <option value="cultural-conscience">सांस्कृतिक चेतना (Conscience)</option>
-                  <option value="satire">व्यंग्य (Satire)</option>
-                  <option value="drama">नाटक (Drama)</option>
-                  <option value="essays">निबंध (Essays)</option>
+                  <option value="novel">{t.nav.novel}</option>
+                  <option value="story">{t.nav.story}</option>
+                  <option value="poetry">{t.nav.poetry}</option>
+                  <option value="magazines">{t.nav.magazines}</option>
+                  <option value="vimarsh">{t.nav.vimarsh}</option>
+                  <option value="cultural-conscience">{t.nav.conscience}</option>
+                  <option value="satire">{t.nav.satire}</option>
+                  <option value="drama">{t.nav.drama}</option>
+                  <option value="essays">{t.nav.essays}</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="font-bold text-stone-700 block mb-1.5">
-                {lang === 'hi' ? 'इस कृति का महत्व अथवा सुझाव का कारण' : 'Why should this book be added?'}
+                {s.reasonLabel || 'Why should this book be added?'}
               </label>
               <textarea
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows="3"
-                placeholder={lang === 'hi' ? 'इस रचना के साहित्यिक/सांस्कृतिक महत्व के बारे में संक्षेप में लिखें...' : 'Describe why this work should be preserved in Chetna Library...'}
+                placeholder={s.reasonPlaceholder || 'Describe why this work should be preserved in Chetna Library...'}
                 className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden leading-relaxed"
               />
             </div>
 
             <div>
               <label className="font-bold text-stone-700 block mb-1.5">
-                {lang === 'hi' ? 'आपका ईमेल (वैकल्पिक, अपडेट हेतु)' : 'Your Email (Optional, for notifications)'}
+                {s.emailLabel || 'Your Email (Optional, for notifications)'}
               </label>
               <input
                 type="email"
@@ -187,7 +186,7 @@ export default function SuggestBookModal({
                 onClick={onClose}
                 className="px-4 py-2.5 text-stone-600 hover:bg-stone-100 rounded-xl font-semibold transition cursor-pointer"
               >
-                {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
+                {s.cancel || 'Cancel'}
               </button>
               <button
                 type="submit"
@@ -195,7 +194,7 @@ export default function SuggestBookModal({
                 className="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isSubmitting ? (lang === 'hi' ? 'भेजा जा रहा है...' : 'Submitting...') : (lang === 'hi' ? 'सुझाव भेजें' : 'Submit Recommendation')}</span>
+                <span>{isSubmitting ? (s.submitting || '...') : (s.submitBtn || 'Submit Recommendation')}</span>
               </button>
             </div>
           </form>

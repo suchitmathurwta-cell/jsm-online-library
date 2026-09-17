@@ -22,6 +22,7 @@ import {
   PanelLeft,
   ArrowUp
 } from 'lucide-react';
+import { translations } from '../locales/translations';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -114,9 +115,10 @@ export default function HikmahPdfReader({
   book,
   onClose,
   onDownloadBook,
-  lang,
+  lang = 'hi',
   t
 }) {
+  const tr = t || translations[lang] || translations.hi;
   const [pdfDoc, setPdfDoc] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(book?.pages || 1);
@@ -138,8 +140,8 @@ export default function HikmahPdfReader({
   const renderTask1Ref = useRef(null);
   const renderTask2Ref = useRef(null);
 
-  const title = book ? (book[`title_${lang}`] || book.title_hi || book.title_en || 'ई-पुस्तक') : 'ई-पुस्तक';
-  const author = book ? (book[`author_${lang}`] || book.author_hi || book.author_en || '') : '';
+  const title = book ? (book['title_' + lang] || book.title_hi || book.title_en || 'ई-पुस्तक') : 'ई-पुस्तक';
+  const author = book ? (book['author_' + lang] || book.author_hi || book.author_en || '') : '';
 
   // Load PDF Document
   useEffect(() => {
@@ -148,375 +150,282 @@ export default function HikmahPdfReader({
     let isMounted = true;
     setIsLoading(true);
 
-    const loadPdf = async () => {
-      try {
-        const res = await fetch(book.file_url);
-        if (!res.ok) throw new Error(`Failed to fetch PDF: ${res.status}`);
-        const arrayBuffer = await res.arrayBuffer();
+    const loadingTask = pdfjsLib.getDocument({
+      url: book.file_url,
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
+      cMapPacked: true
+    });
 
-        const loadingTask = pdfjsLib.getDocument({
-          data: arrayBuffer,
-          cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
-          cMapPacked: true
-        });
-
-        const doc = await loadingTask.promise;
-        if (isMounted) {
-          setPdfDoc(doc);
-          setTotalPages(doc.numPages);
-          setCurrentPage(1);
-          setPageInput('1');
-          setIsLoading(false);
-
-          // Generate first 30 thumbnails
-          generateThumbnails(doc);
-        }
-      } catch (err) {
-        console.warn('Interactive PDF.js loading notice, switching to native viewer mode:', err);
-        if (isMounted) {
-          setViewMode('native');
-          setIsLoading(false);
-        }
+    loadingTask.promise.then(
+      (doc) => {
+        if (!isMounted) return;
+        setPdfDoc(doc);
+        setTotalPages(doc.numPages);
+        setIsLoading(false);
+      },
+      (err) => {
+        if (!isMounted) return;
+        console.warn('PDF Loading notice:', err);
+        setIsLoading(false);
       }
-    };
-
-    loadPdf();
-
-    // Check stored bookmark
-    const saved = localStorage.getItem(`bookmark_${book.id}`);
-    if (saved) {
-      const p = parseInt(saved);
-      if (!isNaN(p)) {
-        setCurrentPage(p);
-        setPageInput(String(p));
-        setIsBookmarked(true);
-      }
-    }
+    );
 
     return () => {
       isMounted = false;
-      if (renderTask1Ref.current) renderTask1Ref.current.cancel();
-      if (renderTask2Ref.current) renderTask2Ref.current.cancel();
+      try {
+        loadingTask.destroy();
+      } catch (_) {}
     };
   }, [book]);
 
-  const generateThumbnails = async (doc) => {
-    const thumbs = [];
-    const maxThumbs = Math.min(doc.numPages, 40);
-    for (let i = 1; i <= maxThumbs; i++) {
-      try {
-        const page = await doc.getPage(i);
-        const viewport = page.getViewport({ scale: 0.18 });
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        thumbs.push({ pageNum: i, dataUrl: canvas.toDataURL('image/jpeg', 0.7) });
-      } catch (_) {}
-    }
-    setThumbnails(thumbs);
-  };
-
-  // Dual Spread Canvas Rendering
-  useEffect(() => {
+  // Dual Page Spread Render
+  const renderDualPages = useCallback(async () => {
     if (!pdfDoc || viewMode !== 'dual') return;
 
-    const renderPage = async (pageNumber, canvasRef, taskRef) => {
-      if (!canvasRef.current || pageNumber > pdfDoc.numPages || pageNumber < 1) return;
+    // Render Page 1 (Left)
+    if (canvasRef1.current) {
       try {
-        if (taskRef.current) {
-          taskRef.current.cancel();
-        }
-
-        const page = await pdfDoc.getPage(pageNumber);
+        if (renderTask1Ref.current) renderTask1Ref.current.cancel();
+        const page1 = await pdfDoc.getPage(currentPage);
         const dpr = window.devicePixelRatio || 1;
-        const viewport = page.getViewport({ scale: scale * dpr });
-        const displayViewport = page.getViewport({ scale });
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
+        const viewport1 = page1.getViewport({ scale: scale * dpr });
+        const displayViewport1 = page1.getViewport({ scale });
+        const canvas = canvasRef1.current;
         const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        canvas.style.height = `${displayViewport.height}px`;
-        canvas.style.width = `${displayViewport.width}px`;
+        canvas.height = viewport1.height;
+        canvas.width = viewport1.width;
+        canvas.style.height = `${displayViewport1.height}px`;
+        canvas.style.width = `${displayViewport1.width}px`;
 
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport
-        };
-        const task = page.render(renderContext);
-        taskRef.current = task;
-        await task.promise;
+        renderTask1Ref.current = page1.render({ canvasContext: context, viewport: viewport1 });
+        await renderTask1Ref.current.promise;
       } catch (e) {
-        if (e?.name !== 'RenderingCancelledException') {
-          console.warn('Dual canvas render notice:', e);
-        }
+        if (e?.name !== 'RenderingCancelledException') console.warn('Spread p1 notice:', e);
       }
-    };
-
-    renderPage(currentPage, canvasRef1, renderTask1Ref);
-    if (currentPage + 1 <= pdfDoc.numPages) {
-      renderPage(currentPage + 1, canvasRef2, renderTask2Ref);
     }
-  }, [pdfDoc, currentPage, scale, viewMode]);
 
-  // Keyboard navigation
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        if (isFullscreen) {
-          document.exitFullscreen?.();
-          setIsFullscreen(false);
-        } else {
-          onClose();
-        }
-      } else if (viewMode === 'dual') {
-        if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-          goToNextSpread();
-        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-          goToPrevSpread();
-        }
+    // Render Page 2 (Right) if available
+    if (currentPage + 1 <= totalPages && canvasRef2.current) {
+      try {
+        if (renderTask2Ref.current) renderTask2Ref.current.cancel();
+        const page2 = await pdfDoc.getPage(currentPage + 1);
+        const dpr = window.devicePixelRatio || 1;
+        const viewport2 = page2.getViewport({ scale: scale * dpr });
+        const displayViewport2 = page2.getViewport({ scale });
+        const canvas = canvasRef2.current;
+        const context = canvas.getContext('2d');
+        canvas.height = viewport2.height;
+        canvas.width = viewport2.width;
+        canvas.style.height = `${displayViewport2.height}px`;
+        canvas.style.width = `${displayViewport2.width}px`;
+
+        renderTask2Ref.current = page2.render({ canvasContext: context, viewport: viewport2 });
+        await renderTask2Ref.current.promise;
+      } catch (e) {
+        if (e?.name !== 'RenderingCancelledException') console.warn('Spread p2 notice:', e);
       }
-    };
+    }
+  }, [pdfDoc, currentPage, totalPages, scale, viewMode]);
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentPage, totalPages, viewMode, isFullscreen]);
+  useEffect(() => {
+    if (viewMode === 'dual') {
+      renderDualPages();
+    }
+  }, [renderDualPages, viewMode]);
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!isFullscreen) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+      setIsFullscreen(false);
+    }
+  };
 
   const scrollToPage = (pageNum) => {
-    setCurrentPage(pageNum);
-    setPageInput(String(pageNum));
+    const clamped = Math.max(1, Math.min(pageNum, totalPages));
+    setCurrentPage(clamped);
+    setPageInput(String(clamped));
+
     if (viewMode === 'single') {
-      const el = document.getElementById(`pdf-page-${pageNum}`);
-      if (el) {
+      const el = document.getElementById(`pdf-page-${clamped}`);
+      if (el && scrollContainerRef.current) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   };
 
-  const goToNextSpread = () => {
-    if (currentPage + 2 <= totalPages) {
-      const nextP = currentPage + 2;
-      setCurrentPage(nextP);
-      setPageInput(String(nextP));
-    } else if (currentPage + 1 <= totalPages) {
-      setCurrentPage(currentPage + 1);
-      setPageInput(String(currentPage + 1));
+  const handlePageInputSubmit = (e) => {
+    e.preventDefault();
+    const p = parseInt(pageInput, 10);
+    if (!isNaN(p)) {
+      scrollToPage(p);
     }
   };
 
   const goToPrevSpread = () => {
-    if (currentPage - 2 >= 1) {
-      const prevP = currentPage - 2;
-      setCurrentPage(prevP);
-      setPageInput(String(prevP));
-    } else if (currentPage > 1) {
-      setCurrentPage(1);
-      setPageInput('1');
-    }
+    scrollToPage(currentPage - 2);
   };
 
-  const handlePageJump = (e) => {
-    e.preventDefault();
-    const num = parseInt(pageInput);
-    if (!isNaN(num) && num >= 1 && num <= totalPages) {
-      scrollToPage(num);
-    } else {
-      setPageInput(String(currentPage));
-    }
-  };
-
-  const toggleBookmark = () => {
-    if (isBookmarked) {
-      localStorage.removeItem(`bookmark_${book.id}`);
-      setIsBookmarked(false);
-    } else {
-      localStorage.setItem(`bookmark_${book.id}`, String(currentPage));
-      setIsBookmarked(true);
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (!containerRef.current) return;
-    if (!document.fullscreenElement) {
-      containerRef.current.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
-    } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
-    }
+  const goToNextSpread = () => {
+    scrollToPage(currentPage + 2);
   };
 
   const handleScrollContainer = (e) => {
-    if (e.target.scrollTop > 500) {
+    if (e.target.scrollTop > 400) {
       setShowScrollTop(true);
     } else {
       setShowScrollTop(false);
     }
   };
 
-  const themeBg = {
-    light: 'bg-[#f4f4f4] text-stone-900',
-    sepia: 'bg-[#f5ebd7] text-[#2c1d11]',
-    dark: 'bg-[#121212] text-stone-200',
-    emerald: 'bg-[#031c15] text-[#d4af37]'
-  }[theme];
+  // Color Theme Presets
+  const themes = {
+    light: {
+      bg: 'bg-[#f4f4f5]',
+      topbar: 'bg-white/95 border-stone-200 text-stone-800',
+      pageBg: 'bg-white',
+      textColor: 'text-stone-900'
+    },
+    sepia: {
+      bg: 'bg-[#f5ebd7]',
+      topbar: 'bg-[#efe0c7]/95 border-[#dec8a7] text-[#3e2c1c]',
+      pageBg: 'bg-[#fbf5eb]',
+      textColor: 'text-[#3e2c1c]'
+    },
+    emerald: {
+      bg: 'bg-[#06241c]',
+      topbar: 'bg-[#0a3529]/95 border-[#125844] text-[#d1fae5]',
+      pageBg: 'bg-[#0f4032]',
+      textColor: 'text-[#e6f4ea]'
+    },
+    dark: {
+      bg: 'bg-[#18181b]',
+      topbar: 'bg-stone-900/95 border-stone-800 text-stone-100',
+      pageBg: 'bg-stone-900',
+      textColor: 'text-stone-100'
+    }
+  };
 
-  const pageBg = {
-    light: 'bg-white shadow-2xl',
-    sepia: 'bg-[#fdf8ee] shadow-2xl border border-[#e8dac0]',
-    dark: 'bg-[#1f1f1f] shadow-2xl border border-stone-800 text-white',
-    emerald: 'bg-[#082a20] shadow-2xl border border-[#0d4535] text-amber-200'
-  }[theme];
+  const activeTheme = themes[theme] || themes.sepia;
+  const pageBg = activeTheme.pageBg;
 
   return (
     <div
       ref={containerRef}
-      className={`fixed inset-0 z-50 flex flex-col ${themeBg} select-none overflow-hidden transition-colors duration-200`}
+      className={`fixed inset-0 z-50 flex flex-col ${activeTheme.bg} animate-fadeIn select-none`}
     >
       
-      {/* Top Toolbar */}
-      <div className="h-14 bg-black/95 backdrop-blur-md text-white px-3 sm:px-4 flex items-center justify-between z-20 border-b border-white/10 shrink-0">
+      {/* Top Navigation Bar */}
+      <div className={`px-3 sm:px-6 py-2.5 border-b backdrop-blur-md flex items-center justify-between z-40 shrink-0 ${activeTheme.topbar}`}>
         
-        {/* Left: Info & Sidebar Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+        {/* Left Section: Book Title & Author */}
+        <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={onClose}
-            title={t.reader.backToCatalog}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold transition cursor-pointer"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={tr.reader.allPages}
+            className="p-2 rounded-lg hover:bg-black/10 text-stone-400 hover:text-white transition cursor-pointer"
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.reader.backToCatalog}</span>
+            <PanelLeft className="w-4 h-4" />
           </button>
 
-          {viewMode !== 'native' && (
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              title="Toggle Page Thumbnails"
-              className={`p-1.5 rounded transition cursor-pointer ${sidebarOpen ? 'bg-[#1d4ed8] text-white' : 'bg-white/10 text-stone-300 hover:bg-white/20'}`}
-            >
-              <PanelLeft className="w-4 h-4" />
-            </button>
-          )}
-
           <div className="min-w-0">
-            <h2 className="text-xs sm:text-sm font-bold truncate font-hindi-serif">
+            <h3 className="font-bold text-xs sm:text-sm truncate font-hindi-serif">
               {title}
-            </h2>
-            <p className="text-[10.5px] text-stone-400 truncate flex items-center gap-2">
-              <span>{author}</span>
-              <span>•</span>
-              <span className="text-amber-400 font-semibold">{totalPages} Pages</span>
-            </p>
+            </h3>
+            {author && (
+              <p className="text-[11px] opacity-75 truncate font-normal">
+                {author}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Center: Navigation Controls */}
-        {viewMode !== 'native' ? (
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {viewMode === 'dual' && (
-              <button
-                onClick={goToPrevSpread}
-                disabled={currentPage <= 1}
-                className="p-1.5 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            )}
+        {/* Center: Page Controls */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          
+          <button
+            onClick={() => scrollToPage(currentPage - 1)}
+            disabled={currentPage <= 1}
+            className="p-1.5 rounded hover:bg-white/10 text-stone-300 disabled:opacity-30 cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
 
-            <form onSubmit={handlePageJump} className="flex items-center gap-1 text-xs">
-              <span className="text-stone-400 text-xs hidden sm:inline">Page</span>
-              <input
-                type="text"
-                value={pageInput}
-                onChange={(e) => setPageInput(e.target.value)}
-                className="w-11 py-1 text-center bg-white/15 border border-white/20 rounded font-bold text-white text-xs outline-hidden"
-              />
-              <span className="text-stone-300 text-xs font-medium">/ {totalPages}</span>
-            </form>
+          <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1 text-xs">
+            <input
+              type="text"
+              value={pageInput}
+              onChange={(e) => setPageInput(e.target.value)}
+              className="w-10 text-center py-1 bg-white/10 rounded border border-white/20 text-white font-bold outline-hidden focus:border-[#1d4ed8]"
+            />
+            <span className="text-stone-400 text-xs">/ {totalPages}</span>
+          </form>
 
-            {viewMode === 'dual' && (
-              <button
-                onClick={goToNextSpread}
-                disabled={currentPage >= totalPages}
-                className="p-1.5 rounded bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none transition cursor-pointer"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            )}
+          <button
+            onClick={() => scrollToPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            className="p-1.5 rounded hover:bg-white/10 text-stone-300 disabled:opacity-30 cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
 
-            <button
-              onClick={toggleBookmark}
-              title={isBookmarked ? 'Bookmark Saved' : 'Add Bookmark'}
-              className={`p-1.5 rounded transition cursor-pointer hidden sm:inline-flex ${isBookmarked ? 'bg-amber-500 text-stone-950' : 'bg-white/10 text-stone-300 hover:bg-white/20'}`}
-            >
-              <Bookmark className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ) : (
-          <div className="text-xs font-semibold text-stone-300 flex items-center gap-1.5">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <span>Browser PDF Mode</span>
-          </div>
-        )}
+        </div>
 
-        {/* Right Tools: View Mode Toggle, Themes, Zoom, Download, Fullscreen */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Right Section: View Mode, Theme & Actions */}
+        <div className="flex items-center gap-1 sm:gap-2">
           
           {/* View Modes */}
-          <div className="flex items-center bg-white/10 rounded-lg p-0.5">
+          <div className="hidden sm:flex items-center bg-white/10 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode('single')}
-              title="Single Page (Continuous Vertical Scroll)"
-              className={`px-2 py-1.5 rounded text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${viewMode === 'single' ? 'bg-[#1d4ed8] text-white shadow-xs' : 'text-stone-300 hover:text-white'}`}
+              title={tr.reader.singlePage}
+              className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer ${viewMode === 'single' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-300 hover:text-white'}`}
             >
-              <Layout className="w-3.5 h-3.5" />
-              <span className="hidden md:inline text-[11px]">Scroll</span>
+              {tr.reader.singlePage}
             </button>
             <button
               onClick={() => setViewMode('dual')}
-              title="Dual Page Book Spread"
-              className={`px-2 py-1.5 rounded text-xs font-semibold transition cursor-pointer flex items-center gap-1 ${viewMode === 'dual' ? 'bg-[#1d4ed8] text-white shadow-xs' : 'text-stone-300 hover:text-white'}`}
+              title={tr.reader.dualPage}
+              className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer ${viewMode === 'dual' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-300 hover:text-white'}`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
-              <span className="hidden md:inline text-[11px]">Spread</span>
-            </button>
-            <button
-              onClick={() => setViewMode('native')}
-              title="Native Browser PDF Mode"
-              className={`p-1.5 rounded text-xs font-semibold transition cursor-pointer ${viewMode === 'native' ? 'bg-emerald-700 text-white shadow-xs' : 'text-stone-300 hover:text-white'}`}
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
+              {tr.reader.dualPage}
             </button>
           </div>
 
           {/* Themes */}
           {viewMode !== 'native' && (
-            <div className="hidden sm:flex items-center bg-white/10 rounded-lg p-0.5">
+            <div className="hidden lg:flex items-center bg-white/10 rounded-lg p-0.5 gap-0.5">
               <button
                 onClick={() => setTheme('light')}
-                title={t.reader.themeLight}
+                title={tr.reader.themeLight}
                 className={`p-1.5 rounded cursor-pointer ${theme === 'light' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-400 hover:text-white'}`}
               >
                 <Sun className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setTheme('sepia')}
-                title={t.reader.themeSepia}
+                title={tr.reader.themeSepia}
                 className={`p-1.5 rounded cursor-pointer ${theme === 'sepia' ? 'bg-[#e2d4bc] text-[#2c1d11] shadow-xs' : 'text-stone-400 hover:text-white'}`}
               >
                 <Coffee className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setTheme('emerald')}
-                title={t.reader.themeEmerald}
+                title={tr.reader.themeEmerald}
                 className={`p-1.5 rounded cursor-pointer ${theme === 'emerald' ? 'bg-[#0f4c3a] text-amber-300 shadow-xs' : 'text-stone-400 hover:text-white'}`}
               >
                 <Sparkles className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => setTheme('dark')}
-                title={t.reader.themeDark}
+                title={tr.reader.themeDark}
                 className={`p-1.5 rounded cursor-pointer ${theme === 'dark' ? 'bg-stone-800 text-amber-400 shadow-xs' : 'text-stone-400 hover:text-white'}`}
               >
                 <Moon className="w-3.5 h-3.5" />
@@ -529,7 +438,7 @@ export default function HikmahPdfReader({
             <div className="hidden md:flex items-center bg-white/10 rounded-lg p-0.5">
               <button
                 onClick={() => setScale(Math.max(0.6, scale - 0.15))}
-                title={t.reader.zoomOut}
+                title={tr.reader.zoomOut}
                 className="p-1.5 text-stone-300 hover:text-white cursor-pointer"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
@@ -539,7 +448,7 @@ export default function HikmahPdfReader({
               </span>
               <button
                 onClick={() => setScale(Math.min(2.5, scale + 0.15))}
-                title={t.reader.zoomIn}
+                title={tr.reader.zoomIn}
                 className="p-1.5 text-stone-300 hover:text-white cursor-pointer"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
@@ -550,17 +459,17 @@ export default function HikmahPdfReader({
           {/* Direct PDF Download */}
           <button
             onClick={() => onDownloadBook(book)}
-            title={t.reader.downloadBook}
+            title={tr.reader.downloadBook}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-xs transition cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">{t.card.downloadPdf}</span>
+            <span className="hidden md:inline">{tr.card.downloadPdf}</span>
           </button>
 
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            title={isFullscreen ? t.reader.exitFullscreen : t.reader.fullscreen}
+            title={isFullscreen ? tr.reader.exitFullscreen : tr.reader.fullscreen}
             className="p-2 text-stone-300 hover:text-white rounded hover:bg-white/10 cursor-pointer"
           >
             {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
@@ -584,7 +493,7 @@ export default function HikmahPdfReader({
         {sidebarOpen && viewMode !== 'native' && (
           <div className="w-52 bg-stone-900/95 border-r border-white/10 p-3 overflow-y-auto space-y-3 z-30 shrink-0">
             <div className="flex items-center justify-between pb-2 border-b border-white/10 text-xs text-stone-300 font-bold">
-              <span>All Pages ({totalPages})</span>
+              <span>{tr.reader.allPages} ({totalPages})</span>
               <button onClick={() => setSidebarOpen(false)} className="text-stone-400 hover:text-white">
                 <X className="w-4 h-4" />
               </button>
@@ -630,11 +539,11 @@ export default function HikmahPdfReader({
           {isLoading && (
             <div className="flex flex-col items-center justify-center gap-3 text-stone-500 animate-pulse my-auto">
               <BookOpen className="w-12 h-12 text-[#1d4ed8]" />
-              <p className="text-sm font-semibold">Opening Complete E-Book in Reader...</p>
+              <p className="text-sm font-semibold">{tr.reader.openingReader}</p>
             </div>
           )}
 
-          {/* 1. SINGLE PAGE CONTINUOUS VERTICAL STACKED SCROLL (User's Requested Feature) */}
+          {/* 1. SINGLE PAGE CONTINUOUS VERTICAL STACKED SCROLL */}
           {!isLoading && viewMode === 'single' && pdfDoc && (
             <div className="w-full flex flex-col items-center py-4">
               {Array.from({ length: totalPages }).map((_, idx) => (
@@ -675,23 +584,12 @@ export default function HikmahPdfReader({
             </div>
           )}
 
-          {/* 3. NATIVE BROWSER PDF MODE */}
-          {!isLoading && viewMode === 'native' && (
-            <div className="w-full h-full rounded-xl overflow-hidden shadow-2xl border border-stone-300 bg-white flex flex-col">
-              <iframe
-                src={`${book.file_url}#toolbar=1&navpanes=1&page=${currentPage}`}
-                title={title}
-                className="w-full h-full border-0"
-              />
-            </div>
-          )}
-
           {/* Scroll to Top Floating Button */}
           {showScrollTop && viewMode === 'single' && (
             <button
               onClick={() => scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
               className="fixed bottom-6 right-6 p-3 bg-[#1d4ed8] text-white rounded-full shadow-2xl hover:bg-[#1e40af] transition transform hover:scale-110 cursor-pointer z-30 flex items-center justify-center"
-              title="Scroll to Top"
+              title={tr.reader.scrollToTop}
             >
               <ArrowUp className="w-5 h-5" />
             </button>

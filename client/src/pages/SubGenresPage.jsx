@@ -18,12 +18,13 @@ import { AdminOnly } from '../components/AdminGuard';
 
 export default function SubGenresPage({
   t,
-  lang,
+  lang = 'hi',
   categories = [],
   books = [],
   onSelectBook,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   onRefreshCategories
 }) {
   const { categorySlug, genreSlug } = useParams();
@@ -134,6 +135,8 @@ export default function SubGenresPage({
     setDeletingSub(sg);
   };
 
+  const hl = t.hierarchyLayers || {};
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
       {/* Layer 3 Breadcrumbs: Home > Category > Genre */}
@@ -144,7 +147,7 @@ export default function SubGenresPage({
         ]}
       />
 
-      {/* Top Bar matching screenshot with + Create New Sub-Genre and Horizontal Pills */}
+      {/* Top Bar with Horizontal Pills */}
       <div className="mt-4 p-4 sm:p-5 rounded-3xl bg-stone-50/90 border border-stone-200/90 shadow-xs">
         
         {/* Top Header Row */}
@@ -152,7 +155,7 @@ export default function SubGenresPage({
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-[#1d4ed8]"></div>
             <span className="text-xs font-bold text-stone-800 uppercase tracking-wider flex items-center gap-1.5 flex-wrap">
-              <span>SUB-GENRES & DEDICATED SUB-SECTIONS</span>
+              <span>{hl.layer3Badge}</span>
               <ChevronRight className="w-3.5 h-3.5 text-stone-400" />
               <span className="text-[#1d4ed8] font-bold normal-case text-sm">
                 {categoryTitle} › {genreTitle}
@@ -167,7 +170,7 @@ export default function SubGenresPage({
               className="px-3.5 py-1.5 bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] text-xs font-bold rounded-xl border border-blue-200/80 shadow-2xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Create New Sub-Genre</span>
+              <span>{hl.addSubgenreBtn}</span>
             </button>
           </AdminOnly>
         </div>
@@ -180,23 +183,23 @@ export default function SubGenresPage({
                 type="text"
                 value={newSubName}
                 onChange={(e) => setNewSubName(e.target.value)}
-                placeholder="Type new sub-genre title (e.g. Agrarian Struggles, Classic Marsiya)..."
+                placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम दर्ज करें...' : (lang === 'ur' ? 'نئی ذیلی صنف کا نام درج کریں...' : 'Enter new sub-genre title...')}
                 className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8]"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={isSubmitting || !newSubName.trim()}
-                className="px-4 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg transition disabled:opacity-50"
+                className="px-4 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg transition disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? 'Creating...' : '+ Create'}
+                {isSubmitting ? '...' : (lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Create'))}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreateSub(false)}
-                className="px-3 py-1.5 text-stone-500 text-xs"
+                className="px-3 py-1.5 text-stone-500 text-xs cursor-pointer"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
               </button>
             </form>
           </AdminOnly>
@@ -210,7 +213,7 @@ export default function SubGenresPage({
             className="px-4 py-2 rounded-2xl text-xs font-bold bg-[#b45309] text-white shadow-xs flex items-center gap-1.5 border border-[#b45309]"
           >
             <FolderOpen className="w-3.5 h-3.5" />
-            <span>All {genreTitle}</span>
+            <span>{lang === 'hi' ? `समग्र ${genreTitle}` : (lang === 'ur' ? `تمام ${genreTitle}` : `All ${genreTitle}`)}</span>
           </button>
 
           {/* Subgenre Pills */}
@@ -229,8 +232,8 @@ export default function SubGenresPage({
                   <button
                     type="button"
                     onClick={(e) => openDeleteModal(sg, e)}
-                    title="Delete Sub-Genre"
-                    className="ml-1 p-1 rounded-full text-amber-700 hover:text-red-700 hover:bg-red-100 transition"
+                    title={t.admin.deleteBtn}
+                    className="ml-1 p-1 rounded-full text-amber-700 hover:text-red-700 hover:bg-red-100 transition cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -246,10 +249,10 @@ export default function SubGenresPage({
       <div className="mt-8">
         <div className="mb-6">
           <h2 className="text-xl font-extrabold text-stone-900 font-rekhta-serif">
-            Sub-Genre Themes in {genreTitle}
+            {hl.layer3Heading} {genreTitle}
           </h2>
           <p className="text-xs text-stone-500 mt-1 font-normal">
-            {genreDesc || 'Select a dedicated sub-genre to filter books and treatises in this theme.'}
+            {genreDesc || hl.layer3Sub}
           </p>
         </div>
 
@@ -266,7 +269,7 @@ export default function SubGenresPage({
                   <div>
                     <div className="flex items-center justify-between mb-2.5">
                       <span className="text-[10.5px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-[#1d4ed8] border border-blue-200">
-                        {sg.count || 0} Works
+                        {sg.count || 0} {t.sections.worksUnit}
                       </span>
                       
                       {/* Admin Only: Edit & Delete */}
@@ -275,16 +278,16 @@ export default function SubGenresPage({
                           <button
                             type="button"
                             onClick={(e) => openEditModal(sg, e)}
-                            title="Edit Sub-Genre"
-                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+                            title={t.admin.editBtn}
+                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={(e) => openDeleteModal(sg, e)}
-                            title="Delete Sub-Genre"
-                            className="p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
+                            title={t.admin.deleteBtn}
+                            className="p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -295,15 +298,10 @@ export default function SubGenresPage({
                     <h3 className="text-base font-bold text-stone-900 font-hindi-serif group-hover:text-[#1d4ed8] transition-colors">
                       {sgTitle}
                     </h3>
-                    {sg.name_en && sg.name_en !== sgTitle && (
-                      <p className="text-xs text-stone-400 mt-0.5 font-medium">
-                        {sg.name_en}
-                      </p>
-                    )}
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-[#1d4ed8] font-bold">
-                    <span>Browse Sub-Genre Books</span>
+                    <span>{hl.layer3Browse}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </div>
                 </div>
@@ -313,14 +311,14 @@ export default function SubGenresPage({
         ) : (
           <div className="py-12 text-center bg-white rounded-3xl border border-stone-200 p-8 max-w-md mx-auto">
             <FolderOpen className="w-10 h-10 text-stone-300 mx-auto mb-2" />
-            <p className="text-sm font-bold text-stone-700">No Sub-Genres Found</p>
-            <p className="text-xs text-stone-500 mt-1 mb-4">No sub-genres are currently available under this theme.</p>
+            <p className="text-sm font-bold text-stone-700">{hl.noWorksFound}</p>
+            <p className="text-xs text-stone-500 mt-1 mb-4">{hl.noWorksDesc}</p>
             <AdminOnly>
               <button
                 onClick={() => setShowCreateSub(true)}
-                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs"
+                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
               >
-                + Create Sub-Genre Now
+                {hl.addSubgenreBtn}
               </button>
             </AdminOnly>
           </div>
@@ -334,11 +332,11 @@ export default function SubGenresPage({
             <div className="flex items-center gap-2.5">
               <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
               <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-rekhta-serif">
-                Treatises in {genreTitle}
+                {hl.featuredTreatises} {genreTitle}
               </h2>
             </div>
             <span className="text-xs text-stone-500 font-medium">
-              {genreBooks.length} Total Treatises
+              {genreBooks.length} {t.sections.worksUnit}
             </span>
           </div>
 
@@ -352,6 +350,7 @@ export default function SubGenresPage({
                 onSelectBook={onSelectBook}
                 onOpenReader={onOpenReader}
                 onDownloadBook={onDownloadBook}
+                onEditBook={onEditBook}
               />
             ))}
           </div>
@@ -364,11 +363,11 @@ export default function SubGenresPage({
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-stone-100">
               <h3 className="text-base font-bold text-stone-900 font-rekhta-serif">
-                Edit Sub-Genre Details
+                {t.admin.editBtn}
               </h3>
               <button
                 onClick={() => setEditingSub(null)}
-                className="p-1 text-stone-400 hover:text-stone-700 rounded-lg"
+                className="p-1 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -376,7 +375,9 @@ export default function SubGenresPage({
 
             <form onSubmit={handleSaveEditSub} className="mt-4 space-y-3.5 text-xs">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Sub-Genre Name (Hindi / Devnagari)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'उप-विधा का नाम (हिंदी)' : (lang === 'ur' ? 'ذیلی صنف کا نام (ہندی)' : 'Sub-Genre Name (Hindi)')}
+                </label>
                 <input
                   type="text"
                   value={editSubHi}
@@ -387,7 +388,9 @@ export default function SubGenresPage({
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Sub-Genre Name (English)</label>
+                <label className="font-bold text-stone-700 block mb-1">
+                  {lang === 'hi' ? 'उप-विधा का नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'ذیلی صنف کا نام (انگریزی)' : 'Sub-Genre Name (English)')}
+                </label>
                 <input
                   type="text"
                   value={editSubEn}
@@ -401,16 +404,16 @@ export default function SubGenresPage({
                 <button
                   type="button"
                   onClick={() => setEditingSub(null)}
-                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-medium"
+                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-medium cursor-pointer"
                 >
-                  Cancel
+                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isEditingSub}
-                  className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-xs transition"
+                  className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-xs transition cursor-pointer"
                 >
-                  {isEditingSub ? 'Saving...' : 'Save Changes'}
+                  {isEditingSub ? '...' : (lang === 'hi' ? 'सुरक्षित करें' : (lang === 'ur' ? 'محفوظ کریں' : 'Save Changes'))}
                 </button>
               </div>
             </form>
@@ -426,26 +429,26 @@ export default function SubGenresPage({
               <Trash2 className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-stone-900 font-rekhta-serif mb-1">
-              Delete Sub-Genre?
+              {t.admin.deleteBtn}
             </h3>
             <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-              Are you sure you want to delete <span className="font-bold text-stone-900">"{deletingSub.name_hi || deletingSub.name_en}"</span>?
+              {t.admin.deleteConfirm}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
                 onClick={() => setDeletingSub(null)}
-                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
+                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition cursor-pointer"
               >
-                Cancel
+                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
               </button>
               <button
                 type="button"
                 onClick={handleDeleteSubGenre}
                 disabled={isDeletingSub}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50"
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
               >
-                {isDeletingSub ? 'Deleting...' : 'Yes, Delete'}
+                {isDeletingSub ? '...' : t.admin.deleteBtn}
               </button>
             </div>
           </div>

@@ -14,7 +14,7 @@ import {
 import { AdminOnly, VisitorOnly } from './AdminGuard';
 
 export default function Header({
-  lang,
+  lang = 'hi',
   setLang,
   t,
   onOpenUpload,
@@ -76,9 +76,9 @@ export default function Header({
     { key: 'novel', label: t.nav.novel || 'Novel' },
     { key: 'story', label: t.nav.story || 'Story' },
     { key: 'poetry', label: t.nav.poetry || 'Poetry' },
-    { key: 'magazines', label: t.nav.magazines || 'Magazines (Patrika)' },
-    { key: 'vimarsh', label: t.nav.vimarsh || 'Discussion (Vimarsh)' },
-    { key: 'cultural-conscience', label: t.nav.conscience || 'Cultural Conscience' },
+    { key: 'magazines', label: t.nav.magazines || 'Magazines' },
+    { key: 'vimarsh', label: t.nav.vimarsh || 'Discourse' },
+    { key: 'cultural-conscience', label: t.nav.conscience || 'Conscience' },
     { key: 'satire', label: t.nav.satire || 'Satire' },
     { key: 'drama', label: t.nav.drama || 'Drama' },
     { key: 'essays', label: t.nav.essays || 'Essays' }
@@ -106,7 +106,7 @@ export default function Header({
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-blue-800 to-indigo-950 flex items-center justify-center text-amber-300 font-bold text-lg shadow-xs border border-amber-400/30 group-hover:scale-105 transition-transform">
-                <span>चे</span>
+                <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'C' : 'चे')}</span>
               </div>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ export default function Header({
               type="button"
               onClick={handleVoiceSearch}
               title="Voice Search"
-              className={`absolute right-2.5 p-1 text-stone-400 hover:text-[#1d4ed8] transition ${isListening ? 'animate-pulse text-red-600' : ''}`}
+              className={`absolute right-2.5 p-1 text-stone-400 hover:text-[#1d4ed8] transition cursor-pointer ${isListening ? 'animate-pulse text-red-600' : ''}`}
             >
               <Mic className="w-3.5 h-3.5" />
             </button>
@@ -199,7 +199,7 @@ export default function Header({
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200/80 transition cursor-pointer"
               >
                 <UserIcon className="w-3.5 h-3.5 text-stone-500" />
-                <span>लॉग इन / Sign In</span>
+                <span>{t.nav.login}</span>
               </button>
             )}
 
@@ -222,9 +222,9 @@ export default function Header({
               >
                 <BookMarked className="w-3.5 h-3.5 text-amber-700" />
                 <span className="hidden sm:inline">
-                  {lang === 'hi' ? 'पुस्तक सुझाव' : (lang === 'ur' ? 'کتاب کی تجویز' : 'Suggest Book')}
+                  {t.nav.suggestBook}
                 </span>
-                <span className="sm:hidden">सुझाव</span>
+                <span className="sm:hidden">{t.nav.suggestBook}</span>
               </button>
             </VisitorOnly>
 
@@ -306,7 +306,7 @@ export default function Header({
                     if (onSelectCategory) onSelectCategory(item.key);
                     setMobileMenuOpen(false);
                   }}
-                  className="p-2.5 rounded-lg hover:bg-stone-50 text-stone-700 text-left font-medium transition"
+                  className="p-2.5 rounded-lg hover:bg-stone-50 text-stone-700 text-left font-medium transition cursor-pointer"
                 >
                   {item.label}
                 </button>
@@ -317,7 +317,7 @@ export default function Header({
               <AdminOnly>
                 <button
                   onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                  className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition"
+                  className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer"
                 >
                   ⚙️ {t.nav.manageLibrary}
                 </button>
@@ -325,9 +325,9 @@ export default function Header({
               <VisitorOnly>
                 <button
                   onClick={() => { onOpenSuggest(); setMobileMenuOpen(false); }}
-                  className="flex-1 py-2 text-xs text-center bg-amber-50 border border-amber-200 rounded-lg font-semibold text-amber-900 hover:bg-amber-100 transition"
+                  className="flex-1 py-2 text-xs text-center bg-amber-50 border border-amber-200 rounded-lg font-semibold text-amber-900 hover:bg-amber-100 transition cursor-pointer"
                 >
-                  💡 {lang === 'hi' ? 'पुस्तक सुझाव दें' : 'Suggest a Book'}
+                  💡 {t.nav.suggestBook}
                 </button>
               </VisitorOnly>
             </div>
