@@ -45,11 +45,11 @@ export function AuthProvider({ children }) {
     return data;
   };
 
-  const signInWithGoogle = async (customRedirectUrl) => {
+  const signInWithGoogle = async () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: customRedirectUrl || window.location.href
+        redirectTo: window.location.origin
       }
     });
     if (error) throw error;

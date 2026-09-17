@@ -18,7 +18,11 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
     setErrorMsg('');
     setIsLoading(true);
     try {
-      await signInWithGoogle(window.location.href);
+      const currentPath = window.location.pathname + window.location.search;
+      if (currentPath && currentPath !== '/') {
+        localStorage.setItem('chetna_auth_redirect_path', currentPath);
+      }
+      await signInWithGoogle();
     } catch (err) {
       setErrorMsg(err.message || 'Google Sign In error. Please try again.');
       setIsLoading(false);

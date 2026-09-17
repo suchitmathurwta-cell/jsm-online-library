@@ -154,6 +154,10 @@ function MainApp() {
         if (readingBook) {
           localStorage.setItem('chetna_pending_reading_book', JSON.stringify(readingBook));
         }
+        const currentPath = window.location.pathname + window.location.search;
+        if (currentPath && currentPath !== '/') {
+          localStorage.setItem('chetna_auth_redirect_path', currentPath);
+        }
       } catch (e) {}
 
       setPendingDownloadBook(book);
@@ -172,26 +176,21 @@ function MainApp() {
       localStorage.removeItem('chetna_pending_download');
       localStorage.removeItem('chetna_pending_selected_book');
       localStorage.removeItem('chetna_pending_reading_book');
+      localStorage.removeItem('chetna_auth_redirect_path');
     } catch (e) {}
   };
 
-  // Auto-trigger pending download when user signs in (including Google OAuth redirect)
+  // Auto-trigger pending download and restore view when user signs in (including Google OAuth redirect)
   useEffect(() => {
     if (user) {
-      const storedPending = localStorage.getItem('chetna_pending_download');
-      if (storedPending) {
-        try {
-          const book = JSON.parse(storedPending);
-          if (book && book.id) {
-            executeDownload(book);
-          }
-        } catch (e) {
-          console.error('Error executing stored pending download:', e);
-        } finally {
-          localStorage.removeItem('chetna_pending_download');
-        }
+      // 1. Restore previous subroute if redirected to origin
+      const savedPath = localStorage.getItem('chetna_auth_redirect_path');
+      if (savedPath && savedPath !== window.location.pathname) {
+        localStorage.removeItem('chetna_auth_redirect_path');
+        window.history.replaceState(null, '', savedPath);
       }
 
+      // 2. Restore active book modal or reader
       const storedSelected = localStorage.getItem('chetna_pending_selected_book');
       if (storedSelected) {
         try {
@@ -208,6 +207,21 @@ function MainApp() {
           if (b) setReadingBook(b);
         } catch (e) {}
         localStorage.removeItem('chetna_pending_reading_book');
+      }
+
+      // 3. Execute pending download
+      const storedPending = localStorage.getItem('chetna_pending_download');
+      if (storedPending) {
+        try {
+          const book = JSON.parse(storedPending);
+          if (book && book.id) {
+            executeDownload(book);
+          }
+        } catch (e) {
+          console.error('Error executing stored pending download:', e);
+        } finally {
+          localStorage.removeItem('chetna_pending_download');
+        }
       }
     }
   }, [user]);
