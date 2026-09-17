@@ -16,6 +16,8 @@ import {
   ChevronRight,
   FolderOpen
 } from 'lucide-react';
+import { AdminOnly } from './AdminGuard';
+import { createSubgenre } from '../services/supabaseApi';
 
 const iconMap = {
   BookOpen,
@@ -140,7 +142,8 @@ export default function CategoryTiles({
   onSelectCategory,
   selectedSubGenre,
   onSelectSubGenre,
-  onCreateSubGenreClick
+  onCreateSubGenreClick,
+  onRefreshCategories
 }) {
   const [showSubGenrePrompt, setShowSubGenrePrompt] = useState(false);
   const [newSubName, setNewSubName] = useState('');
@@ -168,11 +171,22 @@ export default function CategoryTiles({
     try {
       if (onCreateSubGenreClick) {
         await onCreateSubGenreClick(newSubName.trim(), selectedCategory);
+      } else {
+        const subId = newSubName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sg-' + Date.now());
+        const firstGenreId = activeCategoryObj?.genres?.[0]?.id || 'general';
+        await createSubgenre({
+          id: subId,
+          category_id: selectedCategory,
+          genre_id: firstGenreId,
+          name_hi: newSubName.trim(),
+          name_en: newSubName.trim()
+        });
+        if (onRefreshCategories) await onRefreshCategories();
       }
       setNewSubName('');
       setShowSubGenrePrompt(false);
     } catch (err) {
-      console.error(err);
+      console.error('Error creating subgenre:', err);
     } finally {
       setIsSubmittingSub(false);
     }
@@ -319,44 +333,48 @@ export default function CategoryTiles({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowSubGenrePrompt(!showSubGenrePrompt)}
-                    className="text-xs font-bold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl border border-blue-200 flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{lang === 'hi' ? '+ नया उप-वर्ग जोड़ें' : '+ Create New Sub-Genre'}</span>
-                  </button>
-                </div>
+                <AdminOnly>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowSubGenrePrompt(!showSubGenrePrompt)}
+                      className="text-xs font-bold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50/80 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl border border-blue-200 flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{lang === 'hi' ? '+ नया उप-वर्ग जोड़ें' : '+ Create New Sub-Genre'}</span>
+                    </button>
+                  </div>
+                </AdminOnly>
               </div>
 
-              {/* Inline Subgenre Creator Form if opened */}
+              {/* Inline Subgenre Creator Form if opened (Admin Only) */}
               {showSubGenrePrompt && (
-                <form onSubmit={handleCreateSubGenreInline} className="mb-3.5 p-3 bg-white rounded-xl border border-blue-200 flex items-center gap-2 shadow-xs animate-fadeIn">
-                  <input
-                    type="text"
-                    value={newSubName}
-                    onChange={(e) => setNewSubName(e.target.value)}
-                    placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम टाइप करें...' : 'Type new sub-genre name (e.g. Marsiya, Ghazal)...'}
-                    className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]"
-                    autoFocus
-                  />
-                  <button
-                    type="submit"
-                    disabled={isSubmittingSub || !newSubName.trim()}
-                    className="px-4 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-lg transition cursor-pointer disabled:opacity-50"
-                  >
-                    {isSubmittingSub ? 'Creating...' : '+ Create & Open Sub-Page'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowSubGenrePrompt(false); setNewSubName(''); }}
-                    className="px-2.5 py-1.5 text-stone-500 hover:text-stone-800 text-xs rounded-lg transition"
-                  >
-                    Cancel
-                  </button>
-                </form>
+                <AdminOnly>
+                  <form onSubmit={handleCreateSubGenreInline} className="mb-3.5 p-3 bg-white rounded-xl border border-blue-200 flex items-center gap-2 shadow-xs animate-fadeIn">
+                    <input
+                      type="text"
+                      value={newSubName}
+                      onChange={(e) => setNewSubName(e.target.value)}
+                      placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम टाइप करें...' : 'Type new sub-genre name (e.g. Marsiya, Ghazal)...'}
+                      className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8]"
+                      autoFocus
+                    />
+                    <button
+                      type="submit"
+                      disabled={isSubmittingSub || !newSubName.trim()}
+                      className="px-4 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-lg transition cursor-pointer disabled:opacity-50"
+                    >
+                      {isSubmittingSub ? 'Creating...' : '+ Create & Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowSubGenrePrompt(false); setNewSubName(''); }}
+                      className="px-2.5 py-1.5 text-stone-500 hover:text-stone-800 text-xs rounded-lg transition"
+                    >
+                      Cancel
+                    </button>
+                  </form>
+                </AdminOnly>
               )}
 
               {/* Sub-Genre Pills Layer */}
@@ -405,7 +423,7 @@ export default function CategoryTiles({
                 {/* If no subgenres yet */}
                 {activeSubGenres.length === 0 && (
                   <span className="text-xs text-stone-400 italic">
-                    {lang === 'hi' ? 'कोई उप-वर्ग उपलब्ध नहीं है। ऊपर क्लिक करके जोड़ें।' : 'No sub-genres yet. Click "+ Create New Sub-Genre" to add one.'}
+                    {lang === 'hi' ? 'कोई उप-वर्ग उपलब्ध नहीं है।' : 'No sub-genres yet.'}
                   </span>
                 )}
 

@@ -224,3 +224,16 @@ export async function updateSubgenre(categoryId, genreId, subgenreId, updateData
   if (error) throw error;
   return data;
 }
+
+// 6. Book CRUD Operations
+export async function updateBookRecord(bookId, updateData) {
+  const { data, error } = await supabase.from('books').update(updateData).eq('id', bookId).select().single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteBookRecord(bookId) {
+  const { data, error } = await supabase.from('books').delete().eq('id', bookId);
+  if (error) throw error;
+  return data;
+}

@@ -15,6 +15,7 @@ import {
 import Breadcrumbs from '../components/Breadcrumbs';
 import { createGenre, deleteGenre, updateGenre } from '../services/supabaseApi';
 import BookCard from '../components/BookCard';
+import { AdminOnly } from '../components/AdminGuard';
 
 export default function CategoryGenresPage({
   t,
@@ -163,42 +164,47 @@ export default function CategoryGenresPage({
               <span className="text-lg font-bold text-white">{categoryBooks.length}</span>
               <span className="text-xs text-stone-300 block">Works</span>
             </div>
-            <button
-              onClick={() => setShowCreateGenre(!showCreateGenre)}
-              className="px-4 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-2xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>+ Add Genre</span>
-            </button>
+            
+            <AdminOnly>
+              <button
+                onClick={() => setShowCreateGenre(!showCreateGenre)}
+                className="px-4 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-2xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Add Genre</span>
+              </button>
+            </AdminOnly>
           </div>
         </div>
 
-        {/* Inline Create Genre Form */}
+        {/* Inline Create Genre Form (Admin Only) */}
         {showCreateGenre && (
-          <form onSubmit={handleCreateGenre} className="mt-6 pt-5 border-t border-white/10 flex items-center gap-2 max-w-xl animate-fadeIn">
-            <input
-              type="text"
-              value={newGenreName}
-              onChange={(e) => setNewGenreName(e.target.value)}
-              placeholder="Enter new genre name (e.g. Regional Novels, Ghazal)..."
-              className="flex-1 px-4 py-2 text-xs bg-white text-stone-900 rounded-xl outline-hidden font-medium"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting || !newGenreName.trim()}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
-            >
-              {isSubmitting ? 'Creating...' : '+ Create'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowCreateGenre(false)}
-              className="px-3 py-2 text-stone-300 hover:text-white text-xs"
-            >
-              Cancel
-            </button>
-          </form>
+          <AdminOnly>
+            <form onSubmit={handleCreateGenre} className="mt-6 pt-5 border-t border-white/10 flex items-center gap-2 max-w-xl animate-fadeIn">
+              <input
+                type="text"
+                value={newGenreName}
+                onChange={(e) => setNewGenreName(e.target.value)}
+                placeholder="Enter new genre name (e.g. Regional Novels, Ghazal)..."
+                className="flex-1 px-4 py-2 text-xs bg-white text-stone-900 rounded-xl outline-hidden font-medium"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting || !newGenreName.trim()}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
+              >
+                {isSubmitting ? 'Creating...' : '+ Create'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateGenre(false)}
+                className="px-3 py-2 text-stone-300 hover:text-white text-xs"
+              >
+                Cancel
+              </button>
+            </form>
+          </AdminOnly>
         )}
       </div>
 
@@ -235,28 +241,32 @@ export default function CategoryGenresPage({
                         <FolderTree className="w-5 h-5" />
                       </div>
 
-                      {/* Action buttons: Edit & Delete */}
                       <div className="flex items-center gap-1.5">
                         <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
                           {subCount} Sub-Genres
                         </span>
                         
-                        <button
-                          type="button"
-                          onClick={(e) => openEditModal(g, e)}
-                          title="Edit Genre"
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => openDeleteModal(g, e)}
-                          title="Delete Genre"
-                          className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {/* Admin Only Actions: Edit & Delete */}
+                        <AdminOnly>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={(e) => openEditModal(g, e)}
+                              title="Edit Genre"
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => openDeleteModal(g, e)}
+                              title="Delete Genre"
+                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </AdminOnly>
                       </div>
                     </div>
 
@@ -291,13 +301,15 @@ export default function CategoryGenresPage({
           <div className="py-16 text-center bg-white rounded-3xl border border-stone-200 p-8 max-w-lg mx-auto">
             <FolderTree className="w-10 h-10 text-stone-300 mx-auto mb-3" />
             <p className="text-sm font-bold text-stone-700">No Genres Created Yet</p>
-            <p className="text-xs text-stone-500 mt-1 mb-4">Click "+ Add Genre" above to define the first genre under this category.</p>
-            <button
-              onClick={() => setShowCreateGenre(true)}
-              className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs"
-            >
-              + Create Genre Now
-            </button>
+            <p className="text-xs text-stone-500 mt-1 mb-4">No genres are currently available under this category.</p>
+            <AdminOnly>
+              <button
+                onClick={() => setShowCreateGenre(true)}
+                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                + Create Genre Now
+              </button>
+            </AdminOnly>
           </div>
         )}
       </div>
@@ -333,7 +345,7 @@ export default function CategoryGenresPage({
         </div>
       )}
 
-      {/* Edit Genre Modal */}
+      {/* Edit Genre Modal (Admin Only) */}
       {editingGenre && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
@@ -403,7 +415,7 @@ export default function CategoryGenresPage({
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal (Admin Only) */}
       {deletingGenre && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200 text-center animate-in fade-in zoom-in-95">

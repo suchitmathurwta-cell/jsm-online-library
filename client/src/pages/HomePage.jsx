@@ -17,7 +17,9 @@ export default function HomePage({
   onSelectBook,
   onOpenReader,
   onDownloadBook,
-  onOpenUpload
+  onEditBook,
+  onOpenUpload,
+  onRefreshCategories
 }) {
   const navigate = useNavigate();
 
@@ -64,6 +66,7 @@ export default function HomePage({
         categories={categories}
         selectedCategory="all"
         onSelectCategory={handleSelectCategory}
+        onRefreshCategories={onRefreshCategories}
       />
 
       {/* Featured Literary Shelves */}
@@ -77,6 +80,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => {
             setSortBy('popular');
             const catElement = document.getElementById('catalog');
@@ -95,6 +99,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/magazines')}
         />
       )}
@@ -109,6 +114,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/vimarsh')}
         />
       )}
@@ -123,6 +129,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/novel')}
         />
       )}
@@ -137,6 +144,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/poetry')}
         />
       )}
@@ -151,6 +159,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/cultural-conscience')}
         />
       )}
@@ -165,6 +174,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
           onViewAll={() => navigate('/category/satire')}
         />
       )}
@@ -185,6 +195,7 @@ export default function HomePage({
           onSelectBook={onSelectBook}
           onOpenReader={onOpenReader}
           onDownloadBook={onDownloadBook}
+          onEditBook={onEditBook}
         />
       </main>
     </div>

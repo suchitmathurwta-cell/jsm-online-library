@@ -17,7 +17,8 @@ export default function BookGrid({
   t,
   onSelectBook,
   onOpenReader,
-  onDownloadBook
+  onDownloadBook,
+  onEditBook
 }) {
   const currentCat = categories.find((c) => c.id === selectedCategory);
   const catTitle = currentCat
@@ -126,6 +127,7 @@ export default function BookGrid({
                 onSelectBook={onSelectBook}
                 onOpenReader={onOpenReader}
                 onDownloadBook={onDownloadBook}
+                onEditBook={onEditBook}
               />
             ))}
           </div>

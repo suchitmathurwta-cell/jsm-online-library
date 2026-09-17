@@ -6,12 +6,16 @@ import HomePage from './pages/HomePage';
 import CategoryGenresPage from './pages/CategoryGenresPage';
 import SubGenresPage from './pages/SubGenresPage';
 import BooksListingPage from './pages/BooksListingPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import BookDetailModal from './components/BookDetailModal';
 import HikmahPdfReader from './components/HikmahPdfReader';
 import UploadBookModal from './components/UploadBookModal';
 import AdminManageModal from './components/AdminManageModal';
+import EditBookModal from './components/EditBookModal';
+import SuggestBookModal from './components/SuggestBookModal';
 import AuthModal from './components/AuthModal';
 import DownloadReadyModal from './components/DownloadReadyModal';
+import { AdminToggleFloatingBadge, AdminQuickChallengeModal } from './components/AdminGuard';
 import Footer from './components/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { getCategoriesWithHierarchy, getBooks, incrementDownloads, incrementViews } from './services/supabaseApi';
@@ -24,7 +28,7 @@ function MainApp() {
     return localStorage.getItem('chetna_lang') || 'hi';
   });
 
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const t = translations[lang] || translations.hi;
   const isRtl = lang === 'ur';
 
@@ -51,8 +55,10 @@ function MainApp() {
   // Modals
   const [selectedBook, setSelectedBook] = useState(null);
   const [readingBook, setReadingBook] = useState(null);
+  const [editingBook, setEditingBook] = useState(null);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [pendingDownloadBook, setPendingDownloadBook] = useState(null);
 
@@ -255,220 +261,266 @@ function MainApp() {
     >
       {/* Sticky Header */}
       <Header
+        lang={lang}
+        setLang={setLang}
+        t={t}
+        onOpenUpload={() => setIsUploadOpen(true)}
+        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenSuggest={() => setIsSuggestOpen(true)}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearchSubmit={() => {
+          const catElement = document.getElementById('catalog');
+          if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
+        }}
+      />
+
+      {/* Dynamic Route Pages */}
+      <main className="flex-1">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                lang={lang}
+                t={t}
+                categories={categories}
+                books={books}
+                isLoading={isLoading}
+                onSelectBook={(book) => setSelectedBook(book)}
+                onOpenReader={handleOpenReader}
+                onDownloadBook={handleDownloadBook}
+                onEditBook={(book) => setEditingBook(book)}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                onRefreshCategories={fetchCategories}
+              />
+            }
+          />
+
+          <Route
+            path="/category/:categorySlug"
+            element={
+              <CategoryGenresPage
+                lang={lang}
+                t={t}
+                categories={categories}
+                books={books}
+                onSelectBook={(book) => setSelectedBook(book)}
+                onOpenReader={handleOpenReader}
+                onDownloadBook={handleDownloadBook}
+                onRefreshCategories={fetchCategories}
+              />
+            }
+          />
+
+          <Route
+            path="/category/:categorySlug/:genreSlug"
+            element={
+              <SubGenresPage
+                lang={lang}
+                t={t}
+                categories={categories}
+                books={books}
+                onSelectBook={(book) => setSelectedBook(book)}
+                onOpenReader={handleOpenReader}
+                onDownloadBook={handleDownloadBook}
+                onRefreshCategories={fetchCategories}
+              />
+            }
+          />
+
+          <Route
+            path="/category/:categorySlug/:genreSlug/:subgenreSlug"
+            element={
+              <BooksListingPage
+                lang={lang}
+                t={t}
+                categories={categories}
+                onSelectBook={(book) => setSelectedBook(book)}
+                onOpenReader={handleOpenReader}
+                onDownloadBook={handleDownloadBook}
+                onEditBook={(book) => setEditingBook(book)}
+                onRefreshCategories={fetchCategories}
+              />
+            }
+          />
+
+          <Route
+            path="/admin/login"
+            element={
+              <AdminLoginPage lang={lang} t={t} />
+            }
+          />
+        </Routes>
+      </main>
+
+      <Footer lang={lang} t={t} />
+
+      {/* Floating Admin Mode Toggle Badge & Shortcut Key Handler */}
+      <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} />
+      <AdminQuickChallengeModal />
+
+      {/* Detail Modal */}
+      {selectedBook && (
+        <BookDetailModal
+          book={selectedBook}
+          onClose={() => setSelectedBook(null)}
+          onOpenReader={(b) => {
+            setSelectedBook(null);
+            handleOpenReader(b);
+          }}
+          onDownloadBook={handleDownloadBook}
           lang={lang}
-          setLang={setLang}
           t={t}
-          onOpenUpload={() => setIsUploadOpen(true)}
-          onOpenAdmin={() => setIsAdminOpen(true)}
-          onOpenAuth={() => setIsAuthModalOpen(true)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onSearchSubmit={() => {
-            const catElement = document.getElementById('catalog');
-            if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
-          }}
         />
+      )}
 
-        {/* Dynamic Route Pages */}
-        <main className="flex-1">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <HomePage
-                  lang={lang}
-                  t={t}
-                  categories={categories}
-                  books={books}
-                  isLoading={isLoading}
-                  onSelectBook={(book) => setSelectedBook(book)}
-                  onOpenReader={handleOpenReader}
-                  onDownloadBook={handleDownloadBook}
-                  searchQuery={searchQuery}
-                  setSearchQuery={setSearchQuery}
-                  sortBy={sortBy}
-                  setSortBy={setSortBy}
-                  onRefreshCategories={fetchCategories}
-                />
-              }
-            />
-
-            <Route
-              path="/category/:categorySlug"
-              element={
-                <CategoryGenresPage
-                  lang={lang}
-                  t={t}
-                  categories={categories}
-                  books={books}
-                  onSelectBook={(book) => setSelectedBook(book)}
-                  onOpenReader={handleOpenReader}
-                  onDownloadBook={handleDownloadBook}
-                  onRefreshCategories={fetchCategories}
-                />
-              }
-            />
-
-            <Route
-              path="/category/:categorySlug/:genreSlug"
-              element={
-                <SubGenresPage
-                  lang={lang}
-                  t={t}
-                  categories={categories}
-                  books={books}
-                  onSelectBook={(book) => setSelectedBook(book)}
-                  onOpenReader={handleOpenReader}
-                  onDownloadBook={handleDownloadBook}
-                  onRefreshCategories={fetchCategories}
-                />
-              }
-            />
-
-            <Route
-              path="/category/:categorySlug/:genreSlug/:subgenreSlug"
-              element={
-                <BooksListingPage
-                  lang={lang}
-                  t={t}
-                  categories={categories}
-                  onSelectBook={(book) => setSelectedBook(book)}
-                  onOpenReader={handleOpenReader}
-                  onDownloadBook={handleDownloadBook}
-                  onRefreshCategories={fetchCategories}
-                />
-              }
-            />
-          </Routes>
-        </main>
-
-        <Footer lang={lang} t={t} />
-
-        {/* Detail Modal */}
-        {selectedBook && (
-          <BookDetailModal
-            book={selectedBook}
-            onClose={() => setSelectedBook(null)}
-            onOpenReader={(b) => {
-              setSelectedBook(null);
-              handleOpenReader(b);
-            }}
-            onDownloadBook={handleDownloadBook}
-            lang={lang}
-            t={t}
-          />
-        )}
-
-        {/* Reader Modal (Open to All without signup) */}
-        {readingBook && (
-          <HikmahPdfReader
-            book={readingBook}
-            onClose={() => setReadingBook(null)}
-            onDownloadBook={handleDownloadBook}
-            lang={lang}
-            t={t}
-          />
-        )}
-
-        {/* Upload Modal with Supabase Integration */}
-        {isUploadOpen && (
-          <UploadBookModal
-            isOpen={isUploadOpen}
-            onClose={() => setIsUploadOpen(false)}
-            onSuccess={() => {
-              fetchBooksData();
-              fetchCategories();
-            }}
-            lang={lang}
-            t={t}
-          />
-        )}
-
-        {/* Admin Manage Modal with Supabase CRUD */}
-        {isAdminOpen && (
-          <AdminManageModal
-            onClose={() => setIsAdminOpen(false)}
-            onOpenUpload={() => {
-              setIsAdminOpen(false);
-              setIsUploadOpen(true);
-            }}
-            onOpenReader={handleOpenReader}
-            onDownloadBook={handleDownloadBook}
-            onBookDeleted={() => {
-              fetchBooksData();
-              fetchCategories();
-            }}
-            lang={lang}
-            t={t}
-          />
-        )}
-
-        {/* Auth Modal for Gated Downloads */}
-        <AuthModal
-          isOpen={isAuthModalOpen}
-          onClose={() => {
-            setIsAuthModalOpen(false);
-            setPendingDownloadBook(null);
-            try {
-              localStorage.removeItem('chetna_pending_download');
-              localStorage.removeItem('chetna_pending_selected_book');
-              localStorage.removeItem('chetna_pending_reading_book');
-            } catch (e) {}
-          }}
-          onSuccess={handleAuthSuccess}
-          bookTitle={pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
+      {/* Reader Modal (Open to All without signup) */}
+      {readingBook && (
+        <HikmahPdfReader
+          book={readingBook}
+          onClose={() => setReadingBook(null)}
+          onDownloadBook={handleDownloadBook}
+          lang={lang}
+          t={t}
         />
+      )}
 
-        {/* Download Feedback Toast */}
-        {downloadStatus && (
-          <div className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md bg-stone-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-stone-700 flex items-center gap-3.5 animate-in slide-in-from-bottom-5 duration-300">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-              downloadStatus.state === 'downloading'
-                ? 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
-                : 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
-            }`}>
-              {downloadStatus.state === 'downloading' ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <CheckCircle2 className="w-5 h-5" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold truncate text-stone-100">
-                {downloadStatus.book[`title_${lang}`] || downloadStatus.book.title_hi || downloadStatus.book.title_en}
-              </p>
-              <p className="text-[11px] text-stone-300 mt-0.5">
-                {downloadStatus.state === 'downloading' ? (
-                  <span className="text-blue-300">
-                    PDF फ़ाइल डाउनलोड हो रही है...
-                  </span>
-                ) : (
-                  <span className="text-emerald-400 font-medium">
-                    ✓ PDF आपके डिवाइस में सफलतापूर्वक डाउनलोड हो गई!
-                  </span>
-                )}
-              </p>
-            </div>
-            <button
-              onClick={() => setDownloadStatus(null)}
-              className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
+      {/* Upload Modal with Supabase Integration (Admin Only) */}
+      {isUploadOpen && (
+        <UploadBookModal
+          isOpen={isUploadOpen}
+          onClose={() => setIsUploadOpen(false)}
+          onSuccess={() => {
+            fetchBooksData();
+            fetchCategories();
+          }}
+          lang={lang}
+          t={t}
+        />
+      )}
+
+      {/* Admin Manage Modal with Supabase CRUD */}
+      {isAdminOpen && (
+        <AdminManageModal
+          onClose={() => setIsAdminOpen(false)}
+          onOpenUpload={() => {
+            setIsAdminOpen(false);
+            setIsUploadOpen(true);
+          }}
+          onOpenReader={handleOpenReader}
+          onDownloadBook={handleDownloadBook}
+          onEditBook={(book) => {
+            setIsAdminOpen(false);
+            setEditingBook(book);
+          }}
+          onBookDeleted={() => {
+            fetchBooksData();
+            fetchCategories();
+          }}
+          lang={lang}
+          t={t}
+        />
+      )}
+
+      {/* Edit Book Metadata Modal (Admin) */}
+      {editingBook && (
+        <EditBookModal
+          book={editingBook}
+          categories={categories}
+          isOpen={!!editingBook}
+          onClose={() => setEditingBook(null)}
+          onSuccess={() => {
+            fetchBooksData();
+            fetchCategories();
+          }}
+          onDelete={() => {
+            fetchBooksData();
+            fetchCategories();
+          }}
+          lang={lang}
+          t={t}
+        />
+      )}
+
+      {/* Suggest a Book Modal (Visitor) */}
+      <SuggestBookModal
+        isOpen={isSuggestOpen}
+        onClose={() => setIsSuggestOpen(false)}
+        lang={lang}
+        t={t}
+      />
+
+      {/* Auth Modal for Gated Downloads */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setPendingDownloadBook(null);
+          try {
+            localStorage.removeItem('chetna_pending_download');
+            localStorage.removeItem('chetna_pending_selected_book');
+            localStorage.removeItem('chetna_pending_reading_book');
+          } catch (e) {}
+        }}
+        onSuccess={handleAuthSuccess}
+        bookTitle={pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
+      />
+
+      {/* Download Feedback Toast */}
+      {downloadStatus && (
+        <div className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md bg-stone-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-stone-700 flex items-center gap-3.5 animate-in slide-in-from-bottom-5 duration-300">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            downloadStatus.state === 'downloading'
+              ? 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
+              : 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
+          }`}>
+            {downloadStatus.state === 'downloading' ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-5 h-5" />
+            )}
           </div>
-        )}
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold truncate text-stone-100">
+              {downloadStatus.book[`title_${lang}`] || downloadStatus.book.title_hi || downloadStatus.book.title_en}
+            </p>
+            <p className="text-[11px] text-stone-300 mt-0.5">
+              {downloadStatus.state === 'downloading' ? (
+                <span className="text-blue-300">
+                  PDF फ़ाइल डाउनलोड हो रही है...
+                </span>
+              ) : (
+                <span className="text-emerald-400 font-medium">
+                  ✓ PDF आपके डिवाइस में सफलतापूर्वक डाउनलोड हो गई!
+                </span>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={() => setDownloadStatus(null)}
+            className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
-        {/* Download Ready Modal (Post-Auth 1-Click Trigger) */}
-        {downloadReadyBook && (
-          <DownloadReadyModal
-            book={downloadReadyBook}
-            onClose={() => setDownloadReadyBook(null)}
-            onDownloadAgain={executeDownload}
-            lang={lang}
-            t={t}
-          />
-        )}
-      </div>
+      {/* Download Ready Modal (Post-Auth 1-Click Trigger) */}
+      {downloadReadyBook && (
+        <DownloadReadyModal
+          book={downloadReadyBook}
+          onClose={() => setDownloadReadyBook(null)}
+          onDownloadAgain={executeDownload}
+          lang={lang}
+          t={t}
+        />
+      )}
+    </div>
   );
 }
 

@@ -1,5 +1,6 @@
 import React from 'react';
-import { BookOpen, Download, Eye, Sparkles, FileCheck } from 'lucide-react';
+import { BookOpen, Download, Eye, Sparkles, FileCheck, Edit3 } from 'lucide-react';
+import { AdminOnly } from './AdminGuard';
 
 export default function BookCard({
   book,
@@ -7,7 +8,8 @@ export default function BookCard({
   t,
   onSelectBook,
   onOpenReader,
-  onDownloadBook
+  onDownloadBook,
+  onEditBook
 }) {
   const title = book[`title_${lang}`] || book.title_hi || book.title_en;
   const author = book[`author_${lang}`] || book.author_hi || book.author_en;
@@ -69,6 +71,22 @@ export default function BookCard({
             <span>{t.card.featured}</span>
           </div>
         ) : null}
+
+        {/* Admin Quick Edit Button */}
+        {onEditBook && (
+          <AdminOnly>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditBook(book);
+              }}
+              title="Edit Book Metadata (Admin)"
+              className="absolute top-2.5 right-2.5 p-1.5 bg-stone-900/90 hover:bg-stone-900 text-amber-400 rounded-lg shadow-md border border-stone-700 transition cursor-pointer"
+            >
+              <Edit3 className="w-3 h-3" />
+            </button>
+          </AdminOnly>
+        )}
 
         {/* Year Badge */}
         {book.year && (

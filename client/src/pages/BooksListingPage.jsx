@@ -17,6 +17,7 @@ import {
 import Breadcrumbs from '../components/Breadcrumbs';
 import { getBooks, deleteSubgenre } from '../services/supabaseApi';
 import BookCard from '../components/BookCard';
+import { AdminOnly } from '../components/AdminGuard';
 
 export default function BooksListingPage({
   t,
@@ -25,6 +26,7 @@ export default function BooksListingPage({
   onSelectBook,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   onRefreshCategories
 }) {
   const { categorySlug, genreSlug, subgenreSlug } = useParams();
@@ -123,13 +125,15 @@ export default function BooksListingPage({
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold font-rekhta-serif tracking-tight text-stone-900 flex items-center gap-3">
               <span>{subgenreTitle}</span>
-              <button
-                onClick={() => setShowDeleteSubModal(true)}
-                title="Delete this Sub-Genre"
-                className="p-1.5 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <AdminOnly>
+                <button
+                  onClick={() => setShowDeleteSubModal(true)}
+                  title="Delete this Sub-Genre"
+                  className="p-1.5 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </AdminOnly>
             </h1>
             <p className="text-xs sm:text-sm text-stone-500 font-normal leading-relaxed">
               Curated digital archive, scholarly editions, and preserved treatises classified under {subgenreTitle} ({categoryTitle} › {genreTitle}).
@@ -241,6 +245,7 @@ export default function BooksListingPage({
                 onSelectBook={onSelectBook}
                 onOpenReader={onOpenReader}
                 onDownloadBook={onDownloadBook}
+                onEditBook={onEditBook}
               />
             ))}
           </div>
@@ -268,7 +273,7 @@ export default function BooksListingPage({
         )}
       </div>
 
-      {/* Delete Sub-Genre Confirmation Modal */}
+      {/* Delete Sub-Genre Confirmation Modal (Admin Only) */}
       {showDeleteSubModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200 text-center animate-in fade-in zoom-in-95">
@@ -285,7 +290,7 @@ export default function BooksListingPage({
               <button
                 type="button"
                 onClick={() => setShowDeleteSubModal(false)}
-                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition"
+                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -293,7 +298,7 @@ export default function BooksListingPage({
                 type="button"
                 onClick={handleDeleteSubGenre}
                 disabled={isDeletingSub}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50"
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
               >
                 {isDeletingSub ? 'Deleting...' : 'Yes, Delete'}
               </button>

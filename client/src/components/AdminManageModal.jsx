@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { getCategoriesWithHierarchy, getBooks, deleteFormat, updateFormat, createFormat, deleteGenre, updateGenre, createGenre, deleteSubgenre, updateSubgenre, createSubgenre } from '../services/supabaseApi';
-import { supabase } from '../services/supabaseClient';
+import {
+  getCategoriesWithHierarchy,
+  getBooks,
+  deleteFormat,
+  updateFormat,
+  createFormat,
+  deleteGenre,
+  updateGenre,
+  createGenre,
+  deleteSubgenre,
+  updateSubgenre,
+  createSubgenre,
+  deleteBookRecord
+} from '../services/supabaseApi';
 import {
   X,
   BookOpen,
@@ -17,7 +29,8 @@ import {
   Edit2,
   ChevronDown,
   ChevronRight,
-  Plus
+  Plus,
+  Edit3
 } from 'lucide-react';
 
 export default function AdminManageModal({
@@ -25,6 +38,7 @@ export default function AdminManageModal({
   onOpenUpload,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   onBookDeleted,
   lang,
   t
@@ -32,7 +46,6 @@ export default function AdminManageModal({
   const [activeTab, setActiveTab] = useState('hierarchy'); // 'hierarchy' | 'books'
   const [books, setBooks] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [stats, setStats] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -55,7 +68,7 @@ export default function AdminManageModal({
     setIsLoading(true);
     try {
       const [booksData, catsData] = await Promise.all([
-        getBooks({ limit: 250 }),
+        getBooks({ limit: 300 }),
         getCategoriesWithHierarchy()
       ]);
       setBooks(booksData || []);
@@ -76,7 +89,7 @@ export default function AdminManageModal({
 
   const handleDeleteBook = async (id) => {
     try {
-      await supabase.from('books').delete().eq('id', id);
+      await deleteBookRecord(id);
       setBooks((prev) => prev.filter((b) => b.id !== id));
       setDeleteConfirmId(null);
       if (onBookDeleted) onBookDeleted(id);
@@ -89,36 +102,30 @@ export default function AdminManageModal({
   const handleDeleteCategory = async (catId) => {
     if (!window.confirm('Are you sure you want to delete this Category?')) return;
     try {
-      const res = await fetch(`/api/categories/${catId}`, { method: 'DELETE' });
-      const json = await res.json();
-      if (json.success) fetchLibraryData();
-      else alert(json.error || 'Failed to delete category');
+      await deleteFormat(catId);
+      fetchLibraryData();
     } catch (e) {
-      alert(e.message);
+      alert('Error deleting category: ' + e.message);
     }
   };
 
   const handleDeleteGenre = async (catId, genreId) => {
     if (!window.confirm('Are you sure you want to delete this Genre?')) return;
     try {
-      const res = await fetch(`/api/categories/${catId}/genres/${genreId}`, { method: 'DELETE' });
-      const json = await res.json();
-      if (json.success) fetchLibraryData();
-      else alert(json.error || 'Failed to delete genre');
+      await deleteGenre(catId, genreId);
+      fetchLibraryData();
     } catch (e) {
-      alert(e.message);
+      alert('Error deleting genre: ' + e.message);
     }
   };
 
   const handleDeleteSubGenre = async (catId, genreId, subId) => {
     if (!window.confirm('Are you sure you want to delete this Sub-Genre?')) return;
     try {
-      const res = await fetch(`/api/categories/${catId}/genres/${genreId}/subgenres/${subId}`, { method: 'DELETE' });
-      const json = await res.json();
-      if (json.success) fetchLibraryData();
-      else alert(json.error || 'Failed to delete sub-genre');
+      await deleteSubgenre(catId, genreId, subId);
+      fetchLibraryData();
     } catch (e) {
-      alert(e.message);
+      alert('Error deleting sub-genre: ' + e.message);
     }
   };
 
@@ -127,32 +134,27 @@ export default function AdminManageModal({
     if (!editingItem) return;
     setIsSubmittingEdit(true);
     try {
-      let url = '';
       if (editingItem.type === 'category') {
-        url = `/api/categories/${editingItem.data.id}`;
-      } else if (editingItem.type === 'genre') {
-        url = `/api/categories/${editingItem.catId}/genres/${editingItem.data.id}`;
-      } else if (editingItem.type === 'subgenre') {
-        url = `/api/categories/${editingItem.catId}/genres/${editingItem.genreId}/subgenres/${editingItem.data.id}`;
-      }
-
-      const res = await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        await updateFormat(editingItem.data.id, {
           name_hi: editNameHi.trim(),
           name_en: editNameEn.trim()
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setEditingItem(null);
-        fetchLibraryData();
-      } else {
-        alert(data.error || 'Failed to save changes');
+        });
+      } else if (editingItem.type === 'genre') {
+        await updateGenre(editingItem.catId, editingItem.data.id, {
+          name_hi: editNameHi.trim(),
+          name_en: editNameEn.trim()
+        });
+      } else if (editingItem.type === 'subgenre') {
+        await updateSubgenre(editingItem.catId, editingItem.genreId, editingItem.data.id, {
+          name_hi: editNameHi.trim(),
+          name_en: editNameEn.trim()
+        });
       }
+
+      setEditingItem(null);
+      fetchLibraryData();
     } catch (err) {
-      alert(err.message);
+      alert('Error updating taxonomy: ' + err.message);
     } finally {
       setIsSubmittingEdit(false);
     }
@@ -162,26 +164,32 @@ export default function AdminManageModal({
     e.preventDefault();
     if (!addingUnder || !newItemName.trim()) return;
     try {
-      let url = '';
+      const generatedId = newItemName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || (`item-${Date.now()}`);
+
       if (addingUnder.type === 'genre') {
-        url = `/api/categories/${addingUnder.catId}/genres`;
+        await createGenre({
+          id: generatedId,
+          category_id: addingUnder.catId,
+          name_hi: newItemName.trim(),
+          name_en: newItemName.trim(),
+          description_hi: newItemName.trim() + ' से संबंधित विशिष्ट साहित्यिक विधा',
+          description_en: 'Curated works on ' + newItemName.trim()
+        });
       } else if (addingUnder.type === 'subgenre') {
-        url = `/api/categories/${addingUnder.catId}/genres/${addingUnder.genreId}/subgenres`;
+        await createSubgenre({
+          id: generatedId,
+          category_id: addingUnder.catId,
+          genre_id: addingUnder.genreId,
+          name_hi: newItemName.trim(),
+          name_en: newItemName.trim()
+        });
       }
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newItemName.trim() })
-      });
-      const data = await res.json();
-      if (data.success) {
-        setAddingUnder(null);
-        setNewItemName('');
-        fetchLibraryData();
-      }
+      setAddingUnder(null);
+      setNewItemName('');
+      fetchLibraryData();
     } catch (err) {
-      alert(err.message);
+      alert('Error creating taxonomy item: ' + err.message);
     }
   };
 
@@ -221,7 +229,7 @@ export default function AdminManageModal({
                 {t.admin.title}
               </h2>
               <p className="text-xs text-stone-500 font-medium">
-                Manage Formats, Genres, Sub-Genres, and Digital Books Archive
+                Manage Formats, Genres, Sub-Genres, and Digital Books Archive (Supabase Cloud)
               </p>
             </div>
           </div>
@@ -229,14 +237,14 @@ export default function AdminManageModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onOpenUpload}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold rounded-lg shadow-xs transition"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>{t.nav.uploadBook}</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-lg transition"
+              className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-lg transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -247,7 +255,7 @@ export default function AdminManageModal({
         <div className="flex border-b border-stone-200 px-6 pt-3 bg-stone-50/50 gap-4">
           <button
             onClick={() => setActiveTab('hierarchy')}
-            className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition ${
+            className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition cursor-pointer ${
               activeTab === 'hierarchy'
                 ? 'border-[#1d4ed8] text-[#1d4ed8]'
                 : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -258,7 +266,7 @@ export default function AdminManageModal({
           </button>
           <button
             onClick={() => setActiveTab('books')}
-            className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition ${
+            className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition cursor-pointer ${
               activeTab === 'books'
                 ? 'border-[#1d4ed8] text-[#1d4ed8]'
                 : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -277,7 +285,7 @@ export default function AdminManageModal({
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-stone-500">
-                  Click on any format to view and manage its nested genres and sub-genres. You can create, rename, or delete any tier.
+                  Click on any format to view and manage its nested genres and sub-genres. You can create, rename, or delete any tier in real-time.
                 </span>
               </div>
 
@@ -316,7 +324,7 @@ export default function AdminManageModal({
                           <button
                             onClick={() => setAddingUnder({ type: 'genre', catId: cat.id })}
                             title="Add Genre to this Format"
-                            className="px-2.5 py-1 text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] rounded-lg border border-blue-200 flex items-center gap-1 transition"
+                            className="px-2.5 py-1 text-[11px] font-bold bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] rounded-lg border border-blue-200 flex items-center gap-1 transition cursor-pointer"
                           >
                             <Plus className="w-3 h-3" />
                             <span>Add Genre</span>
@@ -324,14 +332,14 @@ export default function AdminManageModal({
                           <button
                             onClick={() => openEdit('category', cat)}
                             title="Edit Format Name"
-                            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-lg transition"
+                            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-lg transition cursor-pointer"
                           >
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteCategory(cat.id)}
                             title="Delete Format"
-                            className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                            className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -352,8 +360,8 @@ export default function AdminManageModal({
                                 className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg"
                                 autoFocus
                               />
-                              <button type="submit" className="px-3 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg">+ Add</button>
-                              <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1.5 text-xs text-stone-500">Cancel</button>
+                              <button type="submit" className="px-3 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">+ Add</button>
+                              <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1.5 text-xs text-stone-500 cursor-pointer">Cancel</button>
                             </form>
                           )}
 
@@ -385,20 +393,20 @@ export default function AdminManageModal({
                                     <div className="flex items-center gap-1">
                                       <button
                                         onClick={() => setAddingUnder({ type: 'subgenre', catId: cat.id, genreId: g.id })}
-                                        className="px-2 py-0.5 text-[10.5px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-md border border-amber-200 flex items-center gap-0.5 transition"
+                                        className="px-2 py-0.5 text-[10.5px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-md border border-amber-200 flex items-center gap-0.5 transition cursor-pointer"
                                       >
                                         <Plus className="w-2.5 h-2.5" />
                                         <span>Add Sub-Genre</span>
                                       </button>
                                       <button
                                         onClick={() => openEdit('genre', g, cat.id)}
-                                        className="p-1 text-stone-400 hover:text-stone-700 rounded-md"
+                                        className="p-1 text-stone-400 hover:text-stone-700 rounded-md cursor-pointer"
                                       >
                                         <Edit2 className="w-3 h-3" />
                                       </button>
                                       <button
                                         onClick={() => handleDeleteGenre(cat.id, g.id)}
-                                        className="p-1 text-stone-400 hover:text-red-600 rounded-md"
+                                        className="p-1 text-stone-400 hover:text-red-600 rounded-md cursor-pointer"
                                       >
                                         <Trash2 className="w-3 h-3" />
                                       </button>
@@ -418,8 +426,8 @@ export default function AdminManageModal({
                                             className="flex-1 px-3 py-1 text-xs bg-white border border-stone-300 rounded-lg"
                                             autoFocus
                                           />
-                                          <button type="submit" className="px-3 py-1 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg">+ Add</button>
-                                          <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1 text-xs text-stone-500">Cancel</button>
+                                          <button type="submit" className="px-3 py-1 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">+ Add</button>
+                                          <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1 text-xs text-stone-500 cursor-pointer">Cancel</button>
                                         </form>
                                       )}
 
@@ -436,13 +444,13 @@ export default function AdminManageModal({
                                               <div className="flex items-center gap-0.5 shrink-0">
                                                 <button
                                                   onClick={() => openEdit('subgenre', sg, cat.id, g.id)}
-                                                  className="p-1 text-stone-400 hover:text-stone-700"
+                                                  className="p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
                                                 >
                                                   <Edit2 className="w-3 h-3" />
                                                 </button>
                                                 <button
                                                   onClick={() => handleDeleteSubGenre(cat.id, g.id, sg.id)}
-                                                  className="p-1 text-stone-400 hover:text-red-600"
+                                                  className="p-1 text-stone-400 hover:text-red-600 cursor-pointer"
                                                 >
                                                   <Trash2 className="w-3 h-3" />
                                                 </button>
@@ -520,17 +528,26 @@ export default function AdminManageModal({
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1.5">
+                            {onEditBook && (
+                              <button
+                                onClick={() => onEditBook(book)}
+                                title="Edit Book Metadata"
+                                className="p-1.5 text-stone-500 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition cursor-pointer"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             <button
                               onClick={() => { onClose(); onOpenReader(book); }}
                               title="Read Book"
-                              className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition"
+                              className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition cursor-pointer"
                             >
                               <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => onDownloadBook(book)}
                               title="Download PDF"
-                              className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition"
+                              className="p-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-lg hover:bg-stone-100 transition cursor-pointer"
                             >
                               <Download className="w-3.5 h-3.5" />
                             </button>
@@ -538,13 +555,13 @@ export default function AdminManageModal({
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => handleDeleteBook(book.id)}
-                                  className="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold"
+                                  className="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold cursor-pointer"
                                 >
                                   Confirm
                                 </button>
                                 <button
                                   onClick={() => setDeleteConfirmId(null)}
-                                  className="px-2 py-1 bg-stone-200 text-stone-700 rounded text-[10px]"
+                                  className="px-2 py-1 bg-stone-200 text-stone-700 rounded text-[10px] cursor-pointer"
                                 >
                                   Cancel
                                 </button>
@@ -553,7 +570,7 @@ export default function AdminManageModal({
                               <button
                                 onClick={() => setDeleteConfirmId(book.id)}
                                 title="Delete Book"
-                                className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition"
+                                className="p-1.5 text-stone-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition cursor-pointer"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -575,7 +592,7 @@ export default function AdminManageModal({
           <span>Chetna Preservation & Archival Control System</span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 bg-stone-800 text-white font-bold rounded-lg hover:bg-stone-900 transition"
+            className="px-4 py-1.5 bg-stone-800 text-white font-bold rounded-lg hover:bg-stone-900 transition cursor-pointer"
           >
             Close
           </button>
@@ -618,14 +635,14 @@ export default function AdminManageModal({
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl"
+                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingEdit}
-                  className="px-4 py-2 bg-[#1d4ed8] text-white font-bold rounded-xl shadow-xs"
+                  className="px-4 py-2 bg-[#1d4ed8] text-white font-bold rounded-xl shadow-xs cursor-pointer"
                 >
                   {isSubmittingEdit ? 'Saving...' : 'Save Changes'}
                 </button>

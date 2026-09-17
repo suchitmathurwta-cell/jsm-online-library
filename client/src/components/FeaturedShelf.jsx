@@ -11,6 +11,7 @@ export default function FeaturedShelf({
   onSelectBook,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   onViewAll
 }) {
   const scrollRef = useRef(null);
@@ -86,6 +87,7 @@ export default function FeaturedShelf({
                 onSelectBook={onSelectBook}
                 onOpenReader={onOpenReader}
                 onDownloadBook={onDownloadBook}
+                onEditBook={onEditBook}
               />
             </div>
           ))}

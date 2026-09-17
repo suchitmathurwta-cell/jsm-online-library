@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, LogOut } from 'lucide-react';
+import { User as UserIcon, LogOut, BookMarked, Sparkles } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Search,
@@ -11,6 +11,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { AdminOnly, VisitorOnly } from './AdminGuard';
 
 export default function Header({
   lang,
@@ -19,13 +20,14 @@ export default function Header({
   onOpenUpload,
   onOpenAdmin,
   onOpenAuth,
+  onOpenSuggest,
   searchQuery,
   setSearchQuery,
   onSearchSubmit,
   onSelectCategory
 }) {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -87,12 +89,14 @@ export default function Header({
       {/* Top Banner Notice with Clean Minimal Style */}
       <div className="bg-[#0f172a] text-stone-300 text-[11.5px] py-1.5 px-4 text-center font-medium tracking-wide flex justify-center items-center gap-4">
         <span>✨ {t.tagline}</span>
-        <button
-          onClick={onOpenAdmin}
-          className="underline hover:text-amber-400 cursor-pointer hidden md:inline text-amber-300/90 font-semibold transition-colors"
-        >
-          {t.nav.manageLibrary}
-        </button>
+        <AdminOnly>
+          <button
+            onClick={onOpenAdmin}
+            className="underline hover:text-amber-400 cursor-pointer hidden md:inline text-amber-300/90 font-semibold transition-colors"
+          >
+            {t.nav.manageLibrary} ⚙️
+          </button>
+        </AdminOnly>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -170,7 +174,6 @@ export default function Header({
           {/* Right Action Tools */}
           <div className="flex items-center gap-2 sm:gap-2.5">
             
-            
             {/* User Profile / Auth Button */}
             {user ? (
               <div className="flex items-center gap-2 bg-blue-50/80 border border-blue-200/80 px-2.5 py-1.5 rounded-full text-xs">
@@ -184,7 +187,7 @@ export default function Header({
                   type="button"
                   onClick={() => signOut()}
                   title="Sign Out"
-                  className="text-stone-400 hover:text-red-600 transition p-0.5"
+                  className="text-stone-400 hover:text-red-600 transition p-0.5 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -200,15 +203,30 @@ export default function Header({
               </button>
             )}
 
-            {/* Multi-Upload Button */}
-            <button
-              onClick={onOpenUpload}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.nav.uploadBook}</span>
-              <span className="sm:hidden">+</span>
-            </button>
+            {/* Admin Upload vs Visitor Suggest CTA */}
+            <AdminOnly>
+              <button
+                onClick={onOpenUpload}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
+              >
+                <PlusCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">{t.nav.uploadBook}</span>
+                <span className="sm:hidden">+</span>
+              </button>
+            </AdminOnly>
+
+            <VisitorOnly>
+              <button
+                onClick={onOpenSuggest}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300 text-xs font-semibold shadow-2xs hover:shadow-xs transition duration-150 cursor-pointer"
+              >
+                <BookMarked className="w-3.5 h-3.5 text-amber-700" />
+                <span className="hidden sm:inline">
+                  {lang === 'hi' ? 'पुस्तक सुझाव' : (lang === 'ur' ? 'کتاب کی تجویز' : 'Suggest Book')}
+                </span>
+                <span className="sm:hidden">सुझाव</span>
+              </button>
+            </VisitorOnly>
 
             {/* Language Selector Dropdown (HIN, ENG, URD) */}
             <div className="relative">
@@ -254,19 +272,21 @@ export default function Header({
               )}
             </div>
 
-            {/* Admin / Management Button */}
-            <button
-              onClick={onOpenAdmin}
-              title={t.nav.manageLibrary}
-              className="p-2 text-stone-500 hover:text-[#1d4ed8] hover:bg-stone-50 rounded-lg transition cursor-pointer border border-transparent hover:border-stone-200/60"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
+            {/* Admin / Management Button (Admin Only) */}
+            <AdminOnly>
+              <button
+                onClick={onOpenAdmin}
+                title={t.nav.manageLibrary}
+                className="p-2 text-stone-500 hover:text-[#1d4ed8] hover:bg-stone-50 rounded-lg transition cursor-pointer border border-transparent hover:border-stone-200/60"
+              >
+                <Settings className="w-4 h-4" />
+              </button>
+            </AdminOnly>
 
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-stone-600 hover:text-stone-900 xl:hidden rounded-lg hover:bg-stone-50"
+              className="p-2 text-stone-600 hover:text-stone-900 xl:hidden rounded-lg hover:bg-stone-50 cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -292,13 +312,24 @@ export default function Header({
                 </button>
               ))}
             </div>
+            
             <div className="pt-2.5 border-t border-stone-100 flex gap-2">
-              <button
-                onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition"
-              >
-                ⚙️ {t.nav.manageLibrary}
-              </button>
+              <AdminOnly>
+                <button
+                  onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
+                  className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition"
+                >
+                  ⚙️ {t.nav.manageLibrary}
+                </button>
+              </AdminOnly>
+              <VisitorOnly>
+                <button
+                  onClick={() => { onOpenSuggest(); setMobileMenuOpen(false); }}
+                  className="flex-1 py-2 text-xs text-center bg-amber-50 border border-amber-200 rounded-lg font-semibold text-amber-900 hover:bg-amber-100 transition"
+                >
+                  💡 {lang === 'hi' ? 'पुस्तक सुझाव दें' : 'Suggest a Book'}
+                </button>
+              </VisitorOnly>
             </div>
           </div>
         )}

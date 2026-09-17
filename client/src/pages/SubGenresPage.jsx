@@ -14,6 +14,7 @@ import {
 import Breadcrumbs from '../components/Breadcrumbs';
 import { createSubgenre, deleteSubgenre, updateSubgenre } from '../services/supabaseApi';
 import BookCard from '../components/BookCard';
+import { AdminOnly } from '../components/AdminGuard';
 
 export default function SubGenresPage({
   t,
@@ -108,21 +109,12 @@ export default function SubGenresPage({
     if (!editingSub) return;
     setIsEditingSub(true);
     try {
-      const res = await fetch(`/api/categories/${categorySlug}/genres/${genreSlug}/subgenres/${editingSub.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name_hi: editSubHi.trim(),
-          name_en: editSubEn.trim()
-        })
+      await updateSubgenre(categorySlug, genreSlug, editingSub.id, {
+        name_hi: editSubHi.trim(),
+        name_en: editSubEn.trim()
       });
-      const data = await res.json();
-      if (data.success) {
-        setEditingSub(null);
-        if (onRefreshCategories) await onRefreshCategories();
-      } else {
-        alert(data.error || 'Failed to update sub-genre');
-      }
+      setEditingSub(null);
+      if (onRefreshCategories) await onRefreshCategories();
     } catch (err) {
       alert('Error updating sub-genre: ' + err.message);
     } finally {
@@ -155,7 +147,7 @@ export default function SubGenresPage({
       {/* Top Bar matching screenshot with + Create New Sub-Genre and Horizontal Pills */}
       <div className="mt-4 p-4 sm:p-5 rounded-3xl bg-stone-50/90 border border-stone-200/90 shadow-xs">
         
-        {/* Top Header Row matching screenshot */}
+        {/* Top Header Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <div className="w-2.5 h-2.5 rounded-full bg-[#1d4ed8]"></div>
@@ -168,45 +160,49 @@ export default function SubGenresPage({
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowCreateSub(!showCreateSub)}
-            className="px-3.5 py-1.5 bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] text-xs font-bold rounded-xl border border-blue-200/80 shadow-2xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ + Create New Sub-Genre</span>
-          </button>
-        </div>
-
-        {/* Inline Create Sub-genre Form */}
-        {showCreateSub && (
-          <form onSubmit={handleCreateSubGenre} className="mb-4 p-3 bg-white rounded-2xl border border-blue-200 flex items-center gap-2 shadow-xs animate-fadeIn">
-            <input
-              type="text"
-              value={newSubName}
-              onChange={(e) => setNewSubName(e.target.value)}
-              placeholder="Type new sub-genre title (e.g. Agrarian Struggles, Classic Marsiya)..."
-              className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8]"
-              autoFocus
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting || !newSubName.trim()}
-              className="px-4 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg transition disabled:opacity-50"
-            >
-              {isSubmitting ? 'Creating...' : '+ Create'}
-            </button>
+          <AdminOnly>
             <button
               type="button"
-              onClick={() => setShowCreateSub(false)}
-              className="px-3 py-1.5 text-stone-500 text-xs"
+              onClick={() => setShowCreateSub(!showCreateSub)}
+              className="px-3.5 py-1.5 bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] text-xs font-bold rounded-xl border border-blue-200/80 shadow-2xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto"
             >
-              Cancel
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Create New Sub-Genre</span>
             </button>
-          </form>
+          </AdminOnly>
+        </div>
+
+        {/* Inline Create Sub-genre Form (Admin Only) */}
+        {showCreateSub && (
+          <AdminOnly>
+            <form onSubmit={handleCreateSubGenre} className="mb-4 p-3 bg-white rounded-2xl border border-blue-200 flex items-center gap-2 shadow-xs animate-fadeIn">
+              <input
+                type="text"
+                value={newSubName}
+                onChange={(e) => setNewSubName(e.target.value)}
+                placeholder="Type new sub-genre title (e.g. Agrarian Struggles, Classic Marsiya)..."
+                className="flex-1 px-3 py-1.5 text-xs border border-stone-300 rounded-lg outline-hidden focus:border-[#1d4ed8]"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting || !newSubName.trim()}
+                className="px-4 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg transition disabled:opacity-50"
+              >
+                {isSubmitting ? 'Creating...' : '+ Create'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateSub(false)}
+                className="px-3 py-1.5 text-stone-500 text-xs"
+              >
+                Cancel
+              </button>
+            </form>
+          </AdminOnly>
         )}
 
-        {/* Horizontal Pill Filters matching Screenshot */}
+        {/* Horizontal Pill Filters */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Active All Pill */}
           <button
@@ -217,7 +213,7 @@ export default function SubGenresPage({
             <span>All {genreTitle}</span>
           </button>
 
-          {/* Subgenre Pills with hover delete icon */}
+          {/* Subgenre Pills */}
           {subgenres.map((sg) => {
             const sgTitle = sg[`name_${lang}`] || sg.name_hi || sg.name_en;
             return (
@@ -225,18 +221,20 @@ export default function SubGenresPage({
                 <button
                   type="button"
                   onClick={() => navigate(`/category/${categorySlug}/${genreSlug}/${sg.id}`)}
-                  className="px-3.5 py-2 rounded-l-2xl text-xs font-semibold bg-amber-50/80 hover:bg-amber-100/90 text-amber-950 border border-amber-200/80 border-r-0 transition cursor-pointer shadow-2xs hover:shadow-xs"
+                  className="px-3.5 py-2 rounded-2xl text-xs font-semibold bg-amber-50/80 hover:bg-amber-100/90 text-amber-950 border border-amber-200/80 transition cursor-pointer shadow-2xs hover:shadow-xs"
                 >
                   <span>{sgTitle}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={(e) => openDeleteModal(sg, e)}
-                  title="Delete Sub-Genre"
-                  className="px-2 py-2 rounded-r-2xl text-xs bg-amber-50/80 hover:bg-red-100 text-amber-700 hover:text-red-700 border border-amber-200/80 border-l-0 transition"
-                >
-                  <X className="w-3 h-3" />
-                </button>
+                <AdminOnly>
+                  <button
+                    type="button"
+                    onClick={(e) => openDeleteModal(sg, e)}
+                    title="Delete Sub-Genre"
+                    className="ml-1 p-1 rounded-full text-amber-700 hover:text-red-700 hover:bg-red-100 transition"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </AdminOnly>
               </div>
             );
           })}
@@ -271,25 +269,27 @@ export default function SubGenresPage({
                         {sg.count || 0} Works
                       </span>
                       
-                      {/* Action buttons: Edit & Delete */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={(e) => openEditModal(sg, e)}
-                          title="Edit Sub-Genre"
-                          className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => openDeleteModal(sg, e)}
-                          title="Delete Sub-Genre"
-                          className="p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
+                      {/* Admin Only: Edit & Delete */}
+                      <AdminOnly>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => openEditModal(sg, e)}
+                            title="Edit Sub-Genre"
+                            className="p-1 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => openDeleteModal(sg, e)}
+                            title="Delete Sub-Genre"
+                            className="p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </AdminOnly>
                     </div>
 
                     <h3 className="text-base font-bold text-stone-900 font-hindi-serif group-hover:text-[#1d4ed8] transition-colors">
@@ -314,7 +314,15 @@ export default function SubGenresPage({
           <div className="py-12 text-center bg-white rounded-3xl border border-stone-200 p-8 max-w-md mx-auto">
             <FolderOpen className="w-10 h-10 text-stone-300 mx-auto mb-2" />
             <p className="text-sm font-bold text-stone-700">No Sub-Genres Found</p>
-            <p className="text-xs text-stone-500 mt-1 mb-4">Click "+ + Create New Sub-Genre" above to create the first sub-genre under this theme.</p>
+            <p className="text-xs text-stone-500 mt-1 mb-4">No sub-genres are currently available under this theme.</p>
+            <AdminOnly>
+              <button
+                onClick={() => setShowCreateSub(true)}
+                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                + Create Sub-Genre Now
+              </button>
+            </AdminOnly>
           </div>
         )}
       </div>
@@ -350,7 +358,7 @@ export default function SubGenresPage({
         </div>
       )}
 
-      {/* Edit Sub-Genre Modal */}
+      {/* Edit Sub-Genre Modal (Admin Only) */}
       {editingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
@@ -410,7 +418,7 @@ export default function SubGenresPage({
         </div>
       )}
 
-      {/* Delete Sub-Genre Modal */}
+      {/* Delete Sub-Genre Modal (Admin Only) */}
       {deletingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200 text-center animate-in fade-in zoom-in-95">
