@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 850" width="600" height="850">
+  <defs>
+    <linearGradient id="bgGrad-syed-ameer-ali-spirit-of-islam" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f0d06" />
+      <stop offset="50%" stop-color="#c2410c" />
+      <stop offset="100%" stop-color="#1f0d06" />
+    </linearGradient>
+    <pattern id="pat-syed-ameer-ali-spirit-of-islam" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M20 0 L40 20 L20 40 L0 20 Z" fill="none" stroke="#fbcfe8" stroke-width="0.8" opacity="0.16" />
+      <circle cx="20" cy="20" r="6" fill="none" stroke="#fbcfe8" stroke-width="0.6" opacity="0.2" />
+    </pattern>
+  </defs>
+  <rect width="600" height="850" fill="url(#bgGrad-syed-ameer-ali-spirit-of-islam)" />
+  <rect width="600" height="850" fill="url(#pat-syed-ameer-ali-spirit-of-islam)" />
+  <rect x="25" y="25" width="550" height="800" rx="12" fill="none" stroke="#fbcfe8" stroke-width="2.5" opacity="0.9" />
+  <rect x="35" y="35" width="530" height="780" rx="8" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1" />
+  <text x="300" y="80" text-anchor="middle" font-family="'Amiri', 'Georgia', serif" font-size="22" fill="#fbcfe8" font-weight="bold" letter-spacing="3">مكتبة حكمة الرقمية</text>
+  <text x="300" y="105" text-anchor="middle" font-family="Georgia, serif" font-size="12" fill="#ffffff" letter-spacing="4" opacity="0.9">HIKMAH DIGITAL PRESERVATION LIBRARY</text>
+  <line x1="160" y1="120" x2="440" y2="120" stroke="#fbcfe8" stroke-width="1" opacity="0.6" />
+  <rect x="180" y="138" width="240" height="32" rx="16" fill="rgba(0,0,0,0.5)" stroke="#fbcfe8" stroke-width="1" />
+  <text x="300" y="159" text-anchor="middle" font-family="'Noto Sans Devanagari', Arial, sans-serif" font-size="13" fill="#ffffff" font-weight="600">सभ्यता व विमर्श</text>
+  <rect x="55" y="205" width="490" height="280" rx="10" fill="rgba(0,0,0,0.6)" stroke="#fbcfe8" stroke-width="1.5" />
+  <text x="300" y="275" text-anchor="middle" font-family="'Amiri', 'Noto Nastaliq Urdu', serif" font-size="38" fill="#fbcfe8" font-weight="bold">روح الإسلام وتاريخ تطوره</text>
+  <text x="300" y="340" text-anchor="middle" font-family="'Noto Serif Devanagari', Georgia, serif" font-size="24" fill="#ffffff" font-weight="bold">द स्पिरिट ऑफ़ इस्लाम (इस्लाम की </text>
+  <text x="300" y="395" text-anchor="middle" font-family="Georgia, serif" font-size="17" fill="rgba(255,255,255,0.9)" font-style="italic">The Spirit of Islam: A History of Evolutio</text>
+  <text x="300" y="445" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#fbcfe8">Era: Modern Era (19th-20th Century / 13t</text>
+  <g transform="translate(300, 525)" fill="#fbcfe8">
+    <circle cx="0" cy="0" r="5" />
+    <path d="M-60,0 Q-30,-12 0,0 Q30,-12 60,0" stroke="#fbcfe8" stroke-width="2" fill="none" />
+    <path d="M-60,0 Q-30,12 0,0 Q30,12 60,0" stroke="#fbcfe8" stroke-width="2" fill="none" />
+  </g>
+  <text x="300" y="585" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.7)" letter-spacing="3">SCHOLAR / AUTHOR / المؤلف</text>
+  <text x="300" y="630" text-anchor="middle" font-family="'Amiri', serif" font-size="28" fill="#ffffff" font-weight="bold">سيد أمير علي</text>
+  <text x="300" y="670" text-anchor="middle" font-family="'Noto Serif Devanagari', Georgia, serif" font-size="20" fill="#fbcfe8">सैयद अमीर अली</text>
+  <line x1="100" y1="725" x2="500" y2="725" stroke="rgba(255,255,255,0.2)" stroke-width="1" />
+  <text x="120" y="760" text-anchor="start" font-family="Arial, sans-serif" font-size="13" fill="rgba(255,255,255,0.85)">Date: 1308 AH / 1891 CE</text>
+  <text x="480" y="760" text-anchor="end" font-family="Arial, sans-serif" font-size="13" fill="rgba(255,255,255,0.85)">Pages: 480</text>
+  <text x="300" y="790" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" fill="#fbcfe8">Hikmah Digital Library for Islamic Thought and Heritage • Open Access</text>
+</svg>

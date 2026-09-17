@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 850" width="600" height="850">
+    <defs>
+      <linearGradient id="bgGC" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#0f172a" />
+        <stop offset="50%" stop-color="#1d4ed8" />
+        <stop offset="100%" stop-color="#0f172a" />
+      </linearGradient>
+    </defs>
+    <rect width="600" height="850" fill="url(#bgGC)" />
+    <rect x="25" y="25" width="550" height="800" rx="14" fill="none" stroke="#fde68a" stroke-width="2.5" opacity="0.85" />
+    <rect x="35" y="35" width="530" height="780" rx="10" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1" />
+    <text x="300" y="85" text-anchor="middle" font-family="'Noto Serif Devanagari', serif" font-size="22" fill="#fde68a" font-weight="bold">चेतना डिजिटल पुस्तकालय</text>
+    <text x="300" y="110" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#ffffff" letter-spacing="3">CHETNA OPEN ACCESS LIBRARY</text>
+    <rect x="55" y="240" width="490" height="260" rx="12" fill="rgba(0,0,0,0.6)" stroke="#fde68a" stroke-width="1.5" />
+    <text x="300" y="340" text-anchor="middle" font-family="'Noto Serif Devanagari', Georgia, serif" font-size="28" fill="#ffffff" font-weight="bold">हंस अप्रैल 2026</text>
+    <text x="300" y="420" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#fde68a">NOVEL</text>
+    <text x="300" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.7)" letter-spacing="2">रचयिता / CREATOR</text>
+    <text x="300" y="630" text-anchor="middle" font-family="'Noto Serif Devanagari', Georgia, serif" font-size="24" fill="#ffffff" font-weight="bold">हंस</text>
+    <text x="300" y="760" text-anchor="middle" font-family="Arial, sans-serif" font-size="13" fill="rgba(255,255,255,0.85)">Year: 2026</text>
+  </svg>

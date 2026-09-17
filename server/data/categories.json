@@ -1,0 +1,1353 @@
+[
+  {
+    "id": "novel",
+    "name_hi": "उपन्यास और गल्प",
+    "name_en": "Novel & Fiction",
+    "name_ur": "ناول و فکشن",
+    "subtitle_hi": "कथा-शिल्प, सामाजिक यथार्थ, महाकाव्यात्मक आख्यान व कालजयी उपन्यास",
+    "subtitle_en": "Epic narratives, social realism, historical chronicles & human journeys",
+    "subtitle_ur": "معاشرتی حقیقت نگاری، تاریخی و نفسیاتی ناول",
+    "icon": "BookOpen",
+    "color": "#b45309",
+    "genres": [
+      {
+        "id": "social-realism",
+        "name_hi": "सामाजिक यथार्थवादी उपन्यास",
+        "name_en": "Social Realism",
+        "name_ur": "سماجی حقیقت نگاری",
+        "description_hi": "सामंतवाद, जाति संघर्ष, ग्रामीण-शहरी असमानता व श्रमिक जीवन का यथार्थवादी चित्रण",
+        "description_en": "Feudalism, caste dynamics, rural-urban inequality, and working-class realities",
+        "subgenres": [
+          {
+            "id": "agrarian-peasantry",
+            "name_hi": "कृषक व ग्रामीण यथार्थ",
+            "name_en": "Agrarian Struggles & Peasantry",
+            "name_ur": "دیہی و کسان جدوجہد"
+          },
+          {
+            "id": "feudal-critique",
+            "name_hi": "सामंतवाद व ज़मींदारी विरोध",
+            "name_en": "Anti-Feudal & Landlordism Critique",
+            "name_ur": "جاگیرداری نظام کے خلاف"
+          },
+          {
+            "id": "labor-working-class",
+            "name_hi": "मजदूर चेतना व श्रमिक संघर्ष",
+            "name_en": "Labor & Working-Class Realities",
+            "name_ur": "مزدور اور محنت کش طبقہ"
+          },
+          {
+            "id": "caste-inequality",
+            "name_hi": "जाति व वर्ग चेतना",
+            "name_en": "Caste & Social Hierarchy",
+            "name_ur": "ذات پات اور طبقاتی کشمکش"
+          },
+          {
+            "id": "urban-alienation",
+            "name_hi": "शहरी मध्यवर्गीय विसंगति",
+            "name_en": "Urban Middle-Class Disillusionment",
+            "name_ur": "شہری متوسط طبقے کا احساسِ بیگانگی"
+          }
+        ]
+      },
+      {
+        "id": "historical-fiction",
+        "name_hi": "ऐतिहासिक उपन्यास",
+        "name_en": "Historical Fiction",
+        "name_ur": "تاریخی ناول",
+        "description_hi": "स्वाधीनता संग्राम, प्राचीन साम्राज्य, मुग़ल व औपनिवेशिक काल के ऐतिहासिक आख्यान",
+        "description_en": "Freedom struggles, ancient civilizations, empires, and documented history",
+        "subgenres": [
+          {
+            "id": "freedom-struggle",
+            "name_hi": "स्वाधीनता आंदोलन व राष्ट्रीय चेतना",
+            "name_en": "Freedom Movement & National Awakening",
+            "name_ur": "تحریکِ آزادی اور قومی بیداری"
+          },
+          {
+            "id": "medieval-empires",
+            "name_hi": "मध्यकालीन इतिहास व सल्तनत काल",
+            "name_en": "Medieval Empires & Sultanates",
+            "name_ur": "قرونِ وسطیٰ کی سلطنتیں"
+          },
+          {
+            "id": "partition-chronicles",
+            "name_hi": "विभाजन त्रासदी व विस्थापन",
+            "name_en": "Partition Chronicles & Trauma",
+            "name_ur": "تقسیم کے المیے اور ہجرت"
+          },
+          {
+            "id": "renaissance-epoch",
+            "name_hi": "भारतीय पुनर्जागरण व सुधार काल",
+            "name_en": "Indian Renaissance & Reforms",
+            "name_ur": "ہندوستانی نشاۃِ ثانیہ"
+          }
+        ]
+      },
+      {
+        "id": "psychological-modernist",
+        "name_hi": "मनोवैज्ञानिक व आधुनिक गल्प",
+        "name_en": "Psychological Modernism",
+        "name_ur": "نفسیاتی و جدید فکشن",
+        "description_hi": "चेतना प्रवाह, अंतर्द्वंद्व, अस्तित्ववादी संत्रास व आधुनिक मानवीय अनुभूतियाँ",
+        "description_en": "Stream of consciousness, existential alienation, and inner psychological monologues",
+        "subgenres": [
+          {
+            "id": "stream-of-consciousness",
+            "name_hi": "चेतना प्रवाह व आंतरिक संवाद",
+            "name_en": "Stream of Consciousness",
+            "name_ur": "شعور کی رو اور باطنی مکالمے"
+          },
+          {
+            "id": "existential-alienation",
+            "name_hi": "अस्तित्ववादी संत्रास व अकेलापन",
+            "name_en": "Existential Alienation & Loneliness",
+            "name_ur": "وجودیت اور تنہائی کا کرب"
+          },
+          {
+            "id": "psychoanalytic-prose",
+            "name_hi": "मनोविश्लेषणात्मक आख्यान",
+            "name_en": "Psychoanalytic Narratives",
+            "name_ur": "نفسیاتی تجزیاتی نثر"
+          }
+        ]
+      },
+      {
+        "id": "regional-aanchalik",
+        "name_hi": "आंचलिक उपन्यास व लोक-जीवन",
+        "name_en": "Regional & Aanchalik",
+        "name_ur": "علاقائی و آنچلِک ناول",
+        "description_hi": "अंचल विशेष का भूगोल, देशज बोलियाँ, लोक-संस्कृति व जन-जीवन का सजीव चित्रण",
+        "description_en": "Deeply rooted rural settings, local dialects, folklore, and indigenous regional geographies",
+        "subgenres": [
+          {
+            "id": "folk-geography",
+            "name_hi": "लोक-भूगोल व अंचल की गाथा",
+            "name_en": "Regional Folklore & Landscape",
+            "name_ur": "علاقائی جغرافیہ اور روایات"
+          },
+          {
+            "id": "dialect-narratives",
+            "name_hi": "देशज भाषा व लोक-संस्कृति",
+            "name_en": "Vernacular Dialect Narratives",
+            "name_ur": "دیسی زبان اور لوک کلچر"
+          },
+          {
+            "id": "tribal-pastoral",
+            "name_hi": "जनजातीय व चरवाहा जीवन",
+            "name_en": "Tribal & Pastoral Life",
+            "name_ur": "قبائلی اور چرواہا زندگی"
+          }
+        ]
+      },
+      {
+        "id": "novellas",
+        "name_hi": "लघु उपन्यास व दीर्घ गल्प",
+        "name_en": "Novellas & Long Prose",
+        "name_ur": "مختصر ناول و ناولیٹ",
+        "description_hi": "तीव्र संवेदना, एकाग्र कथानक व सघन सामाजिक-वैचारिक लघु उपन्यास",
+        "description_en": "Concentrated long-form prose, philosophical novellas, and compact epic tales",
+        "subgenres": [
+          {
+            "id": "chamber-novellas",
+            "name_hi": "एकाग्र लघु उपन्यास",
+            "name_en": "Chamber Novellas",
+            "name_ur": "مرکوز مختصر ناول"
+          },
+          {
+            "id": "philosophical-novellas",
+            "name_hi": "दार्शनिक व प्रतीकात्मक लघु उपन्यास",
+            "name_en": "Philosophical & Symbolic Novellas",
+            "name_ur": "فلسفیانہ و علامتی ناولیٹ"
+          }
+        ]
+      },
+      {
+        "id": "dalit-anti-caste-novels",
+        "name_hi": "दलित चेतना उपन्यास",
+        "name_en": "Dalit Consciousness Fiction",
+        "name_ur": "دلت شعور ناول",
+        "description_hi": "अस्मिता, सामाजिक मुक्ति, आत्मसम्मान व जाति-उन्मूलन पर आधारित आख्यान",
+        "description_en": "Novels exploring emancipation, anti-caste struggle, identity, and dignity",
+        "subgenres": [
+          {
+            "id": "caste-emancipation",
+            "name_hi": "सामाजिक मुक्ति संघर्ष",
+            "name_en": "Social Emancipation Struggle",
+            "name_ur": "سماجی آزادی کی جدوجہد"
+          },
+          {
+            "id": "dalit-autobiographical-fiction",
+            "name_hi": "आत्मकथात्मक उपन्यास",
+            "name_en": "Autobiographical Fiction",
+            "name_ur": "آپ بیتی نما فکشن"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "story",
+    "name_hi": "कहानी और आख्यान",
+    "name_en": "Story & Narrative",
+    "name_ur": "کہانی و افسانہ",
+    "subtitle_hi": "कालजयी कहानियाँ, नई कहानी, लघुकथाएँ, दास्तानगोई व आख्यान",
+    "subtitle_en": "Classic short stories, Nayi Kahani, folklore, micro-fiction & memoirs",
+    "subtitle_ur": "لازوال افسانے، نئی کہانی اور داستانوی ادب",
+    "icon": "Scroll",
+    "color": "#047857",
+    "genres": [
+      {
+        "id": "classic-short-story",
+        "name_hi": "कालजयी कहानियाँ",
+        "name_en": "Classic Short Story",
+        "name_ur": "کلاسیکی کہانی",
+        "description_hi": "प्रेमचंद, गुलेरी, कौशिक परंपरा का आदर्शोन्मुख एवं यथार्थवादी कथा-साहित्य",
+        "description_en": "Traditional plot-driven classic short stories of Premchand tradition",
+        "subgenres": [
+          {
+            "id": "premchand-tradition",
+            "name_hi": "प्रेमचंद कथा परंपरा",
+            "name_en": "Premchandian Realism",
+            "name_ur": "پریم چند کی افسانوی روایت"
+          },
+          {
+            "id": "idealistic-realism",
+            "name_hi": "आदर्शोन्मुख यथार्थवाद",
+            "name_en": "Idealistic Realism",
+            "name_ur": "حقیقت نگاری و اخلاقی اقدار"
+          },
+          {
+            "id": "social-justice-stories",
+            "name_hi": "सामाजिक चेतना कथाएँ",
+            "name_en": "Social Justice Stories",
+            "name_ur": "سماجی انصاف کی کہانیاں"
+          }
+        ]
+      },
+      {
+        "id": "nayi-kahani",
+        "name_hi": "नई कहानी",
+        "name_en": "Nayi Kahani",
+        "name_ur": "نئی کہانی",
+        "description_hi": "आज़ादी के बाद का मोहभंग, मध्यवर्गीय नैतिकता, जटिल मानवीय रिश्ते व अकेलापन",
+        "description_en": "Post-1947 disillusionment, urban breakdown, and complex modern relationships",
+        "subgenres": [
+          {
+            "id": "urban-loneliness",
+            "name_hi": "शहरी अकेलापन व अजनबीपन",
+            "name_en": "Urban Alienation & Loneliness",
+            "name_ur": "شہری تنہائی اور بیگانگی"
+          },
+          {
+            "id": "relationship-complexes",
+            "name_hi": "संबंधों की अंतर्गुंफित जटिलता",
+            "name_en": "Relationship Complexes",
+            "name_ur": "انسانی رشتوں کی الجھنیں"
+          },
+          {
+            "id": "post-independence-disillusion",
+            "name_hi": "स्वातंत्र्योत्तर मोहभंग",
+            "name_en": "Post-Independence Disillusionment",
+            "name_ur": "آزادی کے بعد کا موہ بھنگ"
+          }
+        ]
+      },
+      {
+        "id": "urdu-afsana",
+        "name_hi": "उर्दू अफ़साना",
+        "name_en": "Urdu Afsana",
+        "name_ur": "اردو افسانہ",
+        "description_hi": "मंटो, बेदी, इस्मत, कृष्ण चंदर की बेबाक व मनोवैज्ञानिक अफ़साना निगारी",
+        "description_en": "Progressive, psychological, and fearless short fiction in Urdu tradition",
+        "subgenres": [
+          {
+            "id": "progressive-afsana",
+            "name_hi": "तरक़्क़ी-पसंद अफ़साने",
+            "name_en": "Progressive Movement Afsana",
+            "name_ur": "ترقی پسند افسانہ"
+          },
+          {
+            "id": "partition-afsana",
+            "name_hi": "विभाजन पर आधारित अफ़साने",
+            "name_en": "Partition Afsana",
+            "name_ur": "تقسیم پر مبنی افسانے"
+          },
+          {
+            "id": "psychological-afsana",
+            "name_hi": "मनोवैज्ञानिक अफ़साना",
+            "name_en": "Psychological Afsana",
+            "name_ur": "نفسیاتی افسانہ"
+          }
+        ]
+      },
+      {
+        "id": "folk-tales",
+        "name_hi": "लोक कथाएँ",
+        "name_en": "Folk Tales & Lore",
+        "name_ur": "لوک کہانیاں",
+        "description_hi": "क्षेत्रीय लोक कथाएँ, जातक कथाएँ, पंचतंत्र, पंचायती किस्से व नीतिकथाएँ",
+        "description_en": "Regional folklore, moral fables, indigenous legends, and cautionary tales",
+        "subgenres": [
+          {
+            "id": "regional-legends",
+            "name_hi": "क्षेत्रीय लोकगाथाएँ",
+            "name_en": "Regional Legends & Lore",
+            "name_ur": "علاقائی روایات"
+          },
+          {
+            "id": "moral-fables",
+            "name_hi": "बोधकथाएँ व दृष्टांत",
+            "name_en": "Moral Allegories & Fables",
+            "name_ur": "اخلاقی کہانیاں"
+          }
+        ]
+      },
+      {
+        "id": "dastangoi",
+        "name_hi": "दास्तानगोई व वाचिक आख्यान",
+        "name_en": "Dastangoi & Oral Epics",
+        "name_ur": "داستان گوئی",
+        "description_hi": "दास्तान-ए-अमीर हम्ज़ा, तिलिस्म-ए-होशरुबा व पारंपारिक वाचिक किस्सागोई",
+        "description_en": "Classical oral epics, romance, fantasy, and heroic spoken narratives",
+        "subgenres": [
+          {
+            "id": "dastangoi-tilism",
+            "name_hi": "तिलिस्म व ऐयारी दास्तानें",
+            "name_en": "Tilism & Romance Tales",
+            "name_ur": "طلسم و عیاری"
+          },
+          {
+            "id": "oral-storytelling",
+            "name_hi": "वाचिक किस्सागोई",
+            "name_en": "Oral Recitations",
+            "name_ur": "زبانی قصہ گوئی"
+          }
+        ]
+      },
+      {
+        "id": "micro-fiction",
+        "name_hi": "लघुकथा",
+        "name_en": "Micro-Fiction & Vignettes",
+        "name_ur": "مختصر ترین کہانیاں",
+        "description_hi": "संक्षिप्त, मारक, सूत्रबद्ध सामाजिक व्यंग्य व तीक्ष्ण लघुकथाएँ",
+        "description_en": "Flash fiction, impactful concise vignettes, and satirical snapshots",
+        "subgenres": [
+          {
+            "id": "socio-satirical-micro",
+            "name_hi": "सामाजिक व्यंग्य लघुकथाएँ",
+            "name_en": "Socio-Satirical Micro Fiction",
+            "name_ur": "سماجی طنزیہ مائیکرو فکشن"
+          },
+          {
+            "id": "philosophical-vignettes",
+            "name_hi": "दार्शनिक सूत्र कथाएँ",
+            "name_en": "Philosophical Vignettes",
+            "name_ur": "فلسفیانہ خاکے"
+          }
+        ]
+      },
+      {
+        "id": "memoirs",
+        "name_hi": "संस्मरण व रेखाचित्र",
+        "name_en": "Memoirs & Reminiscences",
+        "name_ur": "یادداشتیں اور خاکے",
+        "description_hi": "व्यक्तिगत स्मृतियों, बीती घटनाओं व साहित्यकारों के जीवन-चित्र",
+        "description_en": "Semi-autobiographical reflections, character sketches, and nostalgia",
+        "subgenres": [
+          {
+            "id": "childhood-nostalgia",
+            "name_hi": "बाल्य स्मृति कथाएँ",
+            "name_en": "Childhood Nostalgia",
+            "name_ur": "بچپن کی یادیں"
+          },
+          {
+            "id": "life-portraits",
+            "name_hi": "व्यक्ति-चित्र व जीवन-झांकी",
+            "name_en": "Life Portraits & Sketches",
+            "name_ur": "شخصی خاکے"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "poetry",
+    "name_hi": "कविता, शायरी और पद्य",
+    "name_en": "Poetry & Verse",
+    "name_ur": "شاعری و منظومات",
+    "subtitle_hi": "ग़ज़ल, क़सीदा, नज़्म, मर्सिया, नौहा, दोहे, गीत, मुक्तछंद, रुबाइयात",
+    "subtitle_en": "Ghazals, Odes, Nazms, Marsiya, Nauha, Doha, Geet, Free Verse, Rubaiyat",
+    "subtitle_ur": "غزل، قصیدہ، نظم، مرثیہ، نوحہ، دوہے، گیت، آزاد نظم، رباعیات",
+    "icon": "Feather",
+    "color": "#7e22ce",
+    "genres": [
+      {
+        "id": "ghazal",
+        "name_hi": "ग़ज़ल",
+        "name_en": "Ghazal",
+        "name_ur": "غزل",
+        "description_hi": "मीर, ग़ालिब, मोमिन, फ़ैज़ परंपरा की शास्त्रीय एवं समकालीन ग़ज़लें व अशआर",
+        "description_en": "Classical and contemporary coupled rhyming verse with matla, maqta, radif and qafiya",
+        "subgenres": [
+          {
+            "id": "classical-ghazal",
+            "name_hi": "शास्त्रीय उर्दू ग़ज़ल",
+            "name_en": "Classical Urdu Ghazal",
+            "name_ur": "کلاسیکی اردو غزل"
+          },
+          {
+            "id": "progressive-ghazal",
+            "name_hi": "प्रगतिशील दौर की ग़ज़ल",
+            "name_en": "Progressive Era Ghazal",
+            "name_ur": "ترقی پسند غزل"
+          },
+          {
+            "id": "contemporary-ghazal",
+            "name_hi": "समकालीन हिंदी-उर्दू ग़ज़ल",
+            "name_en": "Contemporary Ghazal",
+            "name_ur": "عصری غزل"
+          },
+          {
+            "id": "romantic-mystical-ghazal",
+            "name_hi": "इश्किया व सूफ़ी ग़ज़ल",
+            "name_en": "Romantic & Mystical Ghazal",
+            "name_ur": "عشقیہ و صوفیانہ غزل"
+          }
+        ]
+      },
+      {
+        "id": "odes-qasida",
+        "name_hi": "क़सीदा व प्रशस्ति काव्य",
+        "name_en": "Odes & Qasida",
+        "name_ur": "قصیدہ نگاری",
+        "description_hi": "सौदा, ज़ौक़ की भव्य प्रशस्ति शैली, स्तुति काव्य व ऐतिहासिक ओड्स",
+        "description_en": "Grand laudatory verse, classical praise odes, panegyrics, and formal tributes",
+        "subgenres": [
+          {
+            "id": "classical-qasida",
+            "name_hi": "शास्त्रीय क़सीदा",
+            "name_en": "Classical Qasida",
+            "name_ur": "کلاسیکی قصیدہ"
+          },
+          {
+            "id": "historical-odes",
+            "name_hi": "ऐतिहासिक प्रशस्ति ओड्स",
+            "name_en": "Historical & Royal Odes",
+            "name_ur": "تاریخی قصائد"
+          },
+          {
+            "id": "devotional-odes",
+            "name_hi": "भक्ति व मनक़बत ओड्स",
+            "name_en": "Devotional & Spiritual Odes",
+            "name_ur": "منقبت اور مدحیہ کلام"
+          }
+        ]
+      },
+      {
+        "id": "nazm",
+        "name_hi": "नज़्म",
+        "name_en": "Nazm",
+        "name_ur": "نظم",
+        "description_hi": "इक़बाल, साहिर, कैफ़ी, मख़दूम, नज़ीर अकबराबादी की विषय-प्रधान नज़्में",
+        "description_en": "Single-subject thematic verse, narrative, philosophical, and social nazms",
+        "subgenres": [
+          {
+            "id": "thematic-nazm",
+            "name_hi": "वैचारिक व सामाजिक नज़्म",
+            "name_en": "Thematic & Social Nazm",
+            "name_ur": "فکری و سماجی نظمیں"
+          },
+          {
+            "id": "azad-nazm",
+            "name_hi": "आज़ाद नज़्म",
+            "name_en": "Azad Nazm (Free Metric)",
+            "name_ur": "آزاد نظم"
+          },
+          {
+            "id": "modernist-nazm",
+            "name_hi": "आधुनिक व अमूर्त नज़्म",
+            "name_en": "Modernist & Abstract Nazm",
+            "name_ur": "جدید نظم"
+          }
+        ]
+      },
+      {
+        "id": "marsiya",
+        "name_hi": "मर्सिया",
+        "name_en": "Marsiya",
+        "name_ur": "مرثیہ",
+        "description_hi": "मीर अनीस व मिर्ज़ा दबीर की मुसद्दस मर्सिया निगारी, शहादत, शौर्य व करुणा",
+        "description_en": "Classical mourning epics, 6-line musaddas elegies of Mir Anees & Mirza Dabeer",
+        "subgenres": [
+          {
+            "id": "classical-musaddas-marsiya",
+            "name_hi": "शास्त्रीय मुसद्दस मर्सिया",
+            "name_en": "Classical Musaddas Marsiya",
+            "name_ur": "کلاسیکی مسدس مرثیہ"
+          },
+          {
+            "id": "historical-battle-marsiya",
+            "name_hi": "ऐतिहासिक व युद्ध वर्णन मर्सिया",
+            "name_en": "Historical & Battle Accounts",
+            "name_ur": "رجز اور جنگی مرثیہ"
+          },
+          {
+            "id": "philosophical-marsiya",
+            "name_hi": "दार्शनिक व मानवीय मर्सिया",
+            "name_en": "Humanist & Ethical Marsiya",
+            "name_ur": "انسانی و اخلاقی مرثیہ"
+          },
+          {
+            "id": "xyuza",
+            "name_hi": "सयुजा",
+            "name_en": "XYUZA",
+            "name_ur": "ضا"
+          }
+        ]
+      },
+      {
+        "id": "nauha-soz",
+        "name_hi": "नौहा व सोज़",
+        "name_en": "Nauha & Soz",
+        "name_ur": "نوحہ و سوز",
+        "description_hi": "करुण शोक गीत, नौहा, सोज़, सलाम व अज़ादारी का शास्त्रीय काव्य",
+        "description_en": "Sorrowful mourning chants, melodic soz-khwani, and elegiac dirges",
+        "subgenres": [
+          {
+            "id": "classical-nauha",
+            "name_hi": "शास्त्रीय नौहा",
+            "name_en": "Classical Nauha",
+            "name_ur": "کلاسیکی نوحہ"
+          },
+          {
+            "id": "melodic-soz",
+            "name_hi": "सोज़ व सलाम",
+            "name_en": "Melodic Soz & Salam",
+            "name_ur": "سوز خوانی و سلام"
+          }
+        ]
+      },
+      {
+        "id": "doha-sakhi",
+        "name_hi": "दोहा व साखी",
+        "name_en": "Doha & Sakhi",
+        "name_ur": "دوہے و ساکھیاں",
+        "description_hi": "कबीर, तुलसी, रहीम, रसखान के दोहे, साखियाँ, दृष्टांत व नीति-काव्य",
+        "description_en": "Couplets, aphorisms, ethical maxims, and spiritual dohas of Bhakti tradition",
+        "subgenres": [
+          {
+            "id": "kabir-sakhiyan",
+            "name_hi": "कबीर की साखियाँ व उलटबांसी",
+            "name_en": "Kabir's Sakhiyan & Ulatbansi",
+            "name_ur": "کبیر کی ساکھیاں"
+          },
+          {
+            "id": "ethical-dohas",
+            "name_hi": "नीति व उपदेशात्मक दोहे",
+            "name_en": "Ethical & Didactic Couplets",
+            "name_ur": "اخلاقی دوہے"
+          }
+        ]
+      },
+      {
+        "id": "geet-navgeet",
+        "name_hi": "गीत व नवगीत",
+        "name_en": "Geet & Navgeet",
+        "name_ur": "گیت و نو گیت",
+        "description_hi": "निराला, बच्चन, नीरज, शंभुनाथ सिंह के भावपूर्ण गीत, नवगीत व जनगीत",
+        "description_en": "Lyrical songs, Navgeet of modern Hindi, romantic melodies, and folk tunes",
+        "subgenres": [
+          {
+            "id": "classical-geet",
+            "name_hi": "भावप्रधान गीत",
+            "name_en": "Classical Lyrical Geet",
+            "name_ur": "کلاسیکی گیت"
+          },
+          {
+            "id": "navgeet-modern",
+            "name_hi": "आधुनिक नवगीत",
+            "name_en": "Navgeet & Contemporary Song",
+            "name_ur": "جدید نو گیت"
+          }
+        ]
+      },
+      {
+        "id": "bhakti-sufi-kalam",
+        "name_hi": "भक्ति व सूफ़ी काव्य",
+        "name_en": "Bhakti & Sufi Kalam",
+        "name_ur": "بھکتی و صوفیانہ کلام",
+        "description_hi": "सूरदास, मीराबाई, बुल्ले शाह, बाबा फरीद का रहस्यवादी, प्रेमाश्रयी व ज्ञानाश्रयी काव्य",
+        "description_en": "Mystical Sufi kafis, Pada, Vachanas, and devotional expressions of divine love",
+        "subgenres": [
+          {
+            "id": "sufi-mystical-verse",
+            "name_hi": "सूफ़ी काफ़ियाँ व बैत",
+            "name_en": "Sufi Kafis & Baits",
+            "name_ur": "صوفیانہ کافیاں"
+          },
+          {
+            "id": "devotional-pada",
+            "name_hi": "भक्ति पद व कीर्तन",
+            "name_en": "Devotional Pada & Hymns",
+            "name_ur": "بھکتی کے پد"
+          }
+        ]
+      },
+      {
+        "id": "modern-free-verse",
+        "name_hi": "मुक्तछंद व नई कविता",
+        "name_en": "Modern Free Verse",
+        "name_ur": "آزاد و جدید نظم",
+        "description_hi": "अज्ञेय, मुक्तिबोध, नागार्जुन, त्रिलोचन, शमशेर की नई कविता व प्रयोगात्मक पद्य",
+        "description_en": "Nai Kavita, experimental free verse, existential expressions, and modern imagery",
+        "subgenres": [
+          {
+            "id": "experimental-free-verse",
+            "name_hi": "प्रयोगात्मक मुक्तछंद",
+            "name_en": "Experimental Verse",
+            "name_ur": "تجرباتی آزاد شاعری"
+          },
+          {
+            "id": "existential-modernist-poetry",
+            "name_hi": "अस्तित्ववादी नई कविता",
+            "name_en": "Existential Modernist Poetry",
+            "name_ur": "وجودیت پسند شاعری"
+          }
+        ]
+      },
+      {
+        "id": "protest-poetry",
+        "name_hi": "प्रतिरोध व जनवादी कविता",
+        "name_en": "Protest & Resistance Poetry",
+        "name_ur": "انقلابی و احتجاجی شاعری",
+        "description_hi": "हबीब जालिब, पाश, फैज़, गोरख पांडेय की इंक़लाबी व जन-संघर्ष की शायरी",
+        "description_en": "Revolutionary verse, anti-fascist songs, labor struggle anthems, and civil resistance",
+        "subgenres": [
+          {
+            "id": "revolutionary-anthems",
+            "name_hi": "इंक़लाबी तराने व जनगीत",
+            "name_en": "Revolutionary Anthems",
+            "name_ur": "انقلابی ترانے"
+          },
+          {
+            "id": "anti-colonial-verse",
+            "name_hi": "साम्राज्यवाद-विरोधी कविता",
+            "name_en": "Anti-Imperialist Verse",
+            "name_ur": "سامراج مخالف کلام"
+          }
+        ]
+      },
+      {
+        "id": "rubaiyat",
+        "name_hi": "रुबाइयात",
+        "name_en": "Rubaiyat",
+        "name_ur": "رباعیات",
+        "description_hi": "उमर खय्याम, जोश, अमजद हैदराबादी की चार पंक्तियों वाली दार्शनिक रुबाइयाँ",
+        "description_en": "Four-line quatrains with aaba rhyme scheme, philosophical and reflective",
+        "subgenres": [
+          {
+            "id": "classical-rubaiyat",
+            "name_hi": "शास्त्रीय दार्शनिक रुबाइयाँ",
+            "name_en": "Classical Philosophical Rubaiyat",
+            "name_ur": "فلسفیانہ رباعیات"
+          },
+          {
+            "id": "romantic-rubaiyat",
+            "name_hi": "इश्किया रुबाइयाँ",
+            "name_en": "Romantic Rubaiyat",
+            "name_ur": "عشقیہ رباعیات"
+          }
+        ]
+      },
+      {
+        "id": "qataat-epigrams",
+        "name_hi": "क़तआत व संक्षेप पद्य",
+        "name_en": "Qataat & Epigrams",
+        "name_ur": "قطعات",
+        "description_hi": "व्यंग्यात्मक, सामयिक, तीक्ष्ण दो से चार शेरों वाले क़तआत व सूक्तियाँ",
+        "description_en": "Short satirical stanzas, topical epigrams, and sharp poetic fragments",
+        "subgenres": [
+          {
+            "id": "satirical-qataat",
+            "name_hi": "व्यंग्यात्मक क़तआत",
+            "name_en": "Satirical Epigrams",
+            "name_ur": "طنزیہ قطعات"
+          },
+          {
+            "id": "topical-stanzas",
+            "name_hi": "सामयिक राजनीतिक क़तआत",
+            "name_en": "Topical Political Stanzas",
+            "name_ur": "عصری قطعات"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "magazines",
+    "name_hi": "पत्रिकाएँ एवं सामयिकी",
+    "name_en": "Magazines & Periodicals",
+    "name_ur": "رسائل و جرائد",
+    "subtitle_hi": "साहित्यिक पत्रिकाएँ, आंदोलन बुलेटिन, विशेषांक व दुर्लभ ऐतिहासिक अभिलेख",
+    "subtitle_en": "Literary periodicals, cultural manifestos, special numbers & historic journals",
+    "subtitle_ur": "ادبی رسائل، تحریک کے بلیٹن اور نایاب تاریخی جرائد",
+    "icon": "Newspaper",
+    "color": "#0284c7",
+    "genres": [
+      {
+        "id": "literary-periodicals",
+        "name_hi": "साहित्यिक पत्रिकाएँ",
+        "name_en": "Literary Periodicals",
+        "name_ur": "ادبی رسائل",
+        "description_hi": "हंस, सरस्वती, नई धारा, आजकल, पहल, तद्भव जैसी प्रतिष्ठित साहित्यिक पत्रिकाएँ",
+        "description_en": "Monthly, quarterly, and prestigious literary reviews and journals",
+        "subgenres": [
+          {
+            "id": "monthly-literary-reviews",
+            "name_hi": "मासिक साहित्यिक समीक्षा",
+            "name_en": "Monthly Literary Reviews",
+            "name_ur": "ماہوار ادبی جائزے"
+          },
+          {
+            "id": "quarterly-journals",
+            "name_hi": "त्रैमासिक शोध पत्रिकाएँ",
+            "name_en": "Quarterly Academic Journals",
+            "name_ur": "سہ ماہی تحقیقی جرائد"
+          }
+        ]
+      },
+      {
+        "id": "cultural-bulletins",
+        "name_hi": "सांस्कृतिक बुलेटिन",
+        "name_en": "Cultural Bulletins",
+        "name_ur": "ثقافتی بلیٹن",
+        "description_hi": "जसम, इप्टा, जनवादी लेखक संघ व प्रगतिशील लेखक संघ के नियमित बुलेटिन",
+        "description_en": "Newsletters, regular bulletins, and organizational cultural organs",
+        "subgenres": [
+          {
+            "id": "movement-newsletters",
+            "name_hi": "आंदोलन समाचार व रिपोर्ट",
+            "name_en": "Movement Newsletters",
+            "name_ur": "تحریکی خبرنامے"
+          },
+          {
+            "id": "theatre-bulletins",
+            "name_hi": "रंगमंच व जन-संस्कृति बुलेटिन",
+            "name_en": "Theatre & Cultural Bulletins",
+            "name_ur": "تھیٹر اور ثقافتی بلیٹن"
+          }
+        ]
+      },
+      {
+        "id": "movement-manifestos",
+        "name_hi": "आंदोलन व घोषणापत्र",
+        "name_en": "Political & Movement Manifestos",
+        "name_ur": "تحریکی اعلانیے و منشور",
+        "description_hi": "प्रगतिशील, दलित, किसान व श्रमिक आंदोलनों के ऐतिहासिक घोषणापत्र व वैचारिक दस्तावेज़",
+        "description_en": "Historical declarations, cultural manifestos, and ideological resolutions",
+        "subgenres": [
+          {
+            "id": "progressive-manifestos",
+            "name_hi": "प्रगतिशील लेखक संघ घोषणापत्र",
+            "name_en": "Progressive Writers Manifestos",
+            "name_ur": "ترقی پسند منشور"
+          },
+          {
+            "id": "peasant-worker-resolutions",
+            "name_hi": "किसान-मजदूर संकल्प दस्तावेज़",
+            "name_en": "Peasant-Worker Resolutions",
+            "name_ur": "کسان مزدور قراردادیں"
+          }
+        ]
+      },
+      {
+        "id": "special-editions",
+        "name_hi": "विशेषांक व स्मृति ग्रंथ",
+        "name_en": "Special & Memorial Editions",
+        "name_ur": "خصوصی و یادگاری نمبر",
+        "description_hi": "प्रेमचंद विशेषांक, ग़ालिब शताब्दी अंक, निराला स्मृति ग्रंथ व समकालीन विशेषांक",
+        "description_en": "Author centenary editions, thematic special volumes, and memorial monographs",
+        "subgenres": [
+          {
+            "id": "author-centenary-editions",
+            "name_hi": "रचनाकार शताब्दी विशेषांक",
+            "name_en": "Author Centenary Numbers",
+            "name_ur": "مصنفین کے یادگاری نمبر"
+          },
+          {
+            "id": "thematic-special-numbers",
+            "name_hi": "विषय-केंद्रित विशेषांक",
+            "name_en": "Thematic Special Numbers",
+            "name_ur": "موضوعاتی خصوصی شمارے"
+          }
+        ]
+      },
+      {
+        "id": "historical-periodicals",
+        "name_hi": "दुर्लभ ऐतिहासिक पत्रिकाएँ",
+        "name_en": "Historical Periodical Archives",
+        "name_ur": "نایاب تاریخی رسائل",
+        "description_hi": "स्वाधीनता पूर्व (1947 से पहले) प्रकाशित दुर्लभ व विलुप्तप्राय ऐतिहासिक पत्रिकाएँ",
+        "description_en": "Digitized rare archives of pre-independence periodicals and antique journals",
+        "subgenres": [
+          {
+            "id": "pre-1947-archives",
+            "name_hi": "स्वाधीनता पूर्व पत्रिकाएँ (1857-1947)",
+            "name_en": "Pre-Independence Periodicals",
+            "name_ur": "قبل از آزادی کے رسائل"
+          },
+          {
+            "id": "bilingual-antique-journals",
+            "name_hi": "द्विभाषी ऐतिहासिक अंक",
+            "name_en": "Bilingual Historical Journals",
+            "name_ur": "دو لسانی تاریخی جرائد"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "vimarsh",
+    "name_hi": "विमर्श एवं सांस्कृतिक संवाद",
+    "name_en": "Discussion & Cultural Discourse",
+    "name_ur": "مباحث و فکری مکالمہ",
+    "subtitle_hi": "दलित विमर्श, स्त्री विमर्श, आदिवासी चेतना, पर्यावरण व वैचारिक साक्षात्कार",
+    "subtitle_en": "Dalit identity, feminist studies, indigenous rights, ecology & dialogues",
+    "subtitle_ur": "دلت شعور، نسائی مباحث، قبائلی فکر اور فکری مکالمے",
+    "icon": "MessagesSquare",
+    "color": "#e11d48",
+    "genres": [
+      {
+        "id": "dalit-discourse",
+        "name_hi": "दलित विमर्श",
+        "name_en": "Dalit Discourse",
+        "name_ur": "دلت فکر و مباحث",
+        "description_hi": "अंबेडकरवादी चिंतन, जाति उन्मूलन, अस्मिता संघर्ष, दलित सौंदर्यशास्त्र व साहित्य",
+        "description_en": "Ambedkarite thought, anti-caste philosophy, Dalit aesthetics, and identity struggles",
+        "subgenres": [
+          {
+            "id": "anti-caste-theory",
+            "name_hi": "जाति-उन्मूलन सिद्धांत",
+            "name_en": "Anti-Caste Philosophy",
+            "name_ur": "ذات پات کا خاتمہ"
+          },
+          {
+            "id": "dalit-aesthetics",
+            "name_hi": "दलित सौंदर्यशास्त्र व चेतना",
+            "name_en": "Dalit Aesthetics & Literature",
+            "name_ur": "دلت جمالیات"
+          }
+        ]
+      },
+      {
+        "id": "gender-feminist",
+        "name_hi": "स्त्री विमर्श व लैंगिक समता",
+        "name_en": "Gender & Feminist Studies",
+        "name_ur": "نسائی فکر و صنفی مساوات",
+        "description_hi": "पितृसत्ता का प्रतिरोध, महिला अधिकार, श्रम, लैंगिक न्याय व स्त्री अस्मिता",
+        "description_en": "Critique of patriarchy, women's liberation, labor, and gender rights",
+        "subgenres": [
+          {
+            "id": "patriarchy-critique",
+            "name_hi": "पितृसत्ता विरोध व समानता",
+            "name_en": "Critique of Patriarchy",
+            "name_ur": "پدر شاہی کی مخالفت"
+          },
+          {
+            "id": "women-labor-rights",
+            "name_hi": "महिला श्रम व सामाजिक अधिकार",
+            "name_en": "Women's Labor & Social Rights",
+            "name_ur": "خواتین کی محنت اور حقوق"
+          }
+        ]
+      },
+      {
+        "id": "adivasi-indigenous",
+        "name_hi": "आदिवासी व मूलनिवासी विमर्श",
+        "name_en": "Adivasi & Indigenous Studies",
+        "name_ur": "قبائلی فکر و خود مختاری",
+        "description_hi": "जल-जंगल-ज़मीन, जनजातीय स्वायत्तता, प्रकृति-सहजीविता व देशज ज्ञान परंपरा",
+        "description_en": "Indigenous rights, Jal-Jangal-Zameen, tribal culture, and vernacular wisdom",
+        "subgenres": [
+          {
+            "id": "land-forest-rights",
+            "name_hi": "जल-जंगल-ज़मीन अधिकार",
+            "name_en": "Land & Forest Rights",
+            "name_ur": "زمین و جنگل کے حقوق"
+          },
+          {
+            "id": "indigenous-cosmology",
+            "name_hi": "प्रकृति-सहजीविता व लोक-संस्कृति",
+            "name_en": "Indigenous Cosmology & Folklore",
+            "name_ur": "فطرت اور لوک دانش"
+          }
+        ]
+      },
+      {
+        "id": "environmental-thought",
+        "name_hi": "पर्यावरण चेतना व पारिस्थितिकी",
+        "name_en": "Environmental & Ecological Thought",
+        "name_ur": "ماحولیاتی شعور",
+        "description_hi": "पारिस्थितिकी संकट, चिपको आंदोलन परंपरा, नदी-पहाड़ विमर्श व जलवायु न्याय",
+        "description_en": "Ecological crisis, Chipko tradition, river & mountain preservation, and climate justice",
+        "subgenres": [
+          {
+            "id": "ecological-justice",
+            "name_hi": "पर्यावरणीय न्याय व जन-आंदोलन",
+            "name_en": "Ecological Justice & Movements",
+            "name_ur": "ماحولیاتی انصاف"
+          },
+          {
+            "id": "river-commons",
+            "name_hi": "नदी, जल व साझे संसाधन",
+            "name_en": "Rivers & Common Commons",
+            "name_ur": "دریا اور آبی وسائل"
+          }
+        ]
+      },
+      {
+        "id": "interviews-dialogues",
+        "name_hi": "दीर्घ साक्षात्कार व संवाद",
+        "name_en": "Interviews & Intellectual Dialogues",
+        "name_ur": "طویل انٹرویوز اور مکالمے",
+        "description_hi": "प्रमुख चिंतकों, साहित्यकारों, रंगकर्मियों व आंदोलनकारियों से विस्तृत संवाद",
+        "description_en": "In-depth conversations, intellectual debates, and recorded oral histories",
+        "subgenres": [
+          {
+            "id": "author-dialogues",
+            "name_hi": "साहित्यकारों से साक्षात्कार",
+            "name_en": "Author & Critic Dialogues",
+            "name_ur": "ادیبوں کے انٹرویوز"
+          },
+          {
+            "id": "activist-debates",
+            "name_hi": "आंदोलनकारियों से संवाद",
+            "name_en": "Activist Conversations",
+            "name_ur": "سماجی کارکنوں سے مکالمے"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cultural-conscience",
+    "name_hi": "सांस्कृतिक चेतना और विचार",
+    "name_en": "Cultural Conscience & Thought",
+    "name_ur": "ثقافتی شعور و فلسفہ",
+    "subtitle_hi": "प्रगतिशील मानवतावाद, सौंदर्यशास्त्र, दार्शनिक इतिहास व नागरिक अधिकार",
+    "subtitle_en": "Progressive humanism, aesthetics, philosophical traditions & civil ethics",
+    "subtitle_ur": "ترقی پسند انسانیت، جمالیات، فکری تاریخ اور شہری اخلاقیات",
+    "icon": "Brain",
+    "color": "#1d4ed8",
+    "genres": [
+      {
+        "id": "progressive-humanism",
+        "name_hi": "प्रगतिशील मानवतावाद",
+        "name_en": "Progressive Humanism",
+        "name_ur": "ترقی پسند انسانیت",
+        "description_hi": "वैज्ञानिक चेतना, तर्कशीलता, अंधविश्वास-विरोध व सार्वभौमिक मानवीय मूल्य",
+        "description_en": "Scientific temper, rationalism, anti-superstition, and universal humanist values",
+        "subgenres": [
+          {
+            "id": "scientific-temper",
+            "name_hi": "वैज्ञानिक दृष्टिकोण व तर्कशीलता",
+            "name_en": "Scientific Temper & Rationalism",
+            "name_ur": "سائنسی شعور"
+          },
+          {
+            "id": "humanist-ethics",
+            "name_hi": "सार्वभौमिक मानवीय नैतिकता",
+            "name_en": "Universal Humanist Ethics",
+            "name_ur": "عالمی انسانی اقدار"
+          }
+        ]
+      },
+      {
+        "id": "secular-democratic-values",
+        "name_hi": "जनतंत्र व धर्मनिरपेक्षता",
+        "name_en": "Democratic Values & Secularism",
+        "name_ur": "جمہوریت و سیکولرازم",
+        "description_hi": "साझा सांस्कृतिक विरासत, गंगा-जमुनी तहज़ीब, संवैधानिक मूल्य व नागरिक स्वतंत्रता",
+        "description_en": "Ganga-Jamuni composite culture, constitutional morality, and civil liberties",
+        "subgenres": [
+          {
+            "id": "composite-culture",
+            "name_hi": "गंगा-जमुनी तहज़ीब व साझा विरासत",
+            "name_en": "Composite Culture & Pluralism",
+            "name_ur": "مشترکہ تہذیب"
+          },
+          {
+            "id": "constitutional-morality",
+            "name_hi": "संवैधानिक जनतंत्र व नागरिक अधिकार",
+            "name_en": "Constitutional Morality",
+            "name_ur": "آئینی اخلاقیات"
+          }
+        ]
+      },
+      {
+        "id": "aesthetics-criticism",
+        "name_hi": "सौंदर्यशास्त्र व कला विमर्श",
+        "name_en": "Aesthetics & Literary Criticism",
+        "name_ur": "جمالیات و تنقید",
+        "description_hi": "रस सिद्धांत, मार्क्सवादी सौंदर्यशास्त्र, कला-रूप व साहित्यिक मूल्यांकन की पद्धतियाँ",
+        "description_en": "Marxist aesthetics, Indian poetics, art forms, and critical evaluation theories",
+        "subgenres": [
+          {
+            "id": "marxist-aesthetics",
+            "name_hi": "मार्क्सवादी व जनवादी सौंदर्यशास्त्र",
+            "name_en": "Marxist & People's Aesthetics",
+            "name_ur": "مارکسی جمالیات"
+          },
+          {
+            "id": "poetics-criticism",
+            "name_hi": "साहित्य सिद्धांत व आलोचना दृष्टि",
+            "name_en": "Poetics & Critical Theory",
+            "name_ur": "تنقیدی نظریات"
+          }
+        ]
+      },
+      {
+        "id": "intellectual-history",
+        "name_hi": "वैचारिक व दार्शनिक इतिहास",
+        "name_en": "Intellectual History",
+        "name_ur": "فکری و فلسفیانہ تاریخ",
+        "description_hi": "लोकायत, चार्वाक, बौद्ध दर्शन, सूफी मत, नव-जागरण व आधुनिक चिंतन का इतिहास",
+        "description_en": "Materialist philosophies, Lokayata, Buddhism, Bhakti-Sufi history, and Enlightenment",
+        "subgenres": [
+          {
+            "id": "materialist-traditions",
+            "name_hi": "लोकायत व भौतिकवादी परंपरा",
+            "name_en": "Lokayata & Materialist Traditions",
+            "name_ur": "مادہ پرستانہ روایات"
+          },
+          {
+            "id": "renaissance-reformers",
+            "name_hi": "भारतीय नवजागरण व समाज सुधारक",
+            "name_en": "Indian Renaissance Thinkers",
+            "name_ur": "اصلاحی تحریکیں"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "drama",
+    "name_hi": "नाटक और रंगमंच",
+    "name_en": "Drama & Theatre",
+    "name_ur": "ڈراما و اسٹیج",
+    "subtitle_hi": "पूर्ण नाटक, एकांकी, नुक्कड़ नाटक, रेडियो नाटक व लोक नाट्य",
+    "subtitle_en": "Full-length plays, one-act chamber plays, street theatre & folk performances",
+    "subtitle_ur": "اسٹیج ڈرامے، یک بابی، اسٹریٹ تھیٹر اور ریڈیو ڈراما",
+    "icon": "Theater",
+    "color": "#c2410c",
+    "genres": [
+      {
+        "id": "full-length-plays",
+        "name_hi": "पूर्ण नाटक व मंचीय आलेख",
+        "name_en": "Full-Length Stage Plays",
+        "name_ur": "طویل اسٹیج ڈرامے",
+        "description_hi": "भारतेंदु, जयशंकर प्रसाद, हबीब तनवीर, मोहन राकेश के मंचीय नाटक",
+        "description_en": "Multi-act stage dramas, historical epics, and modern theatrical scripts",
+        "subgenres": [
+          {
+            "id": "historical-drama",
+            "name_hi": "ऐतिहासिक व महाकाव्यात्मक नाटक",
+            "name_en": "Historical & Epic Drama",
+            "name_ur": "تاریخی ڈرامے"
+          },
+          {
+            "id": "social-theatre",
+            "name_hi": "सामाजिक यथार्थवादी रंगमंच",
+            "name_en": "Social Realist Plays",
+            "name_ur": "سماجی تھیٹر"
+          }
+        ]
+      },
+      {
+        "id": "one-act-plays",
+        "name_hi": "एकांकी नाटक",
+        "name_en": "One-Act Plays (Ekanki)",
+        "name_ur": "یک بابی ڈرامے",
+        "description_hi": "संक्षिप्त, सघन, एकल या लघु पात्रीय कक्ष नाटक (चैंबर प्ले)",
+        "description_en": "Single-act concentrated chamber plays and solo theatrical performances",
+        "subgenres": [
+          {
+            "id": "chamber-plays",
+            "name_hi": "कक्ष नाटक (चैंबर प्ले)",
+            "name_en": "Chamber & Studio Plays",
+            "name_ur": "چیمبر ڈراما"
+          },
+          {
+            "id": "solo-monologues",
+            "name_hi": "एकल अभिनय व स्वगत आलेख",
+            "name_en": "Solo Theatrical Monologues",
+            "name_ur": "ایک اداکاری و خود کلامی"
+          }
+        ]
+      },
+      {
+        "id": "street-theatre",
+        "name_hi": "नुक्कड़ नाटक",
+        "name_en": "Street Theatre (Nukkad Natak)",
+        "name_ur": "اسٹریٹ تھیٹر",
+        "description_hi": "सफ़दर हाशमी (जनम) परंपरा का जन-चेतना, श्रमिक अधिकार व विरोध प्रदर्शन रंगमंच",
+        "description_en": "Safdar Hashmi / JANAM tradition of activist street performance and agitprop",
+        "subgenres": [
+          {
+            "id": "agitprop-theatre",
+            "name_hi": "जन-चेतना व श्रमिक रंगमंच",
+            "name_en": "Agitprop & Worker Plays",
+            "name_ur": "مزدور اور عوامی تھیٹر"
+          },
+          {
+            "id": "democratic-rights-plays",
+            "name_hi": "नागरिक अधिकार नुक्कड़ नाटक",
+            "name_en": "Civil Rights Street Plays",
+            "name_ur": "حقوقِ انسانی اسٹریٹ پلے"
+          }
+        ]
+      },
+      {
+        "id": "radio-plays",
+        "name_hi": "रेडियो व ध्वन्यात्मक नाटक",
+        "name_en": "Radio & Acoustic Plays",
+        "name_ur": "ریڈیو ڈراما",
+        "description_hi": "ध्वनि-प्रभाव, संवाद-प्रधान रेडियो रूपक व श्रव्य नाट्य आलेख",
+        "description_en": "Sound-crafted acoustic dramas, radio features, and broadcast plays",
+        "subgenres": [
+          {
+            "id": "audio-features",
+            "name_hi": "ध्वनि रूपक व रेडियो वार्ता",
+            "name_en": "Audio Features & Dialogues",
+            "name_ur": "صوتی ڈراما"
+          },
+          {
+            "id": "literary-radio-adaptations",
+            "name_hi": "साहित्यिक कृतियों का रेडियो रूपांतरण",
+            "name_en": "Literary Radio Adaptations",
+            "name_ur": "ادبی ریڈیو ڈرامے"
+          }
+        ]
+      },
+      {
+        "id": "folk-theatre",
+        "name_hi": "पारंपरिक लोक नाट्य",
+        "name_en": "Traditional Folk Theatre",
+        "name_ur": "روایتی لوک تھیٹر",
+        "description_hi": "नौटंकी, स्वांग, जात्रा, भवई, माच व तमाशा के पारंपरिक लोक आलेख",
+        "description_en": "Nautanki, Swang, Jatra, Bhavai, and traditional indigenous folk theatrical scripts",
+        "subgenres": [
+          {
+            "id": "nautanki-swang",
+            "name_hi": "नौटंकी व स्वांग आलेख",
+            "name_en": "Nautanki & Swang Scripts",
+            "name_ur": "نوٹنکی اور سوانگ"
+          },
+          {
+            "id": "jatra-bhavai",
+            "name_hi": "जात्रा व भवई लोकनाट्य",
+            "name_en": "Jatra & Bhavai Performances",
+            "name_ur": "جاترا اور بھوائی"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "satire",
+    "name_hi": "व्यंग्य और हास्य",
+    "name_en": "Satire & Humor",
+    "name_ur": "طنز و مزاح",
+    "subtitle_hi": "सामाजिक-राजनीतिक व्यंग्य, प्रहसन, हास्य स्तंभ व प्रतीकात्मक कटाक्ष",
+    "subtitle_en": "Socio-political satire, literary parody, ironical columns & allegories",
+    "subtitle_ur": "سماجی و سیاسی طنز، مزاحیہ مضامین اور خاکے",
+    "icon": "Smile",
+    "color": "#d97706",
+    "genres": [
+      {
+        "id": "socio-political-satire",
+        "name_hi": "सामाजिक-राजनीतिक व्यंग्य",
+        "name_en": "Socio-Political Satire",
+        "name_ur": "سماجی و سیاسی طنز",
+        "description_hi": "हरिशंकर परसाई, शरद जोशी, श्रीलाल शुक्ल की व्यवस्था-विरोधी व्यंग्य रचनाएँ",
+        "description_en": "Harishankar Parsai & Sharad Joshi tradition of sharp anti-establishment satire",
+        "subgenres": [
+          {
+            "id": "bureaucracy-critique",
+            "name_hi": "प्रशासनिक व व्यवस्थागत व्यंग्य",
+            "name_en": "Bureaucracy & System Critique",
+            "name_ur": "سرکاری نظام پر طنز"
+          },
+          {
+            "id": "electoral-political-parody",
+            "name_hi": "चुनावी व राजनीतिक व्यंग्य",
+            "name_en": "Electoral & Political Parody",
+            "name_ur": "سیاسی طنز"
+          }
+        ]
+      },
+      {
+        "id": "literary-parody",
+        "name_hi": "साहित्यिक प्रहसन व व्यंग्य",
+        "name_en": "Literary Parody & Farce",
+        "name_ur": "ادبی پیروڈی و طنز",
+        "description_hi": "साहित्यिक विद्रूपताओं, पाखंड, बौद्धिक दंभ व ढोंग पर तीखा प्रहार",
+        "description_en": "Farce, intellectual mockery, literary parody, and ironic sketches",
+        "subgenres": [
+          {
+            "id": "intellectual-hypocrisy",
+            "name_hi": "बौद्धिक पाखंड पर व्यंग्य",
+            "name_en": "Intellectual Hypocrisy Satire",
+            "name_ur": "دانشورانہ منافقت پر طنز"
+          },
+          {
+            "id": "comic-farce",
+            "name_hi": "हास्य प्रहसन",
+            "name_en": "Comic Farce",
+            "name_ur": "مزاحیہ خاکے"
+          }
+        ]
+      },
+      {
+        "id": "humorous-columns",
+        "name_hi": "हास्य-व्यंग्य स्तंभ व रेखाचित्र",
+        "name_en": "Humorous Columns & Sketches",
+        "name_ur": "مزاحیہ کالم و خاکے",
+        "description_hi": "दैनिक जीवन की विसंगतियों पर लिखे गए हल्के-फुल्के व चुटीले निबंध",
+        "description_en": "Witty daily life columns, eccentric character sketches, and lighthearted humor",
+        "subgenres": [
+          {
+            "id": "daily-life-wit",
+            "name_hi": "दैनिक जीवन की विसंगतियाँ",
+            "name_en": "Daily Life Quirks",
+            "name_ur": "روزمرہ زندگی کا مزاح"
+          },
+          {
+            "id": "eccentric-sketches",
+            "name_hi": "विचित्र पात्र व हास्य चित्र",
+            "name_en": "Eccentric Character Sketches",
+            "name_ur": "مزاحیہ کردار نگاری"
+          }
+        ]
+      },
+      {
+        "id": "allegorical-satire",
+        "name_hi": "प्रतीकात्मक व रूपक व्यंग्य",
+        "name_en": "Allegorical Satire",
+        "name_ur": "علامتی و تمثیلی طنز",
+        "description_hi": "पशु-पक्षियों, प्रतीकों व रूपकों के माध्यम से सत्ता और समाज की विद्रूपताओं का उद्घाटन",
+        "description_en": "Fables of power, animal allegories, and symbolic socio-political satire",
+        "subgenres": [
+          {
+            "id": "fables-of-power",
+            "name_hi": "सत्ता के रूपक व पशु कथाएँ",
+            "name_en": "Fables of Power",
+            "name_ur": "طاقت کی علامتی کہانیاں"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "essays",
+    "name_hi": "निबंध और आलोचना",
+    "name_en": "Essays & Discourse",
+    "name_ur": "مضامین و تنقید",
+    "subtitle_hi": "ललित निबंध, समीक्षात्मक आलेख, समाजशास्त्रीय अध्ययन व दार्शनिक निबंध",
+    "subtitle_en": "Lalit Nibandh, critical analyses, sociological studies & philosophical treatises",
+    "subtitle_ur": "انشائیہ، تنقیدی مضامین، سماجیاتی اور فلسفیانہ مقالے",
+    "icon": "FileText",
+    "color": "#0f766e",
+    "genres": [
+      {
+        "id": "lalit-nibandh",
+        "name_hi": "ललित निबंध",
+        "name_en": "Lalit Nibandh (Reflective Essays)",
+        "name_ur": "انشائیہ",
+        "description_hi": "हज़ारी प्रसाद द्विवेदी, विद्यानिवास मिश्र, कुबेरनाथ राय के आत्मीय, सांस्कृतिक व प्रकृति-परक निबंध",
+        "description_en": "Personal, cultural, evocative, and meditative essays of Hazari Prasad Dwivedi tradition",
+        "subgenres": [
+          {
+            "id": "cultural-reflections",
+            "name_hi": "सांस्कृतिक व आत्मीय निबंध",
+            "name_en": "Cultural & Meditative Essays",
+            "name_ur": "ثقافتی انشائیے"
+          },
+          {
+            "id": "nature-ecology-essays",
+            "name_hi": "प्रकृति व ऋतु विमर्श निबंध",
+            "name_en": "Nature & Seasonal Reflections",
+            "name_ur": "فطرت پر انشائیے"
+          }
+        ]
+      },
+      {
+        "id": "critical-essays",
+        "name_hi": "आलोचनात्मक व समीक्षात्मक निबंध",
+        "name_en": "Critical & Analytical Essays",
+        "name_ur": "تنقیدی و تجزیاتی مقالے",
+        "description_hi": "रामविलास शर्मा, नामवर सिंह, मलयज के साहित्यिक व ऐतिहासिक मूल्यांकन के लेख",
+        "description_en": "Rigorous literary criticism, historiography, and textual evaluations",
+        "subgenres": [
+          {
+            "id": "literary-evaluations",
+            "name_hi": "साहित्यिक मूल्यांकन व समीक्षा",
+            "name_en": "Literary Evaluations",
+            "name_ur": "ادبی تنقید"
+          },
+          {
+            "id": "historiography-essays",
+            "name_hi": "इतिहास-दृष्टि व आलोचना",
+            "name_en": "Historiography & Method",
+            "name_ur": "تاریخی تجزیہ"
+          }
+        ]
+      },
+      {
+        "id": "sociological-essays",
+        "name_hi": "समाजशास्त्रीय व ऐतिहासिक निबंध",
+        "name_en": "Sociological & Historical Essays",
+        "name_ur": "سماجیاتی و تاریخی مضامین",
+        "description_hi": "भारतीय समाज, किसान-मजदूर इतिहास, जाति संरचना व धर्मनिरपेक्षता पर शोधपरक निबंध",
+        "description_en": "Scholarly research essays on Indian society, caste structures, and peasant histories",
+        "subgenres": [
+          {
+            "id": "social-structures",
+            "name_hi": "सामाजिक संरचना व बदलाव",
+            "name_en": "Social Structures & Change",
+            "name_ur": "سماجی ڈھانچہ"
+          },
+          {
+            "id": "agrarian-history-essays",
+            "name_hi": "कृषक समाज का इतिहास",
+            "name_en": "Agrarian History & Sociology",
+            "name_ur": "کسان تاریخ"
+          }
+        ]
+      },
+      {
+        "id": "philosophical-treatises",
+        "name_hi": "दार्शनिक व वैचारिक निबंध",
+        "name_en": "Philosophical Treatises",
+        "name_ur": "فلسفیانہ مقالات",
+        "description_hi": "मानव अस्तित्व, चेतना, नीतिशास्त्र, सौंदर्य और सत्य की खोज पर गंभीर दार्शनिक आलेख",
+        "description_en": "In-depth explorations of human existence, epistemology, and ethical systems",
+        "subgenres": [
+          {
+            "id": "epistemology-ethics",
+            "name_hi": "ज्ञानमीमांसा व नीतिशास्त्र",
+            "name_en": "Epistemology & Ethics",
+            "name_ur": "فلسفہِ اخلاق"
+          },
+          {
+            "id": "existential-inquiries",
+            "name_hi": "अस्तित्व व मानवीय नियति",
+            "name_en": "Existential Inquiries",
+            "name_ur": "انسانی وجود کے سوالات"
+          }
+        ]
+      }
+    ]
+  }
+]
