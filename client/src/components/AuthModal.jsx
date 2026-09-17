@@ -34,18 +34,18 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
     try {
       if (isSignUp) {
         await signUp(email.trim(), password, fullName.trim());
-        setSuccessMsg('Account created successfully! You can now download.');
+        setSuccessMsg('Account created successfully!');
         setTimeout(() => {
           if (onSuccess) onSuccess();
           onClose();
-        }, 1000);
+        }, 300);
       } else {
         await signIn(email.trim(), password);
         setSuccessMsg('Signed in successfully!');
         setTimeout(() => {
           if (onSuccess) onSuccess();
           onClose();
-        }, 800);
+        }, 250);
       }
     } catch (err) {
       setErrorMsg(err.message || 'Authentication error. Please try again.');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Download, CheckCircle2, X } from 'lucide-react';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import CategoryGenresPage from './pages/CategoryGenresPage';
@@ -23,6 +24,8 @@ function MainApp() {
   const { user } = useAuth();
   const t = translations[lang] || translations.hi;
   const isRtl = lang === 'ur';
+
+  const [downloadToastBook, setDownloadToastBook] = useState(null);
 
   useEffect(() => {
     localStorage.setItem('chetna_lang', lang);
@@ -82,37 +85,31 @@ function MainApp() {
     fetchBooksData();
   }, [searchQuery, sortBy]);
 
-  const executeDownload = async (book) => {
+  const executeDownload = (book) => {
     if (!book || !book.id) return;
     try {
       incrementDownloads(book.id).catch(console.error);
       const downloadUrl = book.file_url;
       if (downloadUrl) {
-        try {
-          const res = await fetch(downloadUrl);
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const blob = await res.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = blobUrl;
-          const rawName = book.title_en || book.title_hi || 'chetna_ebook';
-          const safeName = rawName.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
-          a.download = safeName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
-        } catch (fetchErr) {
-          // Fallback if CORS or network issue
-          const a = document.createElement('a');
-          a.href = downloadUrl;
-          a.target = '_blank';
-          a.download = (book.title_en || book.title_hi || 'chetna_ebook') + '.pdf';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        }
+        const rawName = book.title_en || book.title_hi || 'chetna_ebook';
+        const safeName = rawName.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
+
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.setAttribute('download', safeName);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          try {
+            document.body.removeChild(a);
+          } catch (e) {}
+        }, 800);
       }
+
+      setDownloadToastBook(book);
+
       setBooks((prev) =>
         prev.map((b) => (b.id === book.id ? { ...b, downloads_count: (b.downloads_count || 0) + 1 } : b))
       );
@@ -129,6 +126,8 @@ function MainApp() {
         localStorage.setItem('chetna_pending_download', JSON.stringify(book));
         if (selectedBook) {
           localStorage.setItem('chetna_pending_selected_book', JSON.stringify(selectedBook));
+        } else {
+          localStorage.setItem('chetna_pending_selected_book', JSON.stringify(book));
         }
         if (readingBook) {
           localStorage.setItem('chetna_pending_reading_book', JSON.stringify(readingBook));
@@ -190,6 +189,16 @@ function MainApp() {
       }
     }
   }, [user]);
+
+  // Auto-dismiss download toast after 10 seconds
+  useEffect(() => {
+    if (downloadToastBook) {
+      const timer = setTimeout(() => {
+        setDownloadToastBook(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [downloadToastBook]);
 
   const handleOpenReader = (book) => {
     if (book && book.id) {
@@ -369,6 +378,39 @@ function MainApp() {
           onSuccess={handleAuthSuccess}
           bookTitle={pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
         />
+
+        {/* Download Feedback Toast */}
+        {downloadToastBook && (
+          <div className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md bg-stone-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-stone-700 flex items-center gap-3.5 animate-in slide-in-from-bottom-5 duration-300">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+              <Download className="w-5 h-5 animate-bounce" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold truncate text-stone-100">
+                {downloadToastBook[`title_${lang}`] || downloadToastBook.title_hi || downloadToastBook.title_en}
+              </p>
+              <p className="text-[11px] text-stone-300 flex items-center gap-2 mt-0.5">
+                <span>डाउनलोड शुरू...</span>
+                <span>•</span>
+                <a
+                  href={downloadToastBook.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={(downloadToastBook.title_en || downloadToastBook.title_hi || 'chetna_ebook') + '.pdf'}
+                  className="text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
+                >
+                  पुनः डाउनलोड करें
+                </a>
+              </p>
+            </div>
+            <button
+              onClick={() => setDownloadToastBook(null)}
+              className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
     </BrowserRouter>
   );
