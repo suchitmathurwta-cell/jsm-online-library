@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Download, CheckCircle2, X } from 'lucide-react';
+import { Download, CheckCircle2, Loader2, X } from 'lucide-react';
 import Header from './components/Header';
 import HomePage from './pages/HomePage';
 import CategoryGenresPage from './pages/CategoryGenresPage';
@@ -25,7 +25,7 @@ function MainApp() {
   const t = translations[lang] || translations.hi;
   const isRtl = lang === 'ur';
 
-  const [downloadToastBook, setDownloadToastBook] = useState(null);
+  const [downloadStatus, setDownloadStatus] = useState(null); // { book, state: 'downloading' | 'completed' | 'error' }
 
   useEffect(() => {
     localStorage.setItem('chetna_lang', lang);
@@ -85,36 +85,58 @@ function MainApp() {
     fetchBooksData();
   }, [searchQuery, sortBy]);
 
-  const executeDownload = (book) => {
-    if (!book || !book.id) return;
+  const executeDownload = async (book) => {
+    if (!book || !book.id || !book.file_url) return;
     try {
+      setDownloadStatus({ book, state: 'downloading' });
       incrementDownloads(book.id).catch(console.error);
-      const downloadUrl = book.file_url;
-      if (downloadUrl) {
+
+      // Fetch the file as a Blob to ensure same-origin native download in browser
+      const res = await fetch(book.file_url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+
+      const blobUrl = window.URL.createObjectURL(blob);
+      const rawName = book.title_en || book.title_hi || 'chetna_ebook';
+      const safeName = rawName.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
+
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = blobUrl;
+      a.download = safeName;
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        try {
+          document.body.removeChild(a);
+          window.URL.revokeObjectURL(blobUrl);
+        } catch (e) {}
+      }, 3000);
+
+      setDownloadStatus({ book, state: 'completed' });
+      setBooks((prev) =>
+        prev.map((b) => (b.id === book.id ? { ...b, downloads_count: (b.downloads_count || 0) + 1 } : b))
+      );
+    } catch (err) {
+      console.warn('Blob fetch download failed, fallback to direct anchor:', err);
+      try {
         const rawName = book.title_en || book.title_hi || 'chetna_ebook';
         const safeName = rawName.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
-
         const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.setAttribute('download', safeName);
-        a.setAttribute('target', '_blank');
-        a.setAttribute('rel', 'noopener noreferrer');
+        a.style.display = 'none';
+        a.href = book.file_url;
+        a.download = safeName;
+        a.target = '_blank';
         document.body.appendChild(a);
         a.click();
         setTimeout(() => {
           try {
             document.body.removeChild(a);
           } catch (e) {}
-        }, 800);
-      }
-
-      setDownloadToastBook(book);
-
-      setBooks((prev) =>
-        prev.map((b) => (b.id === book.id ? { ...b, downloads_count: (b.downloads_count || 0) + 1 } : b))
-      );
-    } catch (e) {
-      console.error('Download error:', e);
+        }, 1000);
+      } catch (e) {}
+      setDownloadStatus({ book, state: 'completed' });
     }
   };
 
@@ -190,15 +212,15 @@ function MainApp() {
     }
   }, [user]);
 
-  // Auto-dismiss download toast after 10 seconds
+  // Auto-dismiss download status toast after 5 seconds
   useEffect(() => {
-    if (downloadToastBook) {
+    if (downloadStatus && downloadStatus.state === 'completed') {
       const timer = setTimeout(() => {
-        setDownloadToastBook(null);
-      }, 10000);
+        setDownloadStatus(null);
+      }, 5000);
       return () => clearTimeout(timer);
     }
-  }, [downloadToastBook]);
+  }, [downloadStatus]);
 
   const handleOpenReader = (book) => {
     if (book && book.id) {
@@ -380,31 +402,37 @@ function MainApp() {
         />
 
         {/* Download Feedback Toast */}
-        {downloadToastBook && (
+        {downloadStatus && (
           <div className="fixed bottom-5 right-5 z-50 max-w-sm sm:max-w-md bg-stone-900/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-stone-700 flex items-center gap-3.5 animate-in slide-in-from-bottom-5 duration-300">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
-              <Download className="w-5 h-5 animate-bounce" />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+              downloadStatus.state === 'downloading'
+                ? 'bg-blue-500/20 border border-blue-500/30 text-blue-400'
+                : 'bg-emerald-500/20 border border-emerald-500/30 text-emerald-400'
+            }`}>
+              {downloadStatus.state === 'downloading' ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold truncate text-stone-100">
-                {downloadToastBook[`title_${lang}`] || downloadToastBook.title_hi || downloadToastBook.title_en}
+                {downloadStatus.book[`title_${lang}`] || downloadStatus.book.title_hi || downloadStatus.book.title_en}
               </p>
-              <p className="text-[11px] text-stone-300 flex items-center gap-2 mt-0.5">
-                <span>डाउनलोड शुरू...</span>
-                <span>•</span>
-                <a
-                  href={downloadToastBook.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  download={(downloadToastBook.title_en || downloadToastBook.title_hi || 'chetna_ebook') + '.pdf'}
-                  className="text-amber-400 hover:text-amber-300 underline font-semibold cursor-pointer"
-                >
-                  पुनः डाउनलोड करें
-                </a>
+              <p className="text-[11px] text-stone-300 mt-0.5">
+                {downloadStatus.state === 'downloading' ? (
+                  <span className="text-blue-300">
+                    PDF फ़ाइल डाउनलोड हो रही है...
+                  </span>
+                ) : (
+                  <span className="text-emerald-400 font-medium">
+                    ✓ PDF आपके डिवाइस में सफलतापूर्वक डाउनलोड हो गई!
+                  </span>
+                )}
               </p>
             </div>
             <button
-              onClick={() => setDownloadToastBook(null)}
+              onClick={() => setDownloadStatus(null)}
               className="p-1.5 text-stone-400 hover:text-white rounded-lg hover:bg-white/10 transition cursor-pointer shrink-0"
             >
               <X className="w-4 h-4" />
