@@ -18,7 +18,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess, initialMode = 's
     setErrorMsg('');
     setIsLoading(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(window.location.href);
     } catch (err) {
       setErrorMsg(err.message || 'Google Sign In error. Please try again.');
       setIsLoading(false);

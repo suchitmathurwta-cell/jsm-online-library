@@ -85,16 +85,33 @@ function MainApp() {
   const executeDownload = async (book) => {
     if (!book || !book.id) return;
     try {
-      await incrementDownloads(book.id);
-      let downloadUrl = book.file_url;
+      incrementDownloads(book.id).catch(console.error);
+      const downloadUrl = book.file_url;
       if (downloadUrl) {
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.target = '_blank';
-        a.download = (book.title_en || book.title_hi || 'chetna_ebook') + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        try {
+          const res = await fetch(downloadUrl);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const blob = await res.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = blobUrl;
+          const rawName = book.title_en || book.title_hi || 'chetna_ebook';
+          const safeName = rawName.replace(/[/\\?%*:|"<>]/g, '_') + '.pdf';
+          a.download = safeName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 10000);
+        } catch (fetchErr) {
+          // Fallback if CORS or network issue
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.target = '_blank';
+          a.download = (book.title_en || book.title_hi || 'chetna_ebook') + '.pdf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
       }
       setBooks((prev) =>
         prev.map((b) => (b.id === book.id ? { ...b, downloads_count: (b.downloads_count || 0) + 1 } : b))
@@ -107,6 +124,17 @@ function MainApp() {
   const handleDownloadBook = (book) => {
     if (!book) return;
     if (!user) {
+      // Save pending download and current UI state in localStorage for OAuth redirects & page reloads
+      try {
+        localStorage.setItem('chetna_pending_download', JSON.stringify(book));
+        if (selectedBook) {
+          localStorage.setItem('chetna_pending_selected_book', JSON.stringify(selectedBook));
+        }
+        if (readingBook) {
+          localStorage.setItem('chetna_pending_reading_book', JSON.stringify(readingBook));
+        }
+      } catch (e) {}
+
       setPendingDownloadBook(book);
       setIsAuthModalOpen(true);
       return;
@@ -119,7 +147,49 @@ function MainApp() {
       executeDownload(pendingDownloadBook);
       setPendingDownloadBook(null);
     }
+    try {
+      localStorage.removeItem('chetna_pending_download');
+      localStorage.removeItem('chetna_pending_selected_book');
+      localStorage.removeItem('chetna_pending_reading_book');
+    } catch (e) {}
   };
+
+  // Auto-trigger pending download when user signs in (including Google OAuth redirect)
+  useEffect(() => {
+    if (user) {
+      const storedPending = localStorage.getItem('chetna_pending_download');
+      if (storedPending) {
+        try {
+          const book = JSON.parse(storedPending);
+          if (book && book.id) {
+            executeDownload(book);
+          }
+        } catch (e) {
+          console.error('Error executing stored pending download:', e);
+        } finally {
+          localStorage.removeItem('chetna_pending_download');
+        }
+      }
+
+      const storedSelected = localStorage.getItem('chetna_pending_selected_book');
+      if (storedSelected) {
+        try {
+          const b = JSON.parse(storedSelected);
+          if (b) setSelectedBook(b);
+        } catch (e) {}
+        localStorage.removeItem('chetna_pending_selected_book');
+      }
+
+      const storedReading = localStorage.getItem('chetna_pending_reading_book');
+      if (storedReading) {
+        try {
+          const b = JSON.parse(storedReading);
+          if (b) setReadingBook(b);
+        } catch (e) {}
+        localStorage.removeItem('chetna_pending_reading_book');
+      }
+    }
+  }, [user]);
 
   const handleOpenReader = (book) => {
     if (book && book.id) {
@@ -290,6 +360,11 @@ function MainApp() {
           onClose={() => {
             setIsAuthModalOpen(false);
             setPendingDownloadBook(null);
+            try {
+              localStorage.removeItem('chetna_pending_download');
+              localStorage.removeItem('chetna_pending_selected_book');
+              localStorage.removeItem('chetna_pending_reading_book');
+            } catch (e) {}
           }}
           onSuccess={handleAuthSuccess}
           bookTitle={pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
