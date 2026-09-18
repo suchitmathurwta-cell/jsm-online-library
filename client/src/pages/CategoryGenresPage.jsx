@@ -134,7 +134,7 @@ export default function CategoryGenresPage({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
       {/* Layer 2 Breadcrumb */}
-      <Breadcrumbs items={[{ label: categoryTitle }]} />
+      <Breadcrumbs lang={lang} t={t} items={[{ label: categoryTitle }]} />
 
       {/* Layer 2 Header Banner */}
       <div className="mt-3 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-stone-900 via-stone-800 to-indigo-950 text-white shadow-xl relative overflow-hidden">

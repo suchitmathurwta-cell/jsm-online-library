@@ -92,7 +92,7 @@ export default function BookGrid({
                 onClick={onClearSearch}
                 className="px-3.5 py-1.5 text-xs bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-xl font-medium transition cursor-pointer shadow-2xs"
               >
-                ✕ {lang === 'hi' ? 'खोज हटाएं' : (lang === 'ur' ? 'مسح تلاش' : 'Clear search')}
+                ✕ {t.sections.clearSearch}
               </button>
             )}
 
@@ -140,9 +140,7 @@ export default function BookGrid({
               {t.sections.noBooksFound}
             </h3>
             <p className="text-xs text-stone-500 max-w-sm mx-auto mb-5 leading-relaxed">
-              {lang === 'hi'
-                ? 'इस उप-विधा में वर्तमान में कोई पुस्तक उपलब्ध नहीं है। आप अपनी ई-पुस्तक अपलोड कर सकते हैं।'
-                : 'No treatises found matching this sub-genre or criteria. You can upload relevant e-books to this collection.'}
+              {t.sections.noBooksDesc}
             </p>
             <div className="flex items-center justify-center gap-3">
               {selectedSubGenre && selectedSubGenre !== 'all' && (

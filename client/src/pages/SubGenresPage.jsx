@@ -141,6 +141,8 @@ export default function SubGenresPage({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
       {/* Layer 3 Breadcrumbs: Home > Category > Genre */}
       <Breadcrumbs
+        lang={lang}
+        t={t}
         items={[
           { label: categoryTitle, url: `/category/${categorySlug}` },
           { label: genreTitle }

@@ -8,11 +8,13 @@ export default function SearchableCombobox({
   placeholder = "Select or search...",
   searchPlaceholder = "Type to search...",
   type = "genre", // 'genre' | 'subgenre'
+  lang,
   onChange,
   onCreate,
   onDelete,
   disabled = false
 }) {
+  const currentLang = lang || localStorage.getItem('chetna_lang') || 'hi';
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -48,7 +50,7 @@ export default function SearchableCombobox({
     }
     return {
       id: opt.id || opt.value || opt.label,
-      label: opt.label || opt.name_hi || opt.name_en || opt.name || opt.id,
+      label: opt.label || opt['name_' + currentLang] || opt.name_hi || opt.name_en || opt.name || opt.id,
       name_hi: opt.name_hi || '',
       name_en: opt.name_en || '',
       name_ur: opt.name_ur || '',
@@ -98,10 +100,37 @@ export default function SearchableCombobox({
   const handleDeleteItem = (e, opt) => {
     e.stopPropagation();
     if (!onDelete) return;
-    if (window.confirm(`Are you sure you want to delete "${opt.label}"?`)) {
+    const confirmMsg = currentLang === 'hi'
+      ? `क्या आप "${opt.label}" को हटाना चाहते हैं?`
+      : (currentLang === 'ur'
+        ? `کیا آپ "${opt.label}" کو حذف کرنا چاہتے ہیں؟`
+        : `Are you sure you want to delete "${opt.label}"?`);
+    if (window.confirm(confirmMsg)) {
       onDelete(opt.id, opt);
     }
   };
+
+  const notFoundTitle = type === "genre"
+    ? (currentLang === 'hi' ? 'विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'صنف نہیں ملی' : 'Genre not found'))
+    : (currentLang === 'hi' ? 'उप-विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'ذیلی صنف نہیں ملی' : 'Sub-Genre not found'));
+
+  const notFoundDesc = currentLang === 'hi'
+    ? `"${searchQuery}" नाम से कोई विकल्प नहीं मिला।`
+    : (currentLang === 'ur'
+      ? `"${searchQuery}" کے نام سے کوئی آپشن نہیں ملا۔`
+      : `No existing ${type === 'genre' ? 'genre' : 'sub-genre'} matches "${searchQuery}".`);
+
+  const createBtnText = currentLang === 'hi'
+    ? `+ "${searchQuery.trim()}" नया जोड़ें`
+    : (currentLang === 'ur'
+      ? `+ "${searchQuery.trim()}" نیا بنائیں`
+      : `+ Create "${searchQuery.trim()}"`);
+
+  const creatingText = currentLang === 'hi'
+    ? 'जोड़ा जा रहा है...'
+    : (currentLang === 'ur'
+      ? 'بنایا جا رہا ہے...'
+      : 'Creating...');
 
   return (
     <div ref={containerRef} className="relative w-full">
@@ -188,10 +217,10 @@ export default function SearchableCombobox({
               <div className="p-4 text-center space-y-2.5">
                 <div className="flex items-center justify-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 py-1.5 px-2.5 rounded-lg border border-amber-200">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{type === "genre" ? "Genre not found" : "Sub-Genre not found"}</span>
+                  <span>{notFoundTitle}</span>
                 </div>
                 <p className="text-xs text-stone-500">
-                  No existing {type === "genre" ? "genre" : "sub-genre"} matches "{searchQuery}".
+                  {notFoundDesc}
                 </p>
                 <button
                   type="button"
@@ -202,12 +231,12 @@ export default function SearchableCombobox({
                   {isCreating ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Creating...</span>
+                      <span>{creatingText}</span>
                     </>
                   ) : (
                     <>
                       <PlusCircle className="w-4 h-4" />
-                      <span>+ Create "{searchQuery.trim()}"</span>
+                      <span>{createBtnText}</span>
                     </>
                   )}
                 </button>
@@ -229,7 +258,7 @@ export default function SearchableCombobox({
                 ) : (
                   <PlusCircle className="w-3.5 h-3.5" />
                 )}
-                <span>+ Create "{searchQuery.trim()}"</span>
+                <span>{createBtnText}</span>
               </button>
             </div>
           )}

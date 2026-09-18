@@ -1,11 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
+import { translations } from '../locales/translations';
 
-export default function Breadcrumbs({ items = [], lang = 'hi', t }) {
+export default function Breadcrumbs({ items = [], lang, t }) {
   if (!items || items.length === 0) return null;
 
-  const homeLabel = t?.breadcrumbs?.home || (lang === 'hi' ? 'मुख्य पृष्ठ' : (lang === 'ur' ? 'مرکزی صفحہ' : 'Home'));
+  const currentLang = lang || localStorage.getItem('chetna_lang') || 'hi';
+  const tr = t || translations[currentLang] || translations.hi;
+  const homeLabel = tr.breadcrumbs?.home || (currentLang === 'hi' ? 'मुख्य पृष्ठ' : (currentLang === 'ur' ? 'مرکزی صفحہ' : 'Home'));
 
   return (
     <nav className="flex items-center gap-1.5 text-xs text-stone-500 py-3 flex-wrap animate-fadeIn" aria-label="Breadcrumb">
