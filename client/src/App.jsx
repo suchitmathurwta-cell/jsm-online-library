@@ -7,6 +7,7 @@ import CategoryGenresPage from './pages/CategoryGenresPage';
 import SubGenresPage from './pages/SubGenresPage';
 import BooksListingPage from './pages/BooksListingPage';
 import AdminLoginPage from './pages/AdminLoginPage';
+import ReaderPage from './pages/ReaderPage';
 import BookDetailModal from './components/BookDetailModal';
 import HikmahPdfReader from './components/HikmahPdfReader';
 import UploadBookModal from './components/UploadBookModal';
@@ -248,11 +249,30 @@ function MainApp() {
   }, [downloadStatus]);
 
   const handleOpenReader = (book) => {
-    if (book && book.id) {
-      incrementViews(book.id).catch(console.error);
+    if (!book) return;
+    const bookId = book.id;
+    if (bookId) {
+      incrementViews(bookId).catch(console.error);
+      window.open(`/reader/${bookId}`, '_blank');
     }
-    setReadingBook(book);
   };
+
+  const isReaderRoute = location.pathname.startsWith('/reader/');
+
+  if (isReaderRoute) {
+    return (
+      <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#18181b] text-white">
+        <Routes>
+          <Route
+            path="/reader/:bookId"
+            element={
+              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+            }
+          />
+        </Routes>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -355,6 +375,13 @@ function MainApp() {
             path="/admin/login"
             element={
               <AdminLoginPage lang={lang} t={t} />
+            }
+          />
+
+          <Route
+            path="/reader/:bookId"
+            element={
+              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
             }
           />
         </Routes>

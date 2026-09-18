@@ -237,3 +237,32 @@ export async function deleteBookRecord(bookId) {
   if (error) throw error;
   return data;
 }
+
+// Fetch single book by ID
+export async function getBookById(id) {
+  if (!id) return null;
+  
+  // 1. Direct query by ID in Supabase
+  try {
+    const { data, error } = await supabase.from('books').select('*').eq('id', id).maybeSingle();
+    if (data) return data;
+  } catch (e) {
+    console.warn('Supabase getBookById notice:', e);
+  }
+
+  // 2. Query all books as fallback
+  try {
+    const all = await getBooks({ limit: 300 });
+    const matched = all.find(b => String(b.id) === String(id) || b.slug === id);
+    if (matched) return matched;
+  } catch (e) {}
+
+  // 3. Query local backend API fallback
+  try {
+    const res = await fetch(`/api/books/${id}`);
+    const json = await res.json();
+    if (json.success && json.book) return json.book;
+  } catch (e) {}
+
+  return null;
+}
