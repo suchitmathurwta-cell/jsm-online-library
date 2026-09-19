@@ -363,16 +363,16 @@ export default function UploadBookModal({
         let coverPublicUrl = '';
 
         try {
-          const pdfRes = await uploadBookFile(item.file, 'books', 'pdf');
-          pdfPublicUrl = pdfRes.publicUrl;
+          const pdfRes = await uploadBookFile(item.file, 'books');
+          pdfPublicUrl = typeof pdfRes === 'string' ? pdfRes : (pdfRes?.publicUrl || '');
         } catch (storageErr) {
           console.warn('Storage upload fallback:', storageErr);
         }
 
         if (item.coverFile) {
           try {
-            const coverRes = await uploadBookFile(item.coverFile, 'covers', 'image');
-            coverPublicUrl = coverRes.publicUrl;
+            const coverRes = await uploadBookFile(item.coverFile, 'covers');
+            coverPublicUrl = typeof coverRes === 'string' ? coverRes : (coverRes?.publicUrl || '');
           } catch (covErr) {
             console.warn('Cover upload notice:', covErr);
           }
@@ -381,10 +381,46 @@ export default function UploadBookModal({
             const blobRes = await fetch(item.coverPreview);
             const blob = await blobRes.blob();
             const coverFileFromBlob = new File([blob], `cover_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const coverRes = await uploadBookFile(coverFileFromBlob, 'covers', 'image');
-            coverPublicUrl = coverRes.publicUrl;
+            const coverRes = await uploadBookFile(coverFileFromBlob, 'covers');
+            coverPublicUrl = typeof coverRes === 'string' ? coverRes : (coverRes?.publicUrl || '');
           } catch (bErr) {
             console.warn('Blob thumbnail upload notice:', bErr);
+          }
+        }
+
+        if (!pdfPublicUrl) {
+          try {
+            const formData = new FormData();
+            formData.append('pdf', item.file);
+            if (item.coverFile) formData.append('cover', item.coverFile);
+            if (item.coverPreview && !item.coverFile) formData.append('coverBase64', item.coverPreview);
+            formData.append('title_hi', item.title_hi || item.title_en || item.fileName);
+            formData.append('title_en', item.title_en || item.title_hi || item.fileName);
+            formData.append('title_ur', item.title_ur || item.title_hi || item.title_en);
+            formData.append('author_hi', item.author_hi || item.author_en || '');
+            formData.append('author_en', item.author_en || item.author_hi || '');
+            formData.append('author_ur', item.author_ur || item.author_hi || '');
+            formData.append('category', item.category || 'novel');
+            formData.append('genre', item.genre || 'general');
+            formData.append('subgenre', item.subgenre || 'general');
+            formData.append('era', getLocalizedEra(item.era, 'en'));
+            formData.append('year', item.year || new Date().getFullYear().toString());
+            formData.append('publisher', item.publisher || 'Chetna Digital Library');
+            formData.append('pages', parseInt(item.pages) || 50);
+            formData.append('description', item.description || '');
+            formData.append('is_featured', Boolean(item.is_featured));
+
+            const apiRes = await fetch('/api/books/upload', {
+              method: 'POST',
+              body: formData
+            });
+            const apiData = await apiRes.json();
+            if (apiData.success && apiData.book) {
+              pdfPublicUrl = apiData.book.file_url;
+              if (!coverPublicUrl) coverPublicUrl = apiData.book.cover_url;
+            }
+          } catch (fallbackErr) {
+            console.error('Local upload fallback error:', fallbackErr);
           }
         }
 

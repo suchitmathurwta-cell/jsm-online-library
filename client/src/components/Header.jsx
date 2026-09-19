@@ -203,30 +203,16 @@ export default function Header({
               </button>
             )}
 
-            {/* Admin Upload vs Visitor Suggest CTA */}
-            <AdminOnly>
-              <button
-                onClick={onOpenUpload}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">{t.nav.uploadBook}</span>
-                <span className="sm:hidden">+</span>
-              </button>
-            </AdminOnly>
-
-            <VisitorOnly>
-              <button
-                onClick={onOpenSuggest}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300 text-xs font-semibold shadow-2xs hover:shadow-xs transition duration-150 cursor-pointer"
-              >
-                <BookMarked className="w-3.5 h-3.5 text-amber-700" />
-                <span className="hidden sm:inline">
-                  {t.nav.suggestBook}
-                </span>
-                <span className="sm:hidden">{t.nav.suggestBook}</span>
-              </button>
-            </VisitorOnly>
+            {/* Direct Primary Upload PDF Button */}
+            <button
+              onClick={onOpenUpload}
+              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
+              title={t.nav.uploadBook}
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.nav.uploadBook}</span>
+              <span className="sm:hidden">+</span>
+            </button>
 
             {/* Language Selector Dropdown (HIN, ENG, URD) */}
             <div className="relative">
@@ -314,22 +300,19 @@ export default function Header({
             </div>
             
             <div className="pt-2.5 border-t border-stone-100 flex gap-2">
-              <AdminOnly>
-                <button
-                  onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                  className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer"
-                >
-                  ⚙️ {t.nav.manageLibrary}
-                </button>
-              </AdminOnly>
-              <VisitorOnly>
-                <button
-                  onClick={() => { onOpenSuggest(); setMobileMenuOpen(false); }}
-                  className="flex-1 py-2 text-xs text-center bg-amber-50 border border-amber-200 rounded-lg font-semibold text-amber-900 hover:bg-amber-100 transition cursor-pointer"
-                >
-                  💡 {t.nav.suggestBook}
-                </button>
-              </VisitorOnly>
+              <button
+                onClick={() => { onOpenUpload(); setMobileMenuOpen(false); }}
+                className="flex-1 py-2 text-xs text-center bg-[#1d4ed8] text-white rounded-lg font-bold hover:bg-[#1e40af] transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>{t.nav.uploadBook}</span>
+              </button>
+              <button
+                onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
+                className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>⚙️ {t.nav.manageLibrary}</span>
+              </button>
             </div>
           </div>
         )}

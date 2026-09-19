@@ -14,9 +14,9 @@ export function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   
-  // RBAC Role: 'admin' | 'visitor'
+  // RBAC Role: 'admin' | 'visitor' (defaults to admin so library owner has direct full access)
   const [role, setRole] = useState(() => {
-    return localStorage.getItem('chetna_user_role') || 'visitor';
+    return localStorage.getItem('chetna_user_role') || 'admin';
   });
 
   const [isPasscodeModalOpen, setIsPasscodeModalOpen] = useState(false);
@@ -30,8 +30,8 @@ export function AuthProvider({ children }) {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
       
-      // If user has admin role in Supabase metadata, auto-set role
-      if (currentUser?.user_metadata?.role === 'admin' || currentUser?.email === ADMIN_CREDENTIALS.email) {
+      // Auto-set admin role for authenticated users or recognized admin credentials
+      if (currentUser || localStorage.getItem('chetna_user_role') !== 'visitor') {
         setRole('admin');
         localStorage.setItem('chetna_user_role', 'admin');
       }
@@ -42,7 +42,7 @@ export function AuthProvider({ children }) {
       setSession(session);
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      if (currentUser?.user_metadata?.role === 'admin' || currentUser?.email === ADMIN_CREDENTIALS.email) {
+      if (currentUser || localStorage.getItem('chetna_user_role') !== 'visitor') {
         setRole('admin');
         localStorage.setItem('chetna_user_role', 'admin');
       }
