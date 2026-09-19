@@ -250,7 +250,7 @@ function MainApp() {
 
   const handleOpenReader = (book) => {
     if (!book) return;
-    const bookId = book.id;
+    const bookId = book.id || book._id || book.slug;
     if (bookId) {
       incrementViews(bookId).catch(console.error);
       window.open(`/reader/${bookId}`, '_blank');

@@ -253,7 +253,7 @@ export async function getBookById(id) {
   // 2. Query all books as fallback
   try {
     const all = await getBooks({ limit: 300 });
-    const matched = all.find(b => String(b.id) === String(id) || b.slug === id);
+    const matched = all.find(b => String(b.id) === String(id) || b.slug === id || String(b._id) === String(id));
     if (matched) return matched;
   } catch (e) {}
 
