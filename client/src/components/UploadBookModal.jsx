@@ -87,23 +87,36 @@ export default function UploadBookModal({
   if (!isOpen) return null;
 
   const processSinglePdf = async (file) => {
-    const baseName = file.name.replace(/\.pdf$/i, '');
-    let cleanName = baseName.replace(/[-_]+/g, ' ').trim();
+    let cleanName = file.name.replace(/\.pdf$/i, '');
+    
+    // 1. Remove trailing scan/copy indicators like (1), (2), -cs, _cs, -scan
+    cleanName = cleanName.replace(/\s*\(\d+\)$/g, '');
+    cleanName = cleanName.replace(/[-_]cs$/i, '');
+    cleanName = cleanName.replace(/[-_]scan$/i, '');
 
-    // Check if filename contains "by" or " - " for author separation
+    // 2. Extract Year if present at the end (e.g. -1976 or _1976 or 1976)
+    let extractedYear = new Date().getFullYear().toString();
+    const yearMatch = cleanName.match(/[-_\s]+(1[89]\d\d|20\d\d)$/);
+    if (yearMatch) {
+      extractedYear = yearMatch[1];
+      cleanName = cleanName.replace(/[-_\s]+(1[89]\d\d|20\d\d)$/, '');
+    }
+
     let extractedTitle = cleanName;
     let extractedAuthor = '';
 
     if (/\bby\b/i.test(cleanName)) {
       const parts = cleanName.split(/\bby\b/i);
-      extractedTitle = parts[0].trim();
-      extractedAuthor = parts.slice(1).join(' by ').trim();
-    } else if (cleanName.includes(' - ')) {
-      const parts = cleanName.split(' - ');
-      if (parts.length === 2) {
-        extractedAuthor = parts[0].trim();
-        extractedTitle = parts[1].trim();
+      extractedTitle = parts[0].replace(/[-_]+/g, ' ').trim();
+      extractedAuthor = parts.slice(1).join(' by ').replace(/[-_]+/g, ' ').trim();
+    } else if (cleanName.includes('-')) {
+      const parts = cleanName.split('-');
+      if (parts.length >= 2) {
+        extractedTitle = parts[0].replace(/[-_]+/g, ' ').trim();
+        extractedAuthor = parts.slice(1).join(' ').replace(/[-_]+/g, ' ').trim();
       }
+    } else {
+      extractedTitle = cleanName.replace(/[-_]+/g, ' ').trim();
     }
 
     const defaultFormat = allCategories[0] || { id: 'novel', genres: [] };
@@ -115,9 +128,9 @@ export default function UploadBookModal({
     const item = {
       file,
       fileName: file.name,
-      title_hi: detectedLang === 'hi' ? extractedTitle : '',
-      title_en: detectedLang === 'en' ? extractedTitle : '',
-      title_ur: detectedLang === 'ur' ? extractedTitle : '',
+      title_hi: '',
+      title_en: '',
+      title_ur: '',
       author_hi: '',
       author_en: extractedAuthor || '',
       author_ur: '',
@@ -125,7 +138,7 @@ export default function UploadBookModal({
       genre: defaultGenre.id, // Genre
       subgenre: defaultSub.id, // Subgenre
       era: 'contemporary',
-      year: new Date().getFullYear().toString(),
+      year: extractedYear,
       publisher: lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : (lang === 'ur' ? 'چیتنا ڈیجیٹل آرکائیوز' : 'Chetna Digital Archives'),
       description: '',
       description_en: '',
@@ -158,12 +171,15 @@ export default function UploadBookModal({
     try {
       const titleTrans = await transliterateAll(extractedTitle, detectedLang);
       if (titleTrans) {
-        item.title_hi = titleTrans.hi || item.title_hi || extractedTitle;
-        item.title_en = titleTrans.en || item.title_en || extractedTitle;
-        item.title_ur = titleTrans.ur || item.title_ur || extractedTitle;
+        item.title_hi = titleTrans.hi || extractedTitle;
+        item.title_en = titleTrans.en || extractedTitle;
+        item.title_ur = titleTrans.ur || extractedTitle;
       }
     } catch (e) {
       console.warn('Title transliteration notice:', e);
+      item.title_hi = extractedTitle;
+      item.title_en = extractedTitle;
+      item.title_ur = extractedTitle;
     }
 
     // Auto-transliterate Author if extracted
@@ -178,6 +194,9 @@ export default function UploadBookModal({
         }
       } catch (e) {
         console.warn('Author transliteration notice:', e);
+        item.author_hi = extractedAuthor;
+        item.author_en = extractedAuthor;
+        item.author_ur = extractedAuthor;
       }
     }
 

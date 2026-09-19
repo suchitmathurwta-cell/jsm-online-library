@@ -1,3 +1,6 @@
+// Vercel Serverless Function: /api/translate
+// Handles Trilingual Transliteration (Hindi, English, Urdu) without browser CORS issues
+
 // Universal Trilingual Transliteration Service for Chetna Digital Library
 // Supports Instantaneous & Accurate Transliteration across Hindi (Devanagari), English (Latin), and Urdu (Perso-Arabic)
 
@@ -358,4 +361,112 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
   const fallbackResult = clientSideTransliterateFallback(trimmed, srcLang);
   translitCache.set(cacheKey, fallbackResult);
   return fallbackResult;
+}
+
+
+async function fetchGoogleInputTools(token, targetLang) {
+  const itc = targetLang === 'hi' ? 'hi-t-i0-und' : (targetLang === 'ur' ? 'ur-t-i0-und' : null);
+  if (!itc || !/[a-zA-Z]/.test(token)) return null;
+
+  try {
+    const url = `https://inputtools.google.com/request?text=${encodeURIComponent(token.trim())}&itc=${itc}&num=1`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+      return data[1][0][1][0];
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function fetchGoogleTranslate(text, sourceLang, targetLang) {
+  if (!text || !text.trim()) return '';
+  try {
+    const src = sourceLang === 'auto' ? 'auto' : sourceLang;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${src}&tl=${targetLang}&dt=t&dt=rm&q=${encodeURIComponent(text.trim())}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    if (targetLang === 'en') {
+      let roman = data && data[0] && data[0][0] && data[0][0][3] ? data[0][0][3] : null;
+      if (roman && typeof roman === 'string') return roman;
+      if (data && data[0] && data[0][0] && data[0][0][0]) return data[0][0][0];
+    } else {
+      if (data && data[0] && data[0][0] && data[0][0][0]) return data[0][0][0];
+    }
+  } catch (_) {}
+  return null;
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  try {
+    let text = '';
+    let sourceLang = 'auto';
+
+    if (req.method === 'POST') {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+      text = body?.text || '';
+      sourceLang = body?.sourceLang || 'auto';
+    } else {
+      text = req.query?.text || '';
+      sourceLang = req.query?.sourceLang || 'auto';
+    }
+
+    if (!text || !text.trim()) {
+      return res.status(200).json({ success: true, translations: { hi: '', en: '', ur: '' } });
+    }
+
+    const trimmed = text.trim();
+    let detectedSource = sourceLang;
+    if (detectedSource === 'auto') {
+      if (/[\u0900-\u097F]/.test(trimmed)) detectedSource = 'hi';
+      else if (/[\u0600-\u06FF]/.test(trimmed)) detectedSource = 'ur';
+      else detectedSource = 'en';
+    }
+
+    let hi = '';
+    let en = '';
+    let ur = '';
+
+    if (detectedSource === 'en') {
+      en = trimmed;
+      const hiItc = await fetchGoogleInputTools(trimmed, 'hi');
+      const urItc = await fetchGoogleInputTools(trimmed, 'ur');
+      const hiGtx = await fetchGoogleTranslate(trimmed, 'en', 'hi');
+      const urGtx = await fetchGoogleTranslate(trimmed, 'en', 'ur');
+      hi = hiItc || hiGtx || '';
+      ur = urItc || urGtx || '';
+    } else if (detectedSource === 'hi') {
+      hi = trimmed;
+      en = await fetchGoogleTranslate(trimmed, 'hi', 'en');
+      ur = await fetchGoogleTranslate(trimmed, 'hi', 'ur');
+    } else if (detectedSource === 'ur') {
+      ur = trimmed;
+      hi = await fetchGoogleTranslate(trimmed, 'ur', 'hi');
+      en = await fetchGoogleTranslate(trimmed, 'ur', 'en');
+    }
+
+    const fallback = clientSideTransliterateFallback(trimmed, detectedSource);
+
+    return res.status(200).json({
+      success: true,
+      translations: {
+        hi: hi || fallback.hi || trimmed,
+        en: en || fallback.en || trimmed,
+        ur: ur || fallback.ur || trimmed
+      }
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 }
