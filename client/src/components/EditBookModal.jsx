@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Save, Trash2, Sparkles, BookOpen, AlertTriangle, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Save, Trash2, Sparkles, BookOpen, AlertTriangle, Check, Loader2 } from 'lucide-react';
 import { updateBookRecord, deleteBookRecord } from '../services/supabaseApi';
+import { transliterateAll } from '../services/transliterationService';
 
 export default function EditBookModal({
   book,
@@ -41,6 +42,8 @@ export default function EditBookModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [translatingField, setTranslatingField] = useState(null);
+  const translationTimeoutRef = useRef(null);
 
   const selectedCategoryObj = categories.find((c) => c.id === formData.category);
   const availableGenres = selectedCategoryObj?.genres || [];
@@ -49,6 +52,37 @@ export default function EditBookModal({
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAutoTranslateField = (fieldName, text, sourceLanguage) => {
+    if (!text || text.trim().length < 2) return;
+    if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current);
+
+    setTranslatingField(fieldName);
+    translationTimeoutRef.current = setTimeout(async () => {
+      try {
+        const trans = await transliterateAll(text.trim(), sourceLanguage);
+        if (trans) {
+          setFormData(prev => {
+            const updates = {};
+            if (fieldName === 'title') {
+              if (sourceLanguage !== 'hi') updates.title_hi = trans.hi;
+              if (sourceLanguage !== 'en') updates.title_en = trans.en;
+              if (sourceLanguage !== 'ur') updates.title_ur = trans.ur;
+            } else if (fieldName === 'author') {
+              if (sourceLanguage !== 'hi') updates.author_hi = trans.hi;
+              if (sourceLanguage !== 'en') updates.author_en = trans.en;
+              if (sourceLanguage !== 'ur') updates.author_ur = trans.ur;
+            }
+            return { ...prev, ...updates };
+          });
+        }
+      } catch (e) {
+        console.warn('Auto-transliteration error in edit:', e);
+      } finally {
+        setTranslatingField(null);
+      }
+    }, 350);
   };
 
   const handleSave = async (e) => {
@@ -132,80 +166,124 @@ export default function EditBookModal({
           )}
 
           {/* Titles in 3 Languages */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.titleHi || 'Title (Hindi) *'}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-stone-700 block">
+                {eb.title || 'Book Title'} ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
               </label>
-              <input
-                type="text"
-                value={formData.title_hi}
-                onChange={(e) => handleInputChange('title_hi', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
-                required
-              />
+              {translatingField === 'title' && (
+                <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Transliterating...</span>
+                </span>
+              )}
             </div>
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.titleEn || 'Title (English)'}
-              </label>
-              <input
-                type="text"
-                value={formData.title_en}
-                onChange={(e) => handleInputChange('title_en', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.titleUr || 'Title (Urdu)'}
-              </label>
-              <input
-                type="text"
-                value={formData.title_ur}
-                onChange={(e) => handleInputChange('title_ur', e.target.value)}
-                dir="rtl"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.titleHi || 'Title (Hindi) *'}
+                  value={formData.title_hi}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('title_hi', v);
+                    handleAutoTranslateField('title', v, 'hi');
+                  }}
+                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
+                  required
+                />
+                <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.titleEn || 'Title (English)'}
+                  value={formData.title_en}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('title_en', v);
+                    handleAutoTranslateField('title', v, 'en');
+                  }}
+                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                />
+                <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.titleUr || 'Title (Urdu)'}
+                  value={formData.title_ur}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('title_ur', v);
+                    handleAutoTranslateField('title', v, 'ur');
+                  }}
+                  dir="rtl"
+                  className="w-full pr-3 pl-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right"
+                />
+                <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+              </div>
             </div>
           </div>
 
           {/* Authors in 3 Languages */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.authorHi || 'Author Name (Hindi) *'}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-stone-700 block">
+                {eb.author || 'Author Name'} ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
               </label>
-              <input
-                type="text"
-                value={formData.author_hi}
-                onChange={(e) => handleInputChange('author_hi', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
-                required
-              />
+              {translatingField === 'author' && (
+                <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <span>Transliterating...</span>
+                </span>
+              )}
             </div>
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.authorEn || 'Author Name (English)'}
-              </label>
-              <input
-                type="text"
-                value={formData.author_en}
-                onChange={(e) => handleInputChange('author_en', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
-              />
-            </div>
-            <div>
-              <label className="font-bold text-stone-700 block mb-1">
-                {eb.authorUr || 'Author Name (Urdu)'}
-              </label>
-              <input
-                type="text"
-                value={formData.author_ur}
-                onChange={(e) => handleInputChange('author_ur', e.target.value)}
-                dir="rtl"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.authorHi || 'Author Name (Hindi) *'}
+                  value={formData.author_hi}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('author_hi', v);
+                    handleAutoTranslateField('author', v, 'hi');
+                  }}
+                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
+                  required
+                />
+                <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.authorEn || 'Author Name (English)'}
+                  value={formData.author_en}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('author_en', v);
+                    handleAutoTranslateField('author', v, 'en');
+                  }}
+                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                />
+                <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder={eb.authorUr || 'Author Name (Urdu)'}
+                  value={formData.author_ur}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleInputChange('author_ur', v);
+                    handleAutoTranslateField('author', v, 'ur');
+                  }}
+                  dir="rtl"
+                  className="w-full pr-3 pl-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right"
+                />
+                <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+              </div>
             </div>
           </div>
 

@@ -21,6 +21,7 @@ import {
 import SearchableCombobox from './SearchableCombobox';
 import { getCategoriesWithHierarchy, uploadBookFile, createBookRecord, createFormat, deleteFormat, createGenre, deleteGenre, createSubgenre, deleteSubgenre } from '../services/supabaseApi';
 import { translations, getLocalizedEra } from '../locales/translations';
+import { transliterateAll, detectLanguage } from '../services/transliterationService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -87,20 +88,38 @@ export default function UploadBookModal({
 
   const processSinglePdf = async (file) => {
     const baseName = file.name.replace(/\.pdf$/i, '');
-    const cleanName = baseName.replace(/[-_]+/g, ' ').trim();
+    let cleanName = baseName.replace(/[-_]+/g, ' ').trim();
+
+    // Check if filename contains "by" or " - " for author separation
+    let extractedTitle = cleanName;
+    let extractedAuthor = '';
+
+    if (/\bby\b/i.test(cleanName)) {
+      const parts = cleanName.split(/\bby\b/i);
+      extractedTitle = parts[0].trim();
+      extractedAuthor = parts.slice(1).join(' by ').trim();
+    } else if (cleanName.includes(' - ')) {
+      const parts = cleanName.split(' - ');
+      if (parts.length === 2) {
+        extractedAuthor = parts[0].trim();
+        extractedTitle = parts[1].trim();
+      }
+    }
 
     const defaultFormat = allCategories[0] || { id: 'novel', genres: [] };
     const defaultGenre = defaultFormat.genres?.[0] || { id: 'social-realism', subgenres: [] };
     const defaultSub = defaultGenre.subgenres?.[0] || { id: 'general' };
 
+    const detectedLang = detectLanguage(extractedTitle);
+
     const item = {
       file,
       fileName: file.name,
-      title_hi: cleanName,
-      title_en: cleanName,
-      title_ur: cleanName,
+      title_hi: detectedLang === 'hi' ? extractedTitle : '',
+      title_en: detectedLang === 'en' ? extractedTitle : '',
+      title_ur: detectedLang === 'ur' ? extractedTitle : '',
       author_hi: '',
-      author_en: '',
+      author_en: extractedAuthor || '',
       author_ur: '',
       category: defaultFormat.id, // Format
       genre: defaultGenre.id, // Genre
@@ -135,20 +154,32 @@ export default function UploadBookModal({
       console.warn('PDF thumbnail extraction notice:', e);
     }
 
-    // Auto-translate initial title
+    // Auto-transliterate Title across all 3 languages
     try {
-      const res = await fetch('/api/translate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: cleanName, sourceLang: 'auto' })
-      });
-      const data = await res.json();
-      if (data && data.translations) {
-        if (data.translations.hi) item.title_hi = data.translations.hi;
-        if (data.translations.en) item.title_en = data.translations.en;
-        if (data.translations.ur) item.title_ur = data.translations.ur;
+      const titleTrans = await transliterateAll(extractedTitle, detectedLang);
+      if (titleTrans) {
+        item.title_hi = titleTrans.hi || item.title_hi || extractedTitle;
+        item.title_en = titleTrans.en || item.title_en || extractedTitle;
+        item.title_ur = titleTrans.ur || item.title_ur || extractedTitle;
       }
-    } catch (_) {}
+    } catch (e) {
+      console.warn('Title transliteration notice:', e);
+    }
+
+    // Auto-transliterate Author if extracted
+    if (extractedAuthor) {
+      try {
+        const authorLang = detectLanguage(extractedAuthor);
+        const authorTrans = await transliterateAll(extractedAuthor, authorLang);
+        if (authorTrans) {
+          item.author_hi = authorTrans.hi || extractedAuthor;
+          item.author_en = authorTrans.en || extractedAuthor;
+          item.author_ur = authorTrans.ur || extractedAuthor;
+        }
+      } catch (e) {
+        console.warn('Author transliteration notice:', e);
+      }
+    }
 
     return item;
   };
@@ -216,31 +247,26 @@ export default function UploadBookModal({
     setTranslatingField(fieldName);
     translationTimeoutRef.current = setTimeout(async () => {
       try {
-        const res = await fetch('/api/translate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: text.trim(), sourceLang: sourceLanguage })
-        });
-        const data = await res.json();
-        if (data && data.translations) {
+        const trans = await transliterateAll(text.trim(), sourceLanguage);
+        if (trans) {
           const updates = {};
           if (fieldName === 'title') {
-            if (sourceLanguage !== 'hi' && data.translations.hi) updates.title_hi = data.translations.hi;
-            if (sourceLanguage !== 'en' && data.translations.en) updates.title_en = data.translations.en;
-            if (sourceLanguage !== 'ur' && data.translations.ur) updates.title_ur = data.translations.ur;
+            if (sourceLanguage !== 'hi') updates.title_hi = trans.hi;
+            if (sourceLanguage !== 'en') updates.title_en = trans.en;
+            if (sourceLanguage !== 'ur') updates.title_ur = trans.ur;
           } else if (fieldName === 'author') {
-            if (sourceLanguage !== 'hi' && data.translations.hi) updates.author_hi = data.translations.hi;
-            if (sourceLanguage !== 'en' && data.translations.en) updates.author_en = data.translations.en;
-            if (sourceLanguage !== 'ur' && data.translations.ur) updates.author_ur = data.translations.ur;
+            if (sourceLanguage !== 'hi') updates.author_hi = trans.hi;
+            if (sourceLanguage !== 'en') updates.author_en = trans.en;
+            if (sourceLanguage !== 'ur') updates.author_ur = trans.ur;
           }
           updateCurrentItem(updates);
         }
       } catch (e) {
-        console.warn('Auto-translation notice:', e);
+        console.warn('Auto-transliteration error:', e);
       } finally {
         setTranslatingField(null);
       }
-    }, 650);
+    }, 350);
   };
 
   const handleCustomCover = (e) => {
@@ -692,99 +718,127 @@ export default function UploadBookModal({
 
                 {/* 4. Multi-Script Title Inputs */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
-                    <span>{u.titleHi}</span>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      <span>{lang === 'hi' ? 'रचना का शीर्षक' : (lang === 'ur' ? 'کتاب کا عنوان' : 'Book Title')}</span>
+                      <span className="text-[10.5px] text-stone-400 font-normal">
+                        ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
+                      </span>
+                    </label>
                     {translatingField === 'title' && (
-                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold">
+                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>{u.transliterating}</span>
+                        <span>{u.transliterating || 'Transliterating...'}</span>
                       </span>
                     )}
-                  </label>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <input
-                      type="text"
-                      placeholder={u.titleHi}
-                      value={currentItem.title_hi}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ title_hi: v });
-                        handleAutoTranslateField('title', v, 'hi');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
-                    />
-                    <input
-                      type="text"
-                      placeholder={u.titleEn}
-                      value={currentItem.title_en}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ title_en: v });
-                        handleAutoTranslateField('title', v, 'en');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
-                    />
-                    <input
-                      type="text"
-                      dir="rtl"
-                      placeholder={u.titleUr}
-                      value={currentItem.title_ur}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ title_ur: v });
-                        handleAutoTranslateField('title', v, 'ur');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={u.titleHi || 'शीर्षक (हिंदी)'}
+                        value={currentItem.title_hi || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ title_hi: v });
+                          handleAutoTranslateField('title', v, 'hi');
+                        }}
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
+                      />
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={u.titleEn || 'Title (English) *'}
+                        value={currentItem.title_en || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ title_en: v });
+                          handleAutoTranslateField('title', v, 'en');
+                        }}
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
+                      />
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        dir="rtl"
+                        placeholder={u.titleUr || 'عنوان (اردو)'}
+                        value={currentItem.title_ur || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ title_ur: v });
+                          handleAutoTranslateField('title', v, 'ur');
+                        }}
+                        className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
+                      />
+                      <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                    </div>
                   </div>
                 </div>
 
                 {/* 5. Multi-Script Author Inputs */}
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
-                    <span>{u.authorHi}</span>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+                      <span>{lang === 'hi' ? 'रचनाकार / लेखक' : (lang === 'ur' ? 'مصنف / تخلیق کار' : 'Author / Creator')}</span>
+                      <span className="text-[10.5px] text-stone-400 font-normal">
+                        ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
+                      </span>
+                    </label>
                     {translatingField === 'author' && (
-                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold">
+                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
                         <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>{u.transliterating}</span>
+                        <span>{u.transliterating || 'Transliterating...'}</span>
                       </span>
                     )}
-                  </label>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    <input
-                      type="text"
-                      placeholder={u.authorHi}
-                      value={currentItem.author_hi}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ author_hi: v });
-                        handleAutoTranslateField('author', v, 'hi');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
-                    />
-                    <input
-                      type="text"
-                      placeholder={u.authorEn}
-                      value={currentItem.author_en}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ author_en: v });
-                        handleAutoTranslateField('author', v, 'en');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
-                    />
-                    <input
-                      type="text"
-                      dir="rtl"
-                      placeholder={u.authorUr}
-                      value={currentItem.author_ur}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        updateCurrentItem({ author_ur: v });
-                        handleAutoTranslateField('author', v, 'ur');
-                      }}
-                      className="px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={u.authorHi || 'रचनाकार (हिंदी)'}
+                        value={currentItem.author_hi || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ author_hi: v });
+                          handleAutoTranslateField('author', v, 'hi');
+                        }}
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
+                      />
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={u.authorEn || 'Author (English) *'}
+                        value={currentItem.author_en || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ author_en: v });
+                          handleAutoTranslateField('author', v, 'en');
+                        }}
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
+                      />
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        dir="rtl"
+                        placeholder={u.authorUr || 'مصنف (اردو)'}
+                        value={currentItem.author_ur || ''}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updateCurrentItem({ author_ur: v });
+                          handleAutoTranslateField('author', v, 'ur');
+                        }}
+                        className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
+                      />
+                      <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                    </div>
                   </div>
                 </div>
 
