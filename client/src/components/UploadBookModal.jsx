@@ -259,24 +259,24 @@ export default function UploadBookModal({
 
   const currentItem = fileQueue[selectedIndex];
 
-  const handleAutoTranslateField = (fieldName, text, sourceLanguage) => {
-    if (!text || text.trim().length < 2) return;
+  const handleAutoTranslateField = (fieldName, text, sourceLanguage, immediate = false) => {
+    if (!text || text.trim().length < 1) return;
     if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current);
 
-    setTranslatingField(fieldName);
-    translationTimeoutRef.current = setTimeout(async () => {
+    const execute = async () => {
+      setTranslatingField(fieldName);
       try {
         const trans = await transliterateAll(text.trim(), sourceLanguage);
         if (trans) {
           const updates = {};
           if (fieldName === 'title') {
-            if (sourceLanguage !== 'hi') updates.title_hi = trans.hi;
-            if (sourceLanguage !== 'en') updates.title_en = trans.en;
-            if (sourceLanguage !== 'ur') updates.title_ur = trans.ur;
+            if (sourceLanguage !== 'hi' || !currentItem?.title_hi) updates.title_hi = trans.hi;
+            if (sourceLanguage !== 'en' || !currentItem?.title_en) updates.title_en = trans.en;
+            if (sourceLanguage !== 'ur' || !currentItem?.title_ur) updates.title_ur = trans.ur;
           } else if (fieldName === 'author') {
-            if (sourceLanguage !== 'hi') updates.author_hi = trans.hi;
-            if (sourceLanguage !== 'en') updates.author_en = trans.en;
-            if (sourceLanguage !== 'ur') updates.author_ur = trans.ur;
+            if (sourceLanguage !== 'hi' || !currentItem?.author_hi) updates.author_hi = trans.hi;
+            if (sourceLanguage !== 'en' || !currentItem?.author_en) updates.author_en = trans.en;
+            if (sourceLanguage !== 'ur' || !currentItem?.author_ur) updates.author_ur = trans.ur;
           }
           updateCurrentItem(updates);
         }
@@ -285,7 +285,14 @@ export default function UploadBookModal({
       } finally {
         setTranslatingField(null);
       }
-    }, 350);
+    };
+
+    if (immediate) {
+      execute();
+    } else {
+      setTranslatingField(fieldName);
+      translationTimeoutRef.current = setTimeout(execute, 150);
+    }
   };
 
   const handleCustomCover = (e) => {
@@ -744,12 +751,27 @@ export default function UploadBookModal({
                         ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
                       </span>
                     </label>
-                    {translatingField === 'title' && (
-                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>{u.transliterating || 'Transliterating...'}</span>
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {translatingField === 'title' ? (
+                        <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>{u.transliterating || 'Transliterating...'}</span>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = currentItem.title_en || currentItem.title_hi || currentItem.title_ur;
+                            if (val) handleAutoTranslateField('title', val, currentItem.title_en ? 'en' : (currentItem.title_hi ? 'hi' : 'ur'), true);
+                          }}
+                          className="text-[10px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200/80 transition cursor-pointer flex items-center gap-1"
+                          title="Click to automatically fill title in all 3 languages"
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          <span>Auto-Fill</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div className="relative">
@@ -761,6 +783,9 @@ export default function UploadBookModal({
                           const v = e.target.value;
                           updateCurrentItem({ title_hi: v });
                           handleAutoTranslateField('title', v, 'hi');
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('title', e.target.value, 'hi', true);
                         }}
                         className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
                       />
@@ -775,6 +800,9 @@ export default function UploadBookModal({
                           const v = e.target.value;
                           updateCurrentItem({ title_en: v });
                           handleAutoTranslateField('title', v, 'en');
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('title', e.target.value, 'en', true);
                         }}
                         className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
                       />
@@ -791,6 +819,9 @@ export default function UploadBookModal({
                           updateCurrentItem({ title_ur: v });
                           handleAutoTranslateField('title', v, 'ur');
                         }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('title', e.target.value, 'ur', true);
+                        }}
                         className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
                       />
                       <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
@@ -804,15 +835,30 @@ export default function UploadBookModal({
                     <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                       <span>{lang === 'hi' ? 'रचनाकार / लेखक' : (lang === 'ur' ? 'مصنف / تخلیق کار' : 'Author / Creator')}</span>
                       <span className="text-[10.5px] text-stone-400 font-normal">
-                        ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
+                        ({lang === 'hi' ? 'हिंदी • English • उर्दू' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
                       </span>
                     </label>
-                    {translatingField === 'author' && (
-                      <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        <span>{u.transliterating || 'Transliterating...'}</span>
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {translatingField === 'author' ? (
+                        <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>{u.transliterating || 'Transliterating...'}</span>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const val = currentItem.author_en || currentItem.author_hi || currentItem.author_ur;
+                            if (val) handleAutoTranslateField('author', val, currentItem.author_en ? 'en' : (currentItem.author_hi ? 'hi' : 'ur'), true);
+                          }}
+                          className="text-[10px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200/80 transition cursor-pointer flex items-center gap-1"
+                          title="Click to automatically fill author in all 3 languages"
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          <span>Auto-Fill</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <div className="relative">
@@ -824,6 +870,9 @@ export default function UploadBookModal({
                           const v = e.target.value;
                           updateCurrentItem({ author_hi: v });
                           handleAutoTranslateField('author', v, 'hi');
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('author', e.target.value, 'hi', true);
                         }}
                         className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
                       />
@@ -839,6 +888,9 @@ export default function UploadBookModal({
                           updateCurrentItem({ author_en: v });
                           handleAutoTranslateField('author', v, 'en');
                         }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('author', e.target.value, 'en', true);
+                        }}
                         className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
                       />
                       <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
@@ -853,6 +905,9 @@ export default function UploadBookModal({
                           const v = e.target.value;
                           updateCurrentItem({ author_ur: v });
                           handleAutoTranslateField('author', v, 'ur');
+                        }}
+                        onBlur={(e) => {
+                          if (e.target.value) handleAutoTranslateField('author', e.target.value, 'ur', true);
                         }}
                         className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
                       />
