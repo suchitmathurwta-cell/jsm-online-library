@@ -423,6 +423,7 @@ function MainApp() {
       {isUploadOpen && (
         <UploadBookModal
           isOpen={isUploadOpen}
+          categories={categories}
           onClose={() => setIsUploadOpen(false)}
           onSuccess={() => {
             fetchBooksData();

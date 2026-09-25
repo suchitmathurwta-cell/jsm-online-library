@@ -7,7 +7,7 @@ export default function SearchableCombobox({
   options = [],
   placeholder = "Select or search...",
   searchPlaceholder = "Type to search...",
-  type = "genre", // 'genre' | 'subgenre'
+  type = "genre", // 'format' | 'genre' | 'subgenre'
   lang,
   onChange,
   onCreate,
@@ -110,21 +110,41 @@ export default function SearchableCombobox({
     }
   };
 
-  const notFoundTitle = type === "genre"
-    ? (currentLang === 'hi' ? 'विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'صنف نہیں ملی' : 'Genre not found'))
-    : (currentLang === 'hi' ? 'उप-विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'ذیلی صنف نہیں ملی' : 'Sub-Genre not found'));
+  const notFoundTitle = type === "format"
+    ? (currentLang === 'hi' ? 'प्रारूप उपलब्ध नहीं है' : (currentLang === 'ur' ? 'فارمیٹ نہیں ملا' : 'Format not found'))
+    : type === "genre"
+      ? (currentLang === 'hi' ? 'विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'صنف نہیں ملی' : 'Genre not found'))
+      : (currentLang === 'hi' ? 'उप-विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'ذیلی صنف نہیں ملی' : 'Sub-Genre not found'));
 
-  const notFoundDesc = currentLang === 'hi'
-    ? `"${searchQuery}" नाम से कोई विकल्प नहीं मिला।`
-    : (currentLang === 'ur'
-      ? `"${searchQuery}" کے نام سے کوئی آپشن نہیں ملا۔`
-      : `No existing ${type === 'genre' ? 'genre' : 'sub-genre'} matches "${searchQuery}".`);
+  const typeName = type === "format"
+    ? (currentLang === 'hi' ? 'प्रारूप' : (currentLang === 'ur' ? 'فارمیٹ' : 'format'))
+    : type === "genre"
+      ? (currentLang === 'hi' ? 'विधा' : (currentLang === 'ur' ? 'صنف' : 'genre'))
+      : (currentLang === 'hi' ? 'उप-विधा' : (currentLang === 'ur' ? 'ذیلی صنف' : 'sub-genre'));
 
-  const createBtnText = currentLang === 'hi'
-    ? `+ "${searchQuery.trim()}" नया जोड़ें`
-    : (currentLang === 'ur'
-      ? `+ "${searchQuery.trim()}" نیا بنائیں`
-      : `+ Create "${searchQuery.trim()}"`);
+  const notFoundDesc = searchQuery.trim()
+    ? (currentLang === 'hi'
+      ? `"${searchQuery}" नाम से कोई ${typeName} नहीं मिला।`
+      : (currentLang === 'ur'
+        ? `"${searchQuery}" کے نام سے کوئی ${typeName} نہیں ملا۔`
+        : `No existing ${typeName} matches "${searchQuery}".`))
+    : (currentLang === 'hi'
+      ? `इस वर्ग में कोई ${typeName} उपलब्ध नहीं है। नया जोड़ने के लिए ऊपर नाम टाइप करें।`
+      : (currentLang === 'ur'
+        ? `اس میں کوئی ${typeName} دستیاب نہیں ہے۔ نیا بنانے کے لیے نام درج کریں۔`
+        : `No ${typeName} found in this category. Type above to create one.`));
+
+  const createBtnText = searchQuery.trim()
+    ? (currentLang === 'hi'
+      ? `+ "${searchQuery.trim()}" नया जोड़ें`
+      : (currentLang === 'ur'
+        ? `+ "${searchQuery.trim()}" نیا بنائیں`
+        : `+ Create "${searchQuery.trim()}"`))
+    : (currentLang === 'hi'
+      ? `+ नया ${typeName} जोड़ें`
+      : (currentLang === 'ur'
+        ? `+ نیا ${typeName} بنائیں`
+        : `+ Create new ${typeName}`));
 
   const creatingText = currentLang === 'hi'
     ? 'जोड़ा जा रहा है...'
@@ -222,24 +242,26 @@ export default function SearchableCombobox({
                 <p className="text-xs text-stone-500">
                   {notFoundDesc}
                 </p>
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  disabled={isCreating}
-                  className="w-full py-2.5 px-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
-                >
-                  {isCreating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>{creatingText}</span>
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="w-4 h-4" />
-                      <span>{createBtnText}</span>
-                    </>
-                  )}
-                </button>
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleCreate}
+                    disabled={isCreating}
+                    className="w-full py-2.5 px-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>{creatingText}</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        <span>{createBtnText}</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </div>
