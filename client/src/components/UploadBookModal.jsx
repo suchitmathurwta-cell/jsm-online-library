@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import SearchableCombobox from './SearchableCombobox';
 import { getCategoriesWithHierarchy, uploadBookFile, createBookRecord, createFormat, deleteFormat, createGenre, deleteGenre, createSubgenre, deleteSubgenre } from '../services/supabaseApi';
-import { DEFAULT_CATEGORIES } from '../data/categoriesData';
 import { translations, getLocalizedEra } from '../locales/translations';
 import { transliterateAll, detectLanguage } from '../services/transliterationService';
 
@@ -58,9 +57,7 @@ export default function UploadBookModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-  const [allCategories, setAllCategories] = useState(
-    categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES
-  );
+  const [allCategories, setAllCategories] = useState(categories || []);
   const [translatingField, setTranslatingField] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -69,12 +66,13 @@ export default function UploadBookModal({
 
   const fetchUpdatedCategories = async () => {
     try {
-      const data = await getCategoriesWithHierarchy();
-      if (data && data.length > 0) {
-        setAllCategories(data);
+      const res = await fetch('/api/categories');
+      const data = await res.json();
+      if (data.success) {
+        setAllCategories(data.categories || []);
       }
     } catch (e) {
-      console.warn('Error fetching categories in UploadBookModal:', e);
+      console.error(e);
     }
   };
 
@@ -121,8 +119,7 @@ export default function UploadBookModal({
       extractedTitle = cleanName.replace(/[-_]+/g, ' ').trim();
     }
 
-    const catsList = (allCategories && allCategories.length > 0) ? allCategories : DEFAULT_CATEGORIES;
-    const defaultFormat = catsList[0] || { id: 'novel', genres: [] };
+    const defaultFormat = allCategories[0] || { id: 'novel', genres: [] };
     const defaultGenre = defaultFormat.genres?.[0] || { id: 'social-realism', subgenres: [] };
     const defaultSub = defaultGenre.subgenres?.[0] || { id: 'general' };
 
@@ -311,10 +308,8 @@ export default function UploadBookModal({
     reader.readAsDataURL(file);
   };
 
-  const catsList = (allCategories && allCategories.length > 0) ? allCategories : DEFAULT_CATEGORIES;
-
   // Format options
-  const formatOptions = catsList.map(c => ({
+  const formatOptions = allCategories.map(c => ({
     id: c.id,
     label: c['name_' + lang] || c.name_hi || c.name_en || c.id,
     name_hi: c.name_hi,
@@ -323,14 +318,10 @@ export default function UploadBookModal({
   }));
 
   // Active format object
-  const activeFormatObj = catsList.find(c => c.id === currentItem?.category) || catsList[0];
+  const activeFormatObj = allCategories.find(c => c.id === currentItem?.category) || allCategories[0];
 
   // Genre options conditional on active format
-  const availableGenres = (activeFormatObj?.genres && activeFormatObj.genres.length > 0)
-    ? activeFormatObj.genres
-    : (DEFAULT_CATEGORIES.find(c => c.id === (activeFormatObj?.id || currentItem?.category))?.genres || []);
-
-  const genreOptions = availableGenres.map(g => ({
+  const genreOptions = (activeFormatObj?.genres || []).map(g => ({
     id: g.id,
     label: g['name_' + lang] || g.name_hi || g.name_en || g.id,
     name_hi: g.name_hi,
@@ -339,14 +330,10 @@ export default function UploadBookModal({
   }));
 
   // Active genre object
-  const activeGenreObj = availableGenres.find(g => g.id === currentItem?.genre) || availableGenres[0];
+  const activeGenreObj = (activeFormatObj?.genres || []).find(g => g.id === currentItem?.genre);
 
   // Subgenre options conditional on active genre
-  const availableSubgenres = (activeGenreObj?.subgenres && activeGenreObj.subgenres.length > 0)
-    ? activeGenreObj.subgenres
-    : (DEFAULT_CATEGORIES.find(c => c.id === activeFormatObj?.id)?.genres?.find(g => g.id === activeGenreObj?.id)?.subgenres || []);
-
-  const subgenreOptions = availableSubgenres.map(sg => ({
+  const subgenreOptions = (activeGenreObj?.subgenres || []).map(sg => ({
     id: sg.id,
     label: sg['name_' + lang] || sg.name_hi || sg.name_en || sg.name || sg.id,
     name_hi: sg.name_hi,
@@ -354,118 +341,49 @@ export default function UploadBookModal({
     raw: sg
   }));
 
-  // Hierarchy Handlers with Supabase sync and immediate UI responsiveness
+  // Hierarchy Handlers
   const handleCreateFormat = async (name) => {
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fmt-' + Date.now());
-    try {
-      await createFormat({ id, name_hi: name, name_en: name });
-    } catch (e) {
-      console.warn('createFormat DB notice:', e);
-    }
-    const newFormat = { id, name_hi: name, name_en: name, genres: [] };
-    setAllCategories(prev => [...prev, newFormat]);
+    await createFormat({ id, name_hi: name, name_en: name });
+    await fetchUpdatedCategories();
     updateCurrentItem({ category: id, genre: '', subgenre: '' });
   };
 
   const handleDeleteFormat = async (id) => {
-    try {
-      await deleteFormat(id);
-    } catch (e) {
-      console.warn('deleteFormat DB notice:', e);
-    }
-    setAllCategories(prev => prev.filter(c => c.id !== id));
+    await deleteFormat(id);
+    await fetchUpdatedCategories();
   };
 
   const handleCreateGenre = async (name) => {
-    const catId = currentItem?.category || activeFormatObj?.id;
-    if (!catId) return;
+    if (!currentItem?.category) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('gnr-' + Date.now());
-    try {
-      await createGenre({ id, category_id: catId, name_hi: name, name_en: name });
-    } catch (e) {
-      console.warn('createGenre DB notice:', e);
-    }
-    const newGenre = { id, category_id: catId, name_hi: name, name_en: name, subgenres: [] };
-    setAllCategories(prev => prev.map(c => {
-      if (c.id === catId) {
-        return { ...c, genres: [...(c.genres || []), newGenre] };
-      }
-      return c;
-    }));
+    await createGenre({ id, category_id: currentItem.category, name_hi: name, name_en: name });
+    await fetchUpdatedCategories();
     updateCurrentItem({ genre: id, subgenre: '' });
   };
 
   const handleDeleteGenre = async (id) => {
-    const catId = currentItem?.category || activeFormatObj?.id;
-    try {
-      await deleteGenre(catId, id);
-    } catch (e) {
-      console.warn('deleteGenre DB notice:', e);
-    }
-    setAllCategories(prev => prev.map(c => {
-      if (c.id === catId) {
-        return { ...c, genres: (c.genres || []).filter(g => g.id !== id) };
-      }
-      return c;
-    }));
+    await deleteGenre(id);
+    await fetchUpdatedCategories();
   };
 
   const handleCreateSubGenre = async (name) => {
-    const catId = currentItem?.category || activeFormatObj?.id;
-    const gnrId = currentItem?.genre || activeGenreObj?.id || 'general';
-    if (!catId) return;
+    if (!currentItem?.category) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sub-' + Date.now());
-    try {
-      await createSubgenre({
-        id,
-        category_id: catId,
-        genre_id: gnrId,
-        name_hi: name,
-        name_en: name
-      });
-    } catch (e) {
-      console.warn('createSubgenre DB notice:', e);
-    }
-    const newSub = { id, category_id: catId, genre_id: gnrId, name_hi: name, name_en: name };
-    setAllCategories(prev => prev.map(c => {
-      if (c.id === catId) {
-        return {
-          ...c,
-          genres: (c.genres || []).map(g => {
-            if (g.id === gnrId) {
-              return { ...g, subgenres: [...(g.subgenres || []), newSub] };
-            }
-            return g;
-          })
-        };
-      }
-      return c;
-    }));
+    await createSubgenre({
+      id,
+      category_id: currentItem.category,
+      genre_id: currentItem.genre || 'general',
+      name_hi: name,
+      name_en: name
+    });
+    await fetchUpdatedCategories();
     updateCurrentItem({ subgenre: id });
   };
 
   const handleDeleteSubGenre = async (id) => {
-    const catId = currentItem?.category || activeFormatObj?.id;
-    const gnrId = currentItem?.genre || activeGenreObj?.id;
-    try {
-      await deleteSubgenre(catId, gnrId, id);
-    } catch (e) {
-      console.warn('deleteSubgenre DB notice:', e);
-    }
-    setAllCategories(prev => prev.map(c => {
-      if (c.id === catId) {
-        return {
-          ...c,
-          genres: (c.genres || []).map(g => {
-            if (g.id === gnrId) {
-              return { ...g, subgenres: (g.subgenres || []).filter(s => s.id !== id) };
-            }
-            return g;
-          })
-        };
-      }
-      return c;
-    }));
+    await deleteSubgenre(id);
+    await fetchUpdatedCategories();
   };
 
   // Submission handler
@@ -1016,9 +934,8 @@ export default function UploadBookModal({
                         value={currentItem.category}
                         options={formatOptions}
                         searchPlaceholder={u.category}
-                        lang={lang}
                         onChange={(catId, opt) => {
-                          const targetCat = catsList.find(c => c.id === catId);
+                          const targetCat = allCategories.find(c => c.id === catId);
                           const firstGenre = targetCat?.genres?.[0];
                           const firstSub = firstGenre?.subgenres?.[0];
                           updateCurrentItem({
@@ -1040,9 +957,8 @@ export default function UploadBookModal({
                         value={currentItem.genre}
                         options={genreOptions}
                         searchPlaceholder={u.genre}
-                        lang={lang}
                         onChange={(genreId, opt) => {
-                          const targetGenre = availableGenres.find(g => g.id === genreId);
+                          const targetGenre = (activeFormatObj?.genres || []).find(g => g.id === genreId);
                           const firstSub = targetGenre?.subgenres?.[0];
                           updateCurrentItem({
                             genre: genreId,
@@ -1062,7 +978,6 @@ export default function UploadBookModal({
                         value={currentItem.subgenre}
                         options={subgenreOptions}
                         searchPlaceholder={u.subgenre}
-                        lang={lang}
                         onChange={(subId, opt) => {
                           updateCurrentItem({ subgenre: subId });
                         }}

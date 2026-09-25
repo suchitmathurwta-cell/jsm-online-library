@@ -1,78 +1,62 @@
 import { supabase } from './supabaseClient';
-import { DEFAULT_CATEGORIES } from '../data/categoriesData';
 
 // 1. Fetch Categories with nested Genres, Subgenres & real-time book counts
 export async function getCategoriesWithHierarchy() {
-  try {
-    const [catRes, genreRes, subRes, bookRes] = await Promise.all([
-      supabase.from('categories').select('*').order('created_at', { ascending: true }),
-      supabase.from('genres').select('*').order('created_at', { ascending: true }),
-      supabase.from('subgenres').select('*').order('created_at', { ascending: true }),
-      supabase.from('books').select('id, category, genre, subgenre, title_hi, title_en')
-    ]);
+  const [catRes, genreRes, subRes, bookRes] = await Promise.all([
+    supabase.from('categories').select('*').order('created_at', { ascending: true }),
+    supabase.from('genres').select('*').order('created_at', { ascending: true }),
+    supabase.from('subgenres').select('*').order('created_at', { ascending: true }),
+    supabase.from('books').select('id, category, genre, subgenre, title_hi, title_en')
+  ]);
 
-    const categories = (catRes.data && catRes.data.length > 0) ? catRes.data : DEFAULT_CATEGORIES;
-    const genres = genreRes.data || [];
-    const subgenres = subRes.data || [];
-    const books = bookRes.data || [];
+  if (catRes.error) throw catRes.error;
+  if (genreRes.error) throw genreRes.error;
+  if (subRes.error) throw subRes.error;
 
-    return categories.map(cat => {
-      const defaultCat = DEFAULT_CATEGORIES.find(c => c.id === cat.id);
-      const catBooks = books.filter(b => b.category === cat.id);
+  const categories = catRes.data || [];
+  const genres = genreRes.data || [];
+  const subgenres = subRes.data || [];
+  const books = bookRes.data || [];
 
-      // Find genres from DB or fallback to bundled defaultCat.genres
-      let matchedGenres = genres.filter(g => g.category_id === cat.id);
-      if (matchedGenres.length === 0 && defaultCat?.genres) {
-        matchedGenres = defaultCat.genres;
-      }
+  return categories.map(cat => {
+    const catBooks = books.filter(b => b.category === cat.id);
+    const catGenres = genres.filter(g => g.category_id === cat.id).map(g => {
+      const genreKeywords = [g.id, g.name_en, g.name_hi, g.name_ur].filter(Boolean).map(k => k.toLowerCase());
+      const genreBooks = catBooks.filter(b => {
+        const bg = (b.genre || '').toLowerCase();
+        return genreKeywords.some(k => bg.includes(k) || bg === k);
+      });
 
-      const catGenres = matchedGenres.map(g => {
-        const defaultGenre = defaultCat?.genres?.find(dg => dg.id === g.id);
-        let gSubgenres = subgenres.filter(sg => sg.category_id === cat.id && sg.genre_id === g.id);
-        if (gSubgenres.length === 0 && defaultGenre?.subgenres) {
-          gSubgenres = defaultGenre.subgenres;
-        }
-
-        const sgWithCounts = gSubgenres.map(sg => {
-          const sgKeywords = [sg.id, sg.name_en, sg.name_hi, sg.name_ur].filter(Boolean).map(k => k.toLowerCase());
-          const sgBooks = catBooks.filter(b => {
-            const bg = (b.genre || '').toLowerCase();
-            const bsg = (b.subgenre || '').toLowerCase();
-            const bt = (b.title_hi || b.title_en || '').toLowerCase();
-            return sgKeywords.some(k => bg.includes(k) || bsg.includes(k) || bt.includes(k));
-          });
-
-          return {
-            ...sg,
-            count: sgBooks.length
-          };
-        });
-
-        const genreKeywords = [g.id, g.name_en, g.name_hi, g.name_ur].filter(Boolean).map(k => k.toLowerCase());
-        const genreBooks = catBooks.filter(b => {
+      const gSubgenres = subgenres.filter(sg => sg.category_id === cat.id && sg.genre_id === g.id).map(sg => {
+        const sgKeywords = [sg.id, sg.name_en, sg.name_hi, sg.name_ur].filter(Boolean).map(k => k.toLowerCase());
+        const sgBooks = catBooks.filter(b => {
           const bg = (b.genre || '').toLowerCase();
-          return genreKeywords.some(k => bg.includes(k) || bg === k);
+          const bsg = (b.subgenre || '').toLowerCase();
+          const bt = (b.title_hi || b.title_en || '').toLowerCase();
+          return sgKeywords.some(k => bg.includes(k) || bsg.includes(k) || bt.includes(k));
         });
 
         return {
-          ...g,
-          count: genreBooks.length || sgWithCounts.reduce((acc, s) => acc + s.count, 0),
-          subgenres_count: sgWithCounts.length,
-          subgenres: sgWithCounts
+          ...sg,
+          count: sgBooks.length
         };
       });
 
       return {
-        ...cat,
-        count: catBooks.length,
-        genres_count: catGenres.length,
-        genres: catGenres
+        ...g,
+        count: genreBooks.length || gSubgenres.reduce((acc, s) => acc + s.count, 0),
+        subgenres_count: gSubgenres.length,
+        subgenres: gSubgenres
       };
     });
-  } catch (err) {
-    console.warn('Failed to load categories from Supabase, using bundled hierarchy fallback:', err);
-    return DEFAULT_CATEGORIES;
-  }
+
+    return {
+      ...cat,
+      count: catBooks.length,
+      genres_count: catGenres.length,
+      genres: catGenres
+    };
+  });
 }
 
 // 2. Fetch Books with filters
@@ -204,14 +188,8 @@ export async function createGenre(genreData) {
   return data;
 }
 
-export async function deleteGenre(categoryIdOrGenreId, genreId) {
-  let query = supabase.from('genres').delete();
-  if (genreId) {
-    query = query.eq('category_id', categoryIdOrGenreId).eq('id', genreId);
-  } else {
-    query = query.eq('id', categoryIdOrGenreId);
-  }
-  const { data, error } = await query;
+export async function deleteGenre(categoryId, genreId) {
+  const { data, error } = await supabase.from('genres').delete().eq('category_id', categoryId).eq('id', genreId);
   if (error) throw error;
   return data;
 }
@@ -228,16 +206,11 @@ export async function createSubgenre(subgenreData) {
   return data;
 }
 
-export async function deleteSubgenre(categoryIdOrSubId, genreId, subgenreId) {
-  let query = supabase.from('subgenres').delete();
-  if (subgenreId) {
-    query = query.eq('category_id', categoryIdOrSubId).eq('genre_id', genreId).eq('id', subgenreId);
-  } else if (genreId) {
-    query = query.eq('category_id', categoryIdOrSubId).eq('id', genreId);
-  } else {
-    query = query.eq('id', categoryIdOrSubId);
-  }
-  const { data, error } = await query;
+export async function deleteSubgenre(categoryId, genreId, subgenreId) {
+  const { data, error } = await supabase.from('subgenres').delete()
+    .eq('category_id', categoryId)
+    .eq('genre_id', genreId)
+    .eq('id', subgenreId);
   if (error) throw error;
   return data;
 }
