@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpDown, BookOpen, ChevronRight, X } from 'lucide-react';
+import { ArrowUpDown, BookOpen, ChevronRight, X, Sparkles } from 'lucide-react';
 import BookCard from './BookCard';
 
 export default function BookGrid({
@@ -37,17 +37,17 @@ export default function BookGrid({
     : (selectedSubGenre && selectedSubGenre !== 'all' ? selectedSubGenre : null);
 
   return (
-    <section id="catalog" className="py-12 bg-[#faf8f5]">
+    <section id="catalog" className="py-12 bg-[#FAF9F6] border-t border-[#E2DDD5]/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Top Control Bar with Hierarchical Heading */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-stone-200/80">
+        {/* Editorial Publication Header & Filter Controls */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E2DDD5]">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#BA4E36]"></span>
               
               {/* Category Breadcrumb */}
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#0f172a] font-rekhta-serif tracking-tight flex items-center gap-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#1E1B18] font-editorial tracking-tight flex items-center gap-2">
                 {searchQuery ? (
                   <span>{`${lang === 'hi' ? 'खोज परिणाम' : 'Search Results'}: "${searchQuery}"`}</span>
                 ) : (
@@ -55,8 +55,8 @@ export default function BookGrid({
                     <span>{catTitle}</span>
                     {subGenreTitle && (
                       <>
-                        <ChevronRight className="w-4 h-4 text-stone-400 shrink-0" />
-                        <span className="text-[#1d4ed8] font-bold">{subGenreTitle}</span>
+                        <ChevronRight className="w-4 h-4 text-[#66615B] shrink-0" />
+                        <span className="text-[#BA4E36] font-bold">{subGenreTitle}</span>
                       </>
                     )}
                   </>
@@ -64,18 +64,18 @@ export default function BookGrid({
               </h2>
             </div>
 
-            <div className="flex items-center gap-2 pl-7 mt-1.5 flex-wrap">
-              <p className="text-xs text-stone-500 font-medium">
+            <div className="flex items-center gap-2 pl-5 mt-1.5 flex-wrap">
+              <p className="text-xs text-[#66615B] font-editorial">
                 {books.length} {lang === 'hi' ? 'रचनाएँ उपलब्ध' : (lang === 'ur' ? 'کتابیں دستیاب' : 'treatises available')}
               </p>
 
               {/* Active Sub-genre pill badge */}
               {subGenreTitle && (
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-[#1d4ed8] border border-blue-200 flex items-center gap-1">
+                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#BA4E36]/10 text-[#BA4E36] border border-[#BA4E36]/20 flex items-center gap-1 font-editorial">
                   <span>उप-वर्ग: {subGenreTitle}</span>
                   <button
                     onClick={() => onSelectSubGenre && onSelectSubGenre('all')}
-                    className="hover:text-red-600 transition cursor-pointer"
+                    className="hover:text-red-700 transition cursor-pointer"
                     title="Clear Sub-Genre filter"
                   >
                     <X className="w-3 h-3" />
@@ -85,25 +85,25 @@ export default function BookGrid({
             </div>
           </div>
 
-          {/* Right Controls */}
+          {/* Right Controls: Clear Search & Sort */}
           <div className="flex flex-wrap items-center gap-2.5">
             {searchQuery && (
               <button
                 onClick={onClearSearch}
-                className="px-3.5 py-1.5 text-xs bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-xl font-medium transition cursor-pointer shadow-2xs"
+                className="px-3.5 py-1.5 text-xs bg-[#F2EFE9] hover:bg-[#E2DDD5] text-[#1E1B18] rounded-xl font-medium transition cursor-pointer border border-[#E2DDD5]"
               >
                 ✕ {t.sections.clearSearch}
               </button>
             )}
 
-            {/* Modern Sort Dropdown */}
-            <div className="flex items-center gap-2 bg-white border border-stone-200/90 rounded-xl px-3 py-1.5 shadow-2xs text-xs">
-              <ArrowUpDown className="w-3.5 h-3.5 text-stone-400" />
-              <span className="text-stone-500 font-medium">{t.sections.sortBy}:</span>
+            {/* Editorial Sort Dropdown */}
+            <div className="flex items-center gap-2 bg-[#F2EFE9] border border-[#E2DDD5] rounded-xl px-3 py-1.5 text-xs shadow-2xs">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#66615B]" />
+              <span className="text-[#66615B] font-medium">{t.sections.sortBy}:</span>
               <select
                 value={sortBy}
                 onChange={(e) => onSortChange(e.target.value)}
-                className="bg-transparent font-semibold text-stone-800 outline-hidden cursor-pointer"
+                className="bg-transparent font-semibold text-[#1E1B18] outline-hidden cursor-pointer font-editorial"
               >
                 <option value="popular">{t.sections.sortPopular}</option>
                 <option value="views">{t.sections.sortViews}</option>
@@ -115,7 +115,7 @@ export default function BookGrid({
           </div>
         </div>
 
-        {/* Books Grid */}
+        {/* Fluid Editorial Books Grid */}
         {books.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 mt-8">
             {books.map((book) => (
@@ -132,21 +132,21 @@ export default function BookGrid({
             ))}
           </div>
         ) : (
-          <div className="py-20 text-center bg-white rounded-3xl border border-stone-200/80 mt-8 shadow-xs p-8 max-w-xl mx-auto">
-            <div className="w-14 h-14 bg-stone-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-stone-200/60 shadow-2xs">
-              <BookOpen className="w-6 h-6 text-stone-400" />
+          <div className="py-20 text-center bg-[#F2EFE9] rounded-3xl border border-[#E2DDD5] mt-8 shadow-xs p-8 max-w-xl mx-auto">
+            <div className="w-14 h-14 bg-[#FAF9F6] rounded-2xl flex items-center justify-center mx-auto mb-4 border border-[#E2DDD5] shadow-2xs">
+              <BookOpen className="w-6 h-6 text-[#BA4E36]" />
             </div>
-            <h3 className="text-base font-bold text-stone-900 mb-1 font-hindi-serif">
+            <h3 className="text-lg font-bold text-[#1E1B18] mb-1 font-editorial">
               {t.sections.noBooksFound}
             </h3>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto mb-5 leading-relaxed">
+            <p className="text-xs text-[#66615B] max-w-sm mx-auto mb-5 leading-relaxed font-editorial">
               {t.sections.noBooksDesc}
             </p>
             <div className="flex items-center justify-center gap-3">
               {selectedSubGenre && selectedSubGenre !== 'all' && (
                 <button
                   onClick={() => onSelectSubGenre && onSelectSubGenre('all')}
-                  className="px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold rounded-xl transition cursor-pointer"
+                  className="px-4 py-2 bg-[#FAF9F6] hover:bg-white text-[#1E1B18] text-xs font-semibold rounded-xl border border-[#E2DDD5] transition cursor-pointer"
                 >
                   {lang === 'hi' ? 'समग्र विधा देखें' : 'View Full Genre'}
                 </button>
@@ -157,7 +157,7 @@ export default function BookGrid({
                   if (onSelectSubGenre) onSelectSubGenre('all');
                   if (onClearSearch) onClearSearch();
                 }}
-                className="px-5 py-2 bg-[#1d4ed8] text-white text-xs font-semibold rounded-xl hover:bg-[#1e40af] transition shadow-xs cursor-pointer"
+                className="px-5 py-2 bg-[#BA4E36] text-white text-xs font-semibold rounded-xl hover:bg-[#a0422d] transition shadow-xs cursor-pointer"
               >
                 {lang === 'hi' ? 'सभी रचनाएँ देखें' : 'View All Treatises'}
               </button>

@@ -32,11 +32,25 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [localHeaderSearch, setLocalHeaderSearch] = useState(searchQuery || '');
+  const searchInputRef = useRef(null);
   const debounceRef = useRef(null);
 
   useEffect(() => {
     setLocalHeaderSearch(searchQuery || '');
   }, [searchQuery]);
+
+  // Global ⌘K / Ctrl+K keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleHeaderInputChange = (e) => {
     const val = e.target.value;
@@ -72,217 +86,168 @@ export default function Header({
     recognition.start();
   };
 
-  const navItems = [
-    { key: 'novel', label: t.nav.novel || 'Novel' },
-    { key: 'story', label: t.nav.story || 'Story' },
-    { key: 'poetry', label: t.nav.poetry || 'Poetry' },
-    { key: 'magazines', label: t.nav.magazines || 'Magazines' },
-    { key: 'vimarsh', label: t.nav.vimarsh || 'Discourse' },
-    { key: 'cultural-conscience', label: t.nav.conscience || 'Conscience' },
-    { key: 'satire', label: t.nav.satire || 'Satire' },
-    { key: 'drama', label: t.nav.drama || 'Drama' },
-    { key: 'essays', label: t.nav.essays || 'Essays' }
-  ];
-
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
-      {/* Top Banner Notice with Clean Minimal Style */}
-      <div className="bg-[#0f172a] text-stone-300 text-[11.5px] py-1.5 px-4 text-center font-medium tracking-wide flex justify-center items-center gap-4">
-        <span>✨ {t.tagline}</span>
-        <AdminOnly>
-          <button
-            onClick={onOpenAdmin}
-            className="underline hover:text-amber-400 cursor-pointer hidden md:inline text-amber-300/90 font-semibold transition-colors"
-          >
-            {t.nav.manageLibrary} ⚙️
-          </button>
-        </AdminOnly>
-      </div>
-
+    <header className="sticky top-0 z-40 bg-[#FAF9F6]/95 backdrop-blur-md border-b border-[#E2DDD5] shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 gap-3 sm:gap-5">
+        <div className="flex items-center justify-between h-14 gap-3 sm:gap-6">
           
-          {/* Logo with Elevated Cultural Typography */}
+          {/* Left: Clean Branding */}
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-blue-800 to-indigo-950 flex items-center justify-center text-amber-300 font-bold text-lg shadow-xs border border-amber-400/30 group-hover:scale-105 transition-transform">
-                <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'C' : 'चे')}</span>
+              <div className="w-8 h-8 rounded-lg bg-[#1E1B18] text-[#FAF9F6] flex items-center justify-center font-bold text-sm shadow-xs group-hover:bg-[#BA4E36] transition-colors">
+                <span className="font-editorial">{lang === 'ur' ? 'چ' : (lang === 'en' ? 'C' : 'चे')}</span>
               </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-rekhta-serif text-2xl font-extrabold tracking-tight text-[#0f2852] group-hover:text-[#1d4ed8] transition-colors">
-                    {t.brand}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/70">
-                    {t.brandSubtitle}
-                  </span>
-                </div>
-                <span className="text-[10px] text-stone-400 font-medium hidden sm:block -mt-0.5">
-                  {t.brandTagline}
+              <div className="flex items-baseline gap-2">
+                <span className="font-editorial text-xl font-bold tracking-tight text-[#1E1B18] group-hover:text-[#BA4E36] transition-colors">
+                  {t.brand}
+                </span>
+                <span className="text-[9.5px] font-semibold uppercase tracking-wider text-[#BA4E36] bg-[#F2EFE9] px-2 py-0.5 rounded-full border border-[#E2DDD5] hidden sm:inline-block">
+                  {t.brandSubtitle || 'Archives'}
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Navigation Links for Genres (Desktop) navigating directly to /category/:slug */}
-          <nav className="hidden xl:flex items-center gap-1 text-[13px] font-medium text-stone-600">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => {
-                  navigate('/category/' + item.key);
-                  if (onSelectCategory) onSelectCategory(item.key);
+          {/* Center: Minimal Pill Search Bar (⌘K) */}
+          <div className="flex-1 max-w-md mx-auto hidden md:block">
+            <div className="relative flex items-center w-full">
+              <Search className="w-3.5 h-3.5 text-[#66615B] absolute left-3.5 pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={localHeaderSearch}
+                onChange={handleHeaderInputChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setSearchQuery?.(localHeaderSearch);
+                    if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
+                  }
                 }}
-                className={`px-2.5 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${
-                  item.key === 'magazines' || item.key === 'vimarsh'
-                    ? 'font-bold text-[#1d4ed8] bg-blue-50/70 hover:bg-blue-100/70'
-                    : 'hover:text-[#1d4ed8] hover:bg-stone-50'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Quick Header Search Bar with Refined Style */}
-          <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm relative">
-            <input
-              type="text"
-              value={localHeaderSearch}
-              onChange={handleHeaderInputChange}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setSearchQuery?.(localHeaderSearch);
-                  if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
-                }
-              }}
-              placeholder={t.hero.searchPlaceholder}
-              autoComplete="off"
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-stone-50 hover:bg-white focus:bg-white border border-stone-200 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 rounded-full outline-hidden transition text-stone-900 cursor-text font-normal shadow-2xs"
-            />
-            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 pointer-events-none" />
-            <button
-              type="button"
-              onClick={handleVoiceSearch}
-              title="Voice Search"
-              className={`absolute right-2.5 p-1 text-stone-400 hover:text-[#1d4ed8] transition cursor-pointer ${isListening ? 'animate-pulse text-red-600' : ''}`}
-            >
-              <Mic className="w-3.5 h-3.5" />
-            </button>
+                placeholder={t.hero?.searchPlaceholder || 'Search title, author, verses...'}
+                autoComplete="off"
+                className="w-full pl-9 pr-20 py-1.5 text-xs bg-[#F2EFE9] hover:bg-[#F2EFE9]/80 focus:bg-white border border-[#E2DDD5] focus:border-[#BA4E36] focus:ring-1 focus:ring-[#BA4E36]/30 rounded-full outline-hidden transition text-[#1E1B18] placeholder-[#66615B]/80 font-normal"
+              />
+              <div className="absolute right-2.5 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={handleVoiceSearch}
+                  title="Voice Search"
+                  className={`p-1 text-[#66615B] hover:text-[#BA4E36] transition cursor-pointer ${isListening ? 'animate-pulse text-red-600' : ''}`}
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                </button>
+                <kbd className="hidden lg:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-semibold text-[#66615B] bg-[#FAF9F6] border border-[#E2DDD5] rounded shadow-2xs">
+                  ⌘K
+                </kbd>
+              </div>
+            </div>
           </div>
 
-          {/* Right Action Tools */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Right: Contextual Profile / Admin Actions */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* Admin Management Link */}
+            <AdminOnly>
+              <button
+                onClick={onOpenAdmin}
+                className="text-[11px] font-semibold text-[#1E1B18] hover:text-[#BA4E36] bg-[#F2EFE9] hover:bg-[#E2DDD5]/70 border border-[#E2DDD5] px-2.5 py-1 rounded-full transition cursor-pointer hidden sm:flex items-center gap-1.5"
+              >
+                <span>⚙️ {t.nav.manageLibrary || 'Admin'}</span>
+              </button>
+            </AdminOnly>
+
+            {/* Language Selector Pill */}
+            <div className="relative">
+              <button
+                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-[#1E1B18] bg-[#F2EFE9] hover:bg-[#E2DDD5]/70 rounded-full border border-[#E2DDD5] transition cursor-pointer"
+              >
+                <Globe className="w-3.5 h-3.5 text-[#66615B]" />
+                <span className="uppercase">{lang}</span>
+              </button>
+
+              {langDropdownOpen && (
+                <div className="absolute right-0 mt-1.5 w-36 bg-[#FAF9F6] rounded-xl shadow-lg border border-[#E2DDD5] py-1 text-xs z-50 animate-fadeIn">
+                  <button
+                    onClick={() => { setLang('hi'); setLangDropdownOpen(false); }}
+                    className={`w-full text-left px-3.5 py-1.5 flex items-center justify-between hover:bg-[#F2EFE9] transition ${
+                      lang === 'hi' ? 'font-bold text-[#BA4E36] bg-[#F2EFE9]' : 'text-[#1E1B18]'
+                    }`}
+                  >
+                    <span>हिंदी (HIN)</span>
+                    {lang === 'hi' && <span className="text-[#BA4E36]">✓</span>}
+                  </button>
+                  <button
+                    onClick={() => { setLang('en'); setLangDropdownOpen(false); }}
+                    className={`w-full text-left px-3.5 py-1.5 flex items-center justify-between hover:bg-[#F2EFE9] transition ${
+                      lang === 'en' ? 'font-bold text-[#BA4E36] bg-[#F2EFE9]' : 'text-[#1E1B18]'
+                    }`}
+                  >
+                    <span>English (ENG)</span>
+                    {lang === 'en' && <span className="text-[#BA4E36]">✓</span>}
+                  </button>
+                  <button
+                    onClick={() => { setLang('ur'); setLangDropdownOpen(false); }}
+                    className={`w-full text-left px-3.5 py-1.5 flex items-center justify-between hover:bg-[#F2EFE9] font-urdu transition ${
+                      lang === 'ur' ? 'font-bold text-[#BA4E36] bg-[#F2EFE9]' : 'text-[#1E1B18]'
+                    }`}
+                  >
+                    <span>اردو (URD)</span>
+                    {lang === 'ur' && <span className="text-[#BA4E36]">✓</span>}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Upload PDF Action (Terracotta Pill) */}
+            <button
+              onClick={onOpenUpload}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#BA4E36] hover:bg-[#9E3F29] text-white text-xs font-semibold shadow-xs transition duration-150 cursor-pointer"
+              title={t.nav.uploadBook}
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t.nav.uploadBook || 'Upload'}</span>
+            </button>
+
             {/* User Profile / Auth Button */}
             {user ? (
-              <div className="flex items-center gap-2 bg-blue-50/80 border border-blue-200/80 px-2.5 py-1.5 rounded-full text-xs">
-                <div className="w-5 h-5 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-[10px]">
+              <div className="flex items-center gap-1.5 bg-[#F2EFE9] border border-[#E2DDD5] px-2 py-1 rounded-full text-xs">
+                <div className="w-5 h-5 rounded-full bg-[#1E1B18] text-[#FAF9F6] flex items-center justify-center font-bold text-[10px]">
                   {user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
-                <span className="max-w-[100px] truncate text-[11px] font-semibold text-stone-700 hidden md:inline">
-                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                </span>
                 <button
                   type="button"
                   onClick={() => signOut()}
                   title="Sign Out"
-                  className="text-stone-400 hover:text-red-600 transition p-0.5 cursor-pointer"
+                  className="text-[#66615B] hover:text-red-600 transition p-0.5 cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3 h-3" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuth}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200/80 transition cursor-pointer"
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F2EFE9] hover:bg-[#E2DDD5]/70 text-[#1E1B18] text-xs font-semibold border border-[#E2DDD5] transition cursor-pointer"
               >
-                <UserIcon className="w-3.5 h-3.5 text-stone-500" />
+                <UserIcon className="w-3.5 h-3.5 text-[#66615B]" />
                 <span>{t.nav.login}</span>
               </button>
             )}
 
-            {/* Direct Primary Upload PDF Button */}
-            <button
-              onClick={onOpenUpload}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
-              title={t.nav.uploadBook}
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.nav.uploadBook}</span>
-              <span className="sm:hidden">+</span>
-            </button>
-
-            {/* Language Selector Dropdown (HIN, ENG, URD) */}
-            <div className="relative">
-              <button
-                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-stone-700 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200/80 shadow-2xs cursor-pointer transition"
-              >
-                <Globe className="w-3.5 h-3.5 text-stone-500" />
-                <span className="uppercase">{lang}</span>
-                <span className="text-[10px] text-stone-400">▼</span>
-              </button>
-
-              {langDropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-38 bg-white rounded-xl shadow-xl border border-stone-100 py-1.5 text-xs z-50 animate-fadeIn">
-                  <button
-                    onClick={() => { setLang('hi'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'hi' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>हिंदी (HIN)</span>
-                    {lang === 'hi' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => { setLang('en'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'en' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>English (ENG)</span>
-                    {lang === 'en' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => { setLang('ur'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 font-urdu transition ${
-                      lang === 'ur' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>اردو (URD)</span>
-                    {lang === 'ur' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Admin / Management Button (Admin Only) */}
-            <AdminOnly>
-              <button
-                onClick={onOpenAdmin}
-                title={t.nav.manageLibrary}
-                className="p-2 text-stone-500 hover:text-[#1d4ed8] hover:bg-stone-50 rounded-lg transition cursor-pointer border border-transparent hover:border-stone-200/60"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            </AdminOnly>
-
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-stone-600 hover:text-stone-900 xl:hidden rounded-lg hover:bg-stone-50 cursor-pointer"
+              className="md:hidden p-1.5 text-[#1E1B18] hover:bg-[#F2EFE9] rounded-lg transition cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
 
           </div>
         </div>
-
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-stone-100 py-3.5 px-2 space-y-2 bg-white animate-fadeIn">
+          <div className="md:hidden border-t border-[#E2DDD5] py-3.5 px-3 space-y-2 bg-[#FAF9F6] animate-fadeIn">
             <div className="grid grid-cols-2 gap-2 text-xs">
               {navItems.map((item) => (
                 <button
@@ -292,24 +257,24 @@ export default function Header({
                     if (onSelectCategory) onSelectCategory(item.key);
                     setMobileMenuOpen(false);
                   }}
-                  className="p-2.5 rounded-lg hover:bg-stone-50 text-stone-700 text-left font-medium transition cursor-pointer"
+                  className="p-2.5 rounded-xl hover:bg-[#F2EFE9] text-[#1E1B18] text-left font-medium transition cursor-pointer font-editorial"
                 >
                   {item.label}
                 </button>
               ))}
             </div>
             
-            <div className="pt-2.5 border-t border-stone-100 flex gap-2">
+            <div className="pt-2.5 border-t border-[#E2DDD5] flex gap-2">
               <button
                 onClick={() => { onOpenUpload(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center bg-[#1d4ed8] text-white rounded-lg font-bold hover:bg-[#1e40af] transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 text-xs text-center bg-[#BA4E36] text-white rounded-xl font-bold hover:bg-[#a0422d] transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 <span>{t.nav.uploadBook}</span>
               </button>
               <button
                 onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 text-xs text-center border border-[#E2DDD5] bg-[#F2EFE9] rounded-xl font-medium text-[#1E1B18] hover:bg-[#E2DDD5] transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <span>⚙️ {t.nav.manageLibrary}</span>
               </button>

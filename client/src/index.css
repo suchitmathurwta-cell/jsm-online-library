@@ -1,13 +1,28 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
+
+:root {
+  --bg-base: #FAF9F6;
+  --bg-surface: #F2EFE9;
+  --border-subtle: #E2DDD5;
+  --text-primary: #1E1B18;
+  --text-secondary: #66615B;
+  --accent-terracotta: #BA4E36;
+}
 
 @layer base {
   body {
+    background-color: #FAF9F6;
+    color: #1E1B18;
     font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }
 
+.font-editorial {
+  font-family: 'Newsreader', 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+}
+
 .font-rekhta-serif {
-  font-family: 'Rozha One', 'Noto Serif Devanagari', 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Newsreader', 'Rozha One', 'Noto Serif Devanagari', 'Cormorant Garamond', Georgia, serif;
 }
 
 .font-hindi-serif {
@@ -18,8 +33,13 @@
   font-family: 'Noto Nastaliq Urdu', 'Amiri', serif;
 }
 
+.font-nastaliq-editorial {
+  font-family: 'Noto Nastaliq Urdu', 'Amiri', serif;
+  line-height: 2.4 !important;
+}
+
 .font-english-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Newsreader', 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
 }
 
 /* Custom Scrollbars */
