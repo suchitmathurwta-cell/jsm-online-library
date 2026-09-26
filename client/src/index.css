@@ -1,17 +1,49 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
+
+:root {
+  --archive-base: #F7F5F0;
+  --archive-surface: #EFECE6;
+  --archive-elevated: #FFFFFF;
+  --archive-border: #DDD7CD;
+  --archive-border-subtle: #ECE8E0;
+  
+  --ink-primary: #121110;
+  --ink-secondary: #524E48;
+  --ink-tertiary: #847E75;
+  --ink-mono: #6E685F;
+
+  --accent-terracotta: #9B382A;
+  --accent-verdigris: #244238;
+  --accent-amber: #A66D29;
+}
 
 @layer base {
   body {
+    background-color: var(--archive-base);
+    color: var(--ink-primary);
     font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
   }
 }
 
+/* Editorial & Archival Typography Classes */
+.font-editorial {
+  font-family: 'Newsreader', 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-display {
+  font-family: 'Newsreader', 'Noto Serif Devanagari', Georgia, serif;
+}
+
+.font-devanagari-serif {
+  font-family: 'Noto Serif Devanagari', 'Newsreader', Georgia, serif;
+}
+
 .font-rekhta-serif {
-  font-family: 'Rozha One', 'Noto Serif Devanagari', 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Newsreader', 'Noto Serif Devanagari', 'Cormorant Garamond', Georgia, serif;
 }
 
 .font-hindi-serif {
-  font-family: 'Noto Serif Devanagari', 'Rozha One', Georgia, serif;
+  font-family: 'Noto Serif Devanagari', 'Newsreader', Georgia, serif;
 }
 
 .font-urdu {
@@ -19,38 +51,55 @@
 }
 
 .font-english-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Cormorant Garamond', 'Newsreader', Georgia, serif;
 }
 
-/* Custom Scrollbars */
+.font-mono-ledger {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Custom Archival Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1ede6;
+  background: #F7F5F0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4c5b3;
-  border-radius: 4px;
+  background: #DDD7CD;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8927b;
+  background: #9B382A;
 }
 
-/* Subtle page shadows & vintage book effects */
+/* Archival Visual Devices */
+.archive-border-b {
+  border-bottom: 1px solid var(--archive-border);
+}
+
+.archive-border-r {
+  border-right: 1px solid var(--archive-border);
+}
+
+.archive-rule {
+  height: 1px;
+  background-color: var(--archive-border);
+}
+
 .book-shadow {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px -2px rgba(18, 17, 16, 0.08), 0 2px 6px -1px rgba(18, 17, 16, 0.04);
 }
 
 .book-spine {
-  box-shadow: inset 4px 0 8px -2px rgba(0,0,0,0.4), inset -2px 0 4px -1px rgba(255,255,255,0.2);
+  box-shadow: inset 3px 0 6px -2px rgba(0, 0, 0, 0.35);
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(247, 245, 240, 0.95);
   backdrop-filter: blur(12px);
 }

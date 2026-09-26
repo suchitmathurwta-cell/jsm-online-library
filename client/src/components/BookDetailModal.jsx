@@ -5,7 +5,8 @@ import {
   Download,
   Share2,
   Quote,
-  Check
+  Check,
+  Compass
 } from 'lucide-react';
 import { getLocalizedEra, getLocalizedLanguage } from '../locales/translations';
 
@@ -53,25 +54,27 @@ export default function BookDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#121110]/80 backdrop-blur-[2px] overflow-y-auto">
       <div
-        className="relative bg-white rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden border border-stone-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-[#FFFFFF] rounded-sm max-w-4xl w-full shadow-2xl overflow-hidden border border-[#DDD7CD] my-auto animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50">
-          <div className="text-xs text-stone-500 font-medium flex items-center gap-2">
-            <span>{t.brand}</span>
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#DDD7CD] bg-[#FAF9F6]">
+          <div className="text-xs font-mono text-[#524E48] flex items-center gap-2">
+            <Compass className="w-3.5 h-3.5 text-[#9B382A]" />
+            <span className="font-bold text-[#121110]">CHETNA ARCHIVES</span>
             <span>/</span>
-            <span className="text-[#1d4ed8] font-bold uppercase">{book.category}</span>
+            <span className="text-[#9B382A] font-semibold uppercase">{book.category}</span>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition cursor-pointer"
+            className="p-1 rounded-sm hover:bg-[#EFECE6] text-[#524E48] hover:text-[#121110] transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -81,46 +84,49 @@ export default function BookDetailModal({
             
             {/* Left Column: Cover & Primary Actions */}
             <div className="md:col-span-5 flex flex-col items-center">
-              <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-lg overflow-hidden shadow-xl border-4 border-stone-100 bg-stone-900 group">
+              <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-xs overflow-hidden shadow-lg border border-[#DDD7CD] bg-[#121110] group">
                 <img
                   src={book.cover_url}
                   alt={title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-y-0 left-0 w-3.5 bg-gradient-to-r from-black/40 to-transparent pointer-events-none"></div>
+                <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/40 to-transparent pointer-events-none"></div>
                 {book.is_featured && (
-                  <div className="absolute top-2 left-2 bg-amber-500 text-stone-950 font-bold text-[10px] px-2 py-0.5 rounded shadow-xs">
-                    {t.card.featured}
+                  <div className="absolute top-2 left-2 bg-[#9B382A] text-white font-mono text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-xs shadow-xs">
+                    CANONICAL
                   </div>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div className="w-full max-w-[260px] flex flex-col gap-2.5 mt-5">
+              <div className="w-full max-w-[260px] flex flex-col gap-2 mt-5">
                 <button
+                  type="button"
                   onClick={() => {
                     onClose();
                     onOpenReader(book);
                   }}
-                  className="w-full py-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 bg-[#121110] hover:bg-[#9B382A] text-white text-xs font-mono uppercase tracking-wider rounded-sm shadow-xs flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <BookOpen className="w-4 h-4" />
+                  <BookOpen className="w-3.5 h-3.5 text-[#FFFFFF]" />
                   <span>{t.details.startReading}</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => onDownloadBook(book)}
-                  className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs hover:shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 bg-[#9B382A] hover:bg-[#852E22] text-white text-xs font-mono uppercase tracking-wider rounded-sm shadow-xs flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3.5 h-3.5" />
                   <span>{t.details.downloadNow}</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleShare}
-                  className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition cursor-pointer border border-stone-200"
+                  className="w-full py-2 bg-[#EFECE6] hover:bg-[#E5E1D8] text-[#121110] text-xs font-mono uppercase tracking-wider rounded-sm flex items-center justify-center gap-2 transition cursor-pointer border border-[#DDD7CD]"
                 >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-[#244238]" /> : <Share2 className="w-3.5 h-3.5" />}
                   <span>{copiedLink ? t.details.linkCopied : t.details.share}</span>
                 </button>
               </div>
@@ -129,56 +135,56 @@ export default function BookDetailModal({
             {/* Right Column: Metadata, Citation Generator & Overview */}
             <div className="md:col-span-7 flex flex-col justify-between">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-rekhta-serif leading-tight">
+                <h1 className="font-editorial text-2xl sm:text-3xl font-normal text-[#121110] leading-snug">
                   {title}
                 </h1>
 
                 {book.title_en && book.title_en !== title && (
-                  <p className="text-sm font-medium text-stone-500 italic mt-0.5">
+                  <p className="text-xs font-sans text-[#524E48] italic mt-0.5">
                     {book.title_en}
                   </p>
                 )}
 
                 {/* Author Name */}
-                <div className="mt-3 pb-3 border-b border-stone-200">
-                  <p className="text-xs text-stone-500 font-medium uppercase tracking-wider">{t.details.author}</p>
-                  <p className="text-base font-bold text-stone-900 font-hindi-serif mt-0.5">
+                <div className="mt-3 pb-3 border-b border-[#DDD7CD]">
+                  <p className="text-[10px] font-mono text-[#524E48] uppercase tracking-wider">{t.details.author}</p>
+                  <p className="text-base font-serif font-bold text-[#9B382A] mt-0.5">
                     {author}
                   </p>
                 </div>
 
                 {/* Metadata Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-4 text-xs">
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.pubYear}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.year ? `${book.year} CE` : '—'}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4 text-xs font-mono">
+                  <div className="bg-[#FAF9F6] p-2.5 rounded-sm border border-[#DDD7CD]">
+                    <span className="text-[#524E48] block text-[10px] uppercase">{t.details.pubYear}</span>
+                    <span className="font-bold text-[#121110] text-xs mt-0.5 block">{book.year ? `${book.year} CE` : '—'}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.language}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block truncate">{localizedLang}</span>
+                  <div className="bg-[#FAF9F6] p-2.5 rounded-sm border border-[#DDD7CD]">
+                    <span className="text-[#524E48] block text-[10px] uppercase">{t.details.language}</span>
+                    <span className="font-bold text-[#121110] text-xs mt-0.5 block truncate">{localizedLang}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.pageCount}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.pages || 150} {t.card.pages}</span>
+                  <div className="bg-[#FAF9F6] p-2.5 rounded-sm border border-[#DDD7CD]">
+                    <span className="text-[#524E48] block text-[10px] uppercase">{t.details.pageCount}</span>
+                    <span className="font-bold text-[#121110] text-xs mt-0.5 block">{book.pages || 150} {t.card.pages}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.totalDownloads}</span>
-                    <span className="font-bold text-emerald-700 text-xs mt-0.5 block">{(book.downloads_count || 0).toLocaleString()}</span>
+                  <div className="bg-[#FAF9F6] p-2.5 rounded-sm border border-[#DDD7CD]">
+                    <span className="text-[#524E48] block text-[10px] uppercase">{t.details.totalDownloads}</span>
+                    <span className="font-bold text-[#244238] text-xs mt-0.5 block">{(book.downloads_count || 0).toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Era & Genre */}
-                <div className="mb-3 text-xs flex flex-wrap items-center gap-2 text-stone-600">
+                <div className="mb-3 text-xs flex flex-wrap items-center gap-2">
                   {localizedEra && (
-                    <span className="px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-md font-medium border border-blue-200">
+                    <span className="px-2 py-0.5 bg-[#EFECE6] text-[#121110] rounded-sm font-mono text-[11px] border border-[#DDD7CD]">
                       {localizedEra}
                     </span>
                   )}
                   {book.genre && (
-                    <span className="px-2.5 py-0.5 bg-amber-50 text-amber-900 rounded-md font-medium border border-amber-200">
+                    <span className="px-2 py-0.5 bg-[#FAF9F6] text-[#9B382A] rounded-sm font-mono text-[11px] border border-[#DDD7CD]">
                       {book.genre}
                     </span>
                   )}
@@ -186,30 +192,31 @@ export default function BookDetailModal({
 
                 {/* Description */}
                 <div className="mb-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
+                  <h3 className="text-[10px] font-mono uppercase tracking-widest text-[#524E48] font-bold mb-1">
                     {t.details.description}
                   </h3>
-                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200">
+                  <p className="text-xs sm:text-[13px] text-[#524E48] leading-relaxed bg-[#FAF9F6] p-3 rounded-sm border border-[#DDD7CD] font-sans">
                     {book[`description_${lang}`] || book.description || book.description_en}
                   </p>
                 </div>
 
                 {/* Academic Citation Generator Box */}
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                <div className="bg-[#EFECE6] p-3 rounded-sm border border-[#DDD7CD] text-xs">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                      <Quote className="w-3.5 h-3.5 text-[#1d4ed8]" />
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider font-bold text-[#121110]">
+                      <Quote className="w-3.5 h-3.5 text-[#9B382A]" />
                       <span>{t.details.cite}</span>
                     </div>
 
                     {/* Format Selector */}
-                    <div className="flex items-center gap-1 bg-white p-0.5 rounded border border-slate-300">
+                    <div className="flex items-center gap-1 bg-[#FFFFFF] p-0.5 rounded-sm border border-[#DDD7CD]">
                       {['chicago', 'apa', 'mla', 'humanities'].map((fmt) => (
                         <button
                           key={fmt}
+                          type="button"
                           onClick={() => setCitationFormat(fmt)}
-                          className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold transition cursor-pointer ${
-                            citationFormat === fmt ? 'bg-[#1d4ed8] text-white' : 'text-slate-600 hover:bg-slate-100'
+                          className={`px-1.5 py-0.5 rounded-xs text-[10px] font-mono uppercase font-bold transition cursor-pointer ${
+                            citationFormat === fmt ? 'bg-[#9B382A] text-white' : 'text-[#524E48] hover:bg-[#EFECE6]'
                           }`}
                         >
                           {fmt}
@@ -218,14 +225,15 @@ export default function BookDetailModal({
                     </div>
                   </div>
 
-                  <p className="font-mono text-[11px] text-slate-700 bg-white p-2 rounded border border-slate-200 select-all">
+                  <p className="font-mono text-[11px] text-[#121110] bg-[#FFFFFF] p-2.5 rounded-sm border border-[#DDD7CD] select-all">
                     {citations[citationFormat] || citations.chicago}
                   </p>
 
                   <div className="flex justify-end mt-2">
                     <button
+                      type="button"
                       onClick={handleCopyCitation}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[11px] font-semibold rounded cursor-pointer transition"
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-[#121110] hover:bg-[#9B382A] text-white font-mono text-[10px] uppercase tracking-wider rounded-sm cursor-pointer transition"
                     >
                       {copiedCitation ? <Check className="w-3 h-3 text-white" /> : <Quote className="w-3 h-3 text-white" />}
                       <span>{copiedCitation ? t.details.citationCopied : t.details.copyCitation}</span>
@@ -236,9 +244,9 @@ export default function BookDetailModal({
               </div>
 
               {/* Bottom Note */}
-              <div className="mt-4 pt-2 border-t border-stone-200 text-[11px] text-stone-400 flex items-center justify-between">
+              <div className="mt-4 pt-2 border-t border-[#DDD7CD] text-[10px] font-mono text-[#524E48] flex items-center justify-between">
                 <span>{t.details.footerNote}</span>
-                <span>ID: {book.id}</span>
+                <span>ACCESSION ID: {book.id}</span>
               </div>
             </div>
 
@@ -249,3 +257,4 @@ export default function BookDetailModal({
     </div>
   );
 }
+
