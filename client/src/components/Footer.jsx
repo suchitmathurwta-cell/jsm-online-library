@@ -1,73 +1,69 @@
 import React from 'react';
-import { BookOpen, Globe, Plus, Settings } from 'lucide-react';
+import { BookOpen, Globe, Sparkles } from 'lucide-react';
 
 export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
   return (
-    <footer className="bg-[#121110] text-[#EFECE6] pt-14 pb-10 border-t border-[#2A2723]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#0f172a] text-stone-300 pt-12 pb-8 border-t border-stone-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Main Colophon Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-[#2A2723]">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-10 border-b border-stone-800">
           
-          {/* Col 1: Brand & Colophon Mission Statement */}
-          <div className="md:col-span-5 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-sm bg-[#9B382A] flex items-center justify-center text-[#FFFFFF] font-serif font-bold text-base shadow-xs">
+          {/* Col 1: Brand & Purpose */}
+          <div className="md:col-span-5 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-blue-800 flex items-center justify-center text-amber-200 font-bold text-base shadow-xs">
                 <span>{lang === 'ur' ? 'چ' : 'चे'}</span>
               </div>
-              <span className="font-editorial text-2xl font-normal tracking-tight text-[#FFFFFF]">
+              <span className="font-rekhta-serif text-3xl font-extrabold tracking-tight text-white">
                 {t.brand}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-[#DDD7CD] bg-[#2A2723] px-2.5 py-0.5 rounded-sm border border-[#DDD7CD]/20">
+              <span className="text-xs font-semibold uppercase tracking-widest text-amber-400 bg-amber-400/10 px-2.5 py-0.5 rounded border border-amber-400/20">
                 {t.brandSubtitle}
               </span>
             </div>
 
-            <p className="text-xs text-[#DDD7CD]/75 font-sans leading-relaxed max-w-sm">
+            <p className="text-xs text-stone-400 leading-relaxed max-w-sm">
               {t.footer.about}
             </p>
 
             <div className="flex items-center gap-3 pt-2">
               <button
-                type="button"
                 onClick={onOpenUpload}
-                className="px-3.5 py-2 bg-[#9B382A] hover:bg-[#852E22] text-[#FFFFFF] text-xs font-mono uppercase tracking-wider rounded-sm transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+                className="px-3.5 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold rounded-lg transition cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t.nav.uploadBook}</span>
+                + {t.nav.uploadBook}
               </button>
               <button
-                type="button"
                 onClick={onOpenAdmin}
-                className="px-3 py-2 bg-[#1A1816] hover:bg-[#25221F] text-[#DDD7CD] hover:text-[#FFFFFF] text-xs font-mono uppercase tracking-wider rounded-sm border border-[#2A2723] transition cursor-pointer flex items-center gap-1.5"
+                className="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-medium rounded-lg transition cursor-pointer"
               >
-                <Settings className="w-3.5 h-3.5 text-[#9B382A]" />
-                <span>{t.nav.manageLibrary}</span>
+                ⚙️ {t.nav.manageLibrary}
               </button>
             </div>
           </div>
 
-          {/* Col 2: Major Cultural Domains */}
-          <div className="md:col-span-3 space-y-3">
-            <h4 className="text-[11px] font-mono uppercase tracking-widest text-[#9B382A] font-bold">
+          {/* Col 2: Major Genres */}
+          <div className="md:col-span-3 space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
               {t.footer.majorGenres}
             </h4>
-            <ul className="space-y-2 text-xs font-sans text-[#DDD7CD]/70">
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 01 — {t.nav.novel}</span></li>
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 02 — {t.nav.story}</span></li>
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 03 — {t.nav.poetry}</span></li>
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 04 — {t.nav.conscience}</span></li>
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 05 — {t.nav.satire}</span></li>
-              <li><span className="hover:text-[#FFFFFF] transition cursor-pointer">№ 06 — {t.nav.drama}</span></li>
+            <ul className="space-y-1.5 text-xs text-stone-400">
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.novel}</span></li>
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.story}</span></li>
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.poetry}</span></li>
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.conscience}</span></li>
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.satire}</span></li>
+              <li><span className="hover:text-white transition cursor-pointer">• {t.nav.drama}</span></li>
             </ul>
           </div>
 
           {/* Col 3: Affiliated Literary & Cultural Institutions */}
-          <div className="md:col-span-4 space-y-3">
-            <h4 className="text-[11px] font-mono uppercase tracking-widest text-[#9B382A] font-bold">
+          <div className="md:col-span-4 space-y-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">
               {t.footer.initiatives}
             </h4>
-            <div className="space-y-2 text-xs font-sans text-[#DDD7CD]/70">
+            <div className="space-y-1.5 text-xs text-stone-400">
               <p>• {lang === 'hi' ? 'साहित्य अकादमी राष्ट्रीय डिजिटल अभिलेखागार' : (lang === 'ur' ? 'قومی ادبی و ثقافتی کونسل' : 'National Council for Promotion of Literature & Culture')}</p>
               <p>• {lang === 'hi' ? 'सार्वभौमिक मानवीय चेतना एवं नीतिशास्त्र संग्रह' : (lang === 'ur' ? 'ساہتیہ اکیڈمی اوپن ڈیجیٹل ریپوزٹری' : 'Sahitya Akademi Open Digital Repository')}</p>
               <p>• {lang === 'hi' ? 'एशियाटिक सोसाइटी एवं प्राचीन पांडुलिपि संरक्षण' : (lang === 'ur' ? 'ایشیاٹک سوسائٹی و قدیم مخطوطات تحفظ' : 'Asiatic Society & Classical Manuscript Preservation')}</p>
@@ -77,10 +73,10 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
 
         </div>
 
-        {/* Bottom Rights & Permanent Access Statement */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-[#DDD7CD]/60 gap-3">
-          <p>{t.footer.rights} // {new Date().getFullYear()}</p>
-          <div className="flex items-center gap-3 text-[11px] uppercase tracking-wider text-[#DDD7CD]/75">
+        {/* Bottom Rights */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3">
+          <p>{t.footer.rights}</p>
+          <div className="flex items-center gap-4 text-stone-400">
             <span>{t.footer.openAccess}</span>
             <span>•</span>
             <span>{t.footer.culturalConscience}</span>
@@ -93,4 +89,3 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
     </footer>
   );
 }
-
