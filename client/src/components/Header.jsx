@@ -5,13 +5,13 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Search,
   Mic,
-  PlusCircle,
+  Plus,
   Settings,
   Globe,
   Menu,
   X
 } from 'lucide-react';
-import { AdminOnly, VisitorOnly } from './AdminGuard';
+import { AdminOnly } from './AdminGuard';
 
 export default function Header({
   lang = 'hi',
@@ -33,6 +33,19 @@ export default function Header({
   const [isListening, setIsListening] = useState(false);
   const [localHeaderSearch, setLocalHeaderSearch] = useState(searchQuery || '');
   const debounceRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // Global ⌘K / Ctrl+K shortcut to focus inquiry input
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setLocalHeaderSearch(searchQuery || '');
@@ -85,68 +98,52 @@ export default function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
-      {/* Top Banner Notice with Clean Minimal Style */}
-      <div className="bg-[#0f172a] text-stone-300 text-[11.5px] py-1.5 px-4 text-center font-medium tracking-wide flex justify-center items-center gap-4">
-        <span>✨ {t.tagline}</span>
-        <AdminOnly>
-          <button
-            onClick={onOpenAdmin}
-            className="underline hover:text-amber-400 cursor-pointer hidden md:inline text-amber-300/90 font-semibold transition-colors"
-          >
-            {t.nav.manageLibrary} ⚙️
-          </button>
-        </AdminOnly>
+    <header className="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#D5CFC4]">
+      {/* Editorial Provenance Bar */}
+      <div className="bg-[#161514] text-[#D5CFC4] text-[11px] py-1 px-4 tracking-normal flex justify-between items-center max-w-full">
+        <div className="max-w-7xl mx-auto w-full flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#A83324]"></span>
+            <span className="font-editorial italic text-stone-300">{t.tagline}</span>
+          </div>
+          <AdminOnly>
+            <button
+              onClick={onOpenAdmin}
+              className="text-[#EAE6DC] hover:text-[#A83324] cursor-pointer text-[11px] transition-colors flex items-center gap-1 font-mono"
+            >
+              <span>{t.nav.manageLibrary}</span>
+              <span className="text-[#A83324]">⚙</span>
+            </button>
+          </AdminOnly>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 gap-3 sm:gap-5">
+        <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
           
-          {/* Logo with Elevated Cultural Typography */}
+          {/* Brand Mark: Script Parity & Editorial Dignity */}
           <div className="flex items-center gap-3 shrink-0">
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-blue-800 to-indigo-950 flex items-center justify-center text-amber-300 font-bold text-lg shadow-xs border border-amber-400/30 group-hover:scale-105 transition-transform">
-                <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'C' : 'चे')}</span>
+              <div className="w-8 h-8 rounded-sm bg-[#161514] flex items-center justify-center text-[#F4F1EA] font-serif text-sm border border-[#161514] group-hover:bg-[#A83324] group-hover:border-[#A83324] transition-colors">
+                <span className="font-editorial font-bold">{lang === 'ur' ? 'چ' : (lang === 'en' ? 'CH' : 'चे')}</span>
               </div>
               <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-rekhta-serif text-2xl font-extrabold tracking-tight text-[#0f2852] group-hover:text-[#1d4ed8] transition-colors">
-                    {t.brand}
+                <div className="flex items-baseline gap-2">
+                  <span className="font-editorial text-xl sm:text-2xl font-bold tracking-tight text-[#161514]">
+                    {lang === 'ur' ? 'چیتنا' : (lang === 'en' ? 'CHETNA' : 'चेतना')}
                   </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/70">
-                    {t.brandSubtitle}
+                  <span className="text-[10px] uppercase tracking-wider text-[#7A746B] font-mono border-l border-[#D5CFC4] pl-2 hidden sm:inline">
+                    {lang === 'ur' ? 'کتب خانہ' : (lang === 'en' ? 'LIBRARY REGISTER' : 'ई-पुस्तकालय')}
                   </span>
                 </div>
-                <span className="text-[10px] text-stone-400 font-medium hidden sm:block -mt-0.5">
-                  {t.brandTagline}
-                </span>
               </div>
             </Link>
           </div>
 
-          {/* Navigation Links for Genres (Desktop) navigating directly to /category/:slug */}
-          <nav className="hidden xl:flex items-center gap-1 text-[13px] font-medium text-stone-600">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => {
-                  navigate('/category/' + item.key);
-                  if (onSelectCategory) onSelectCategory(item.key);
-                }}
-                className={`px-2.5 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${
-                  item.key === 'magazines' || item.key === 'vimarsh'
-                    ? 'font-bold text-[#1d4ed8] bg-blue-50/70 hover:bg-blue-100/70'
-                    : 'hover:text-[#1d4ed8] hover:bg-stone-50'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Quick Header Search Bar with Refined Style */}
-          <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm relative">
+          {/* Inquiry Shell / Register Search with ⌘K */}
+          <div className="hidden md:flex items-center flex-1 max-w-sm lg:max-w-md relative">
             <input
+              ref={searchInputRef}
               type="text"
               value={localHeaderSearch}
               onChange={handleHeaderInputChange}
@@ -156,114 +153,136 @@ export default function Header({
                   if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
                 }
               }}
-              placeholder={t.hero.searchPlaceholder}
+              placeholder={t.hero?.searchPlaceholder || 'ग्रंथ, लेखक या विषय खोजें...'}
               autoComplete="off"
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-stone-50 hover:bg-white focus:bg-white border border-stone-200 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 rounded-full outline-hidden transition text-stone-900 cursor-text font-normal shadow-2xs"
+              className="w-full pl-9 pr-14 py-1.5 text-xs bg-[#F4F1EA] hover:bg-white focus:bg-white border border-[#D5CFC4] focus:border-[#161514] focus:ring-1 focus:ring-[#161514] rounded-md outline-hidden transition text-[#161514] placeholder-[#7A746B]"
             />
-            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 pointer-events-none" />
-            <button
-              type="button"
-              onClick={handleVoiceSearch}
-              title="Voice Search"
-              className={`absolute right-2.5 p-1 text-stone-400 hover:text-[#1d4ed8] transition cursor-pointer ${isListening ? 'animate-pulse text-red-600' : ''}`}
-            >
-              <Mic className="w-3.5 h-3.5" />
-            </button>
+            <Search className="w-3.5 h-3.5 text-[#7A746B] absolute left-3 pointer-events-none" />
+            <div className="absolute right-2 flex items-center gap-1.5">
+              <kbd className="hidden lg:inline text-[9.5px] font-mono text-[#7A746B] bg-[#EAE6DC] px-1 py-0.5 rounded border border-[#D5CFC4]">
+                ⌘K
+              </kbd>
+              <button
+                type="button"
+                onClick={handleVoiceSearch}
+                title="Voice Search"
+                className={`p-0.5 text-[#7A746B] hover:text-[#A83324] transition cursor-pointer ${isListening ? 'animate-pulse text-[#A83324]' : ''}`}
+              >
+                <Mic className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
+          {/* Primary Genre Access (Desktop) */}
+          <nav className="hidden xl:flex items-center gap-1 text-xs font-medium text-[#4A463F]">
+            {navItems.slice(0, 6).map((item) => (
+              <button
+                key={item.key}
+                onClick={() => {
+                  navigate('/category/' + item.key);
+                  if (onSelectCategory) onSelectCategory(item.key);
+                }}
+                className="px-2 py-1 rounded transition-colors hover:text-[#A83324] cursor-pointer"
+              >
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
           {/* Right Action Tools */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* User Profile / Auth Button */}
+            {/* User Profile / Auth */}
             {user ? (
-              <div className="flex items-center gap-2 bg-blue-50/80 border border-blue-200/80 px-2.5 py-1.5 rounded-full text-xs">
-                <div className="w-5 h-5 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-[10px]">
+              <div className="flex items-center gap-2 bg-[#F4F1EA] border border-[#D5CFC4] px-2.5 py-1 rounded text-xs">
+                <div className="w-4 h-4 rounded-full bg-[#161514] text-[#F4F1EA] flex items-center justify-center font-bold text-[9px]">
                   {user.email?.[0]?.toUpperCase() || 'U'}
                 </div>
-                <span className="max-w-[100px] truncate text-[11px] font-semibold text-stone-700 hidden md:inline">
+                <span className="max-w-[90px] truncate text-[11px] font-medium text-[#161514] hidden md:inline">
                   {user.user_metadata?.full_name || user.email?.split('@')[0]}
                 </span>
                 <button
                   type="button"
                   onClick={() => signOut()}
                   title="Sign Out"
-                  className="text-stone-400 hover:text-red-600 transition p-0.5 cursor-pointer"
+                  className="text-[#7A746B] hover:text-[#A83324] transition p-0.5 cursor-pointer"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
+                  <LogOut className="w-3 h-3" />
                 </button>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={onOpenAuth}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200/80 transition cursor-pointer"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded border border-[#D5CFC4] bg-[#F4F1EA] hover:bg-white text-[#161514] text-xs font-medium transition cursor-pointer"
               >
-                <UserIcon className="w-3.5 h-3.5 text-stone-500" />
+                <UserIcon className="w-3 h-3 text-[#7A746B]" />
                 <span>{t.nav.login}</span>
               </button>
             )}
 
-            {/* Direct Primary Upload PDF Button */}
+            {/* Accession Button (Upload Treatise) */}
             <button
               onClick={onOpenUpload}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-[#A83324] hover:bg-[#8C2A1E] text-white text-xs font-medium transition cursor-pointer"
               title={t.nav.uploadBook}
             >
-              <PlusCircle className="w-4 h-4" />
+              <Plus className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">{t.nav.uploadBook}</span>
-              <span className="sm:hidden">+</span>
+              <span className="sm:hidden font-bold">+</span>
             </button>
 
-            {/* Language Selector Dropdown (HIN, ENG, URD) */}
+            {/* Trilingual Script Switcher */}
             <div className="relative">
               <button
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-stone-700 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200/80 shadow-2xs cursor-pointer transition"
+                className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium text-[#161514] bg-[#F4F1EA] hover:bg-white rounded border border-[#D5CFC4] transition cursor-pointer"
+                title="Select Script & Language"
               >
-                <Globe className="w-3.5 h-3.5 text-stone-500" />
-                <span className="uppercase">{lang}</span>
-                <span className="text-[10px] text-stone-400">▼</span>
+                <Globe className="w-3 h-3 text-[#7A746B]" />
+                <span className="uppercase text-[11px]">{lang}</span>
+                <span className="text-[8px] text-[#7A746B]">▼</span>
               </button>
 
               {langDropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-38 bg-white rounded-xl shadow-xl border border-stone-100 py-1.5 text-xs z-50 animate-fadeIn">
+                <div className="absolute right-0 mt-1 w-36 bg-[#FAF8F5] rounded border border-[#D5CFC4] py-1 text-xs z-50 shadow-md">
                   <button
                     onClick={() => { setLang('hi'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'hi' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
+                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-[#EAE6DC] transition ${
+                      lang === 'hi' ? 'font-bold text-[#A83324] bg-[#EAE6DC]' : 'text-[#161514]'
                     }`}
                   >
                     <span>हिंदी (HIN)</span>
-                    {lang === 'hi' && <span className="text-[#1d4ed8]">✓</span>}
+                    {lang === 'hi' && <span className="text-[#A83324]">✓</span>}
                   </button>
                   <button
                     onClick={() => { setLang('en'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'en' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
+                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-[#EAE6DC] transition ${
+                      lang === 'en' ? 'font-bold text-[#A83324] bg-[#EAE6DC]' : 'text-[#161514]'
                     }`}
                   >
                     <span>English (ENG)</span>
-                    {lang === 'en' && <span className="text-[#1d4ed8]">✓</span>}
+                    {lang === 'en' && <span className="text-[#A83324]">✓</span>}
                   </button>
                   <button
                     onClick={() => { setLang('ur'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 font-urdu transition ${
-                      lang === 'ur' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
+                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-[#EAE6DC] font-urdu transition ${
+                      lang === 'ur' ? 'font-bold text-[#A83324] bg-[#EAE6DC]' : 'text-[#161514]'
                     }`}
                   >
                     <span>اردو (URD)</span>
-                    {lang === 'ur' && <span className="text-[#1d4ed8]">✓</span>}
+                    {lang === 'ur' && <span className="text-[#A83324]">✓</span>}
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Admin / Management Button (Admin Only) */}
+            {/* Admin Management Button */}
             <AdminOnly>
               <button
                 onClick={onOpenAdmin}
                 title={t.nav.manageLibrary}
-                className="p-2 text-stone-500 hover:text-[#1d4ed8] hover:bg-stone-50 rounded-lg transition cursor-pointer border border-transparent hover:border-stone-200/60"
+                className="p-1.5 text-[#7A746B] hover:text-[#161514] hover:bg-[#EAE6DC] rounded transition cursor-pointer"
               >
                 <Settings className="w-4 h-4" />
               </button>
@@ -272,7 +291,7 @@ export default function Header({
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-stone-600 hover:text-stone-900 xl:hidden rounded-lg hover:bg-stone-50 cursor-pointer"
+              className="p-1.5 text-[#161514] xl:hidden rounded hover:bg-[#EAE6DC] cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -282,8 +301,8 @@ export default function Header({
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-stone-100 py-3.5 px-2 space-y-2 bg-white animate-fadeIn">
-            <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="xl:hidden border-t border-[#D5CFC4] py-3 px-2 space-y-2 bg-[#FAF8F5]">
+            <div className="grid grid-cols-2 gap-1 text-xs">
               {navItems.map((item) => (
                 <button
                   key={item.key}
@@ -292,26 +311,26 @@ export default function Header({
                     if (onSelectCategory) onSelectCategory(item.key);
                     setMobileMenuOpen(false);
                   }}
-                  className="p-2.5 rounded-lg hover:bg-stone-50 text-stone-700 text-left font-medium transition cursor-pointer"
+                  className="p-2 rounded hover:bg-[#EAE6DC] text-[#161514] text-left transition cursor-pointer"
                 >
                   {item.label}
                 </button>
               ))}
             </div>
             
-            <div className="pt-2.5 border-t border-stone-100 flex gap-2">
+            <div className="pt-2 border-t border-[#D5CFC4] flex gap-2">
               <button
                 onClick={() => { onOpenUpload(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center bg-[#1d4ed8] text-white rounded-lg font-bold hover:bg-[#1e40af] transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-1.5 text-xs text-center bg-[#A83324] text-white rounded font-medium transition cursor-pointer flex items-center justify-center gap-1"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>{t.nav.uploadBook}</span>
               </button>
               <button
                 onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-1.5 text-xs text-center border border-[#D5CFC4] bg-[#F4F1EA] rounded text-[#161514] hover:bg-white transition cursor-pointer flex items-center justify-center gap-1"
               >
-                <span>⚙️ {t.nav.manageLibrary}</span>
+                <span>⚙ {t.nav.manageLibrary}</span>
               </button>
             </div>
           </div>
@@ -321,3 +340,4 @@ export default function Header({
     </header>
   );
 }
+

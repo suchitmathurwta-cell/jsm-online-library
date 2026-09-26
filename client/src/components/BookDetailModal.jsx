@@ -5,7 +5,8 @@ import {
   Download,
   Share2,
   Quote,
-  Check
+  Check,
+  FileText
 } from 'lucide-react';
 import { getLocalizedEra, getLocalizedLanguage } from '../locales/translations';
 
@@ -25,6 +26,18 @@ export default function BookDetailModal({
 
   const title = book[`title_${lang}`] || book.title_hi || book.title_en;
   const author = book[`author_${lang}`] || book.author_hi || book.author_en;
+  
+  // Secondary title: only show if the other script actually exists and is distinct
+  let secondaryTitle = null;
+  if (lang === 'en' && book.title_hi) {
+    secondaryTitle = book.title_hi;
+  } else if (lang === 'hi' && book.title_en && book.title_en !== book.title_hi) {
+    secondaryTitle = book.title_en;
+  } else if (lang === 'ur') {
+    if (book.title_hi) secondaryTitle = book.title_hi;
+    else if (book.title_en) secondaryTitle = book.title_en;
+  }
+
   const localizedEra = getLocalizedEra(book.era, lang);
   const localizedLang = getLocalizedLanguage(book.language, lang);
 
@@ -37,10 +50,10 @@ export default function BookDetailModal({
   };
 
   const citations = {
-    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
-    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}.`,
-    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
-    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'चेतना मुक्त पुस्तकालय द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved by Chetna Open Digital Library.'}`
+    chicago: `${book.author_hi || book.author_en || 'लेखक'}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'चेतना मुक्त पुस्तकालय' : 'Chetna Open Library Register')}, ${book.year || '2026'}.`,
+    apa: `${book.author_en || book.author_hi || 'Author'} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'चेतना मुक्त पुस्तकालय' : 'Chetna Open Library Register')}.`,
+    mla: `${book.author_hi || book.author_en || 'Author'}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'चेतना मुक्त पुस्तकालय' : 'Chetna Open Library Register')}, ${book.year || '2026'}.`,
+    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'चेतना मुक्त पुस्तकालय द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved in Chetna Open Register.'}`
   };
 
   const handleCopyCitation = () => {
@@ -52,164 +65,186 @@ export default function BookDetailModal({
     }
   };
 
+  const treatiseDescription = book[`description_${lang}`] || book.description || book.description_en;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-xs overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#161514]/75 backdrop-blur-xs overflow-y-auto">
       <div
-        className="relative bg-white rounded-2xl max-w-4xl w-full shadow-2xl overflow-hidden border border-stone-200 my-auto animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-[#FAF8F5] rounded-xs max-w-4xl w-full border border-[#D5CFC4] shadow-2xl overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50">
-          <div className="text-xs text-stone-500 font-medium flex items-center gap-2">
-            <span>{t.brand}</span>
+        {/* Dossier Header */}
+        <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#D5CFC4] bg-[#EAE6DC]">
+          <div className="text-xs font-mono text-[#7A746B] flex items-center gap-2">
+            <span className="font-bold text-[#161514]">CHETNA</span>
             <span>/</span>
-            <span className="text-[#1d4ed8] font-bold uppercase">{book.category}</span>
+            <span className="uppercase text-[#A83324] font-semibold">{book.category}</span>
+            {book.id && (
+              <>
+                <span>/</span>
+                <span className="text-[10px] text-[#7A746B] hidden sm:inline">{book.id}</span>
+              </>
+            )}
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-stone-200 text-stone-500 hover:text-stone-800 transition cursor-pointer"
+            className="p-1 rounded-xs hover:bg-[#D5CFC4] text-[#7A746B] hover:text-[#161514] transition cursor-pointer"
+            title="Close"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 sm:p-8 max-h-[80vh] overflow-y-auto">
+        {/* Dossier Content Body */}
+        <div className="p-6 sm:p-8 max-h-[82vh] overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-8">
             
-            {/* Left Column: Cover & Primary Actions */}
-            <div className="md:col-span-5 flex flex-col items-center">
-              <div className="relative w-full max-w-[260px] aspect-[3/4] rounded-lg overflow-hidden shadow-xl border-4 border-stone-100 bg-stone-900 group">
-                <img
-                  src={book.cover_url}
-                  alt={title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-y-0 left-0 w-3.5 bg-gradient-to-r from-black/40 to-transparent pointer-events-none"></div>
+            {/* Left Column: Monograph Plate & Primary Actions */}
+            <div className="md:col-span-4 flex flex-col items-center">
+              <div className="relative w-full max-w-[240px] aspect-[3/4] bg-[#EAE6DC] border border-[#D5CFC4] overflow-hidden flex items-center justify-center">
+                {book.cover_url ? (
+                  <img
+                    src={book.cover_url}
+                    alt={title}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="p-4 text-center text-[#7A746B]">
+                    <FileText className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <span className="font-editorial text-xs italic">{title}</span>
+                  </div>
+                )}
                 {book.is_featured && (
-                  <div className="absolute top-2 left-2 bg-amber-500 text-stone-950 font-bold text-[10px] px-2 py-0.5 rounded shadow-xs">
-                    {t.card.featured}
+                  <div className="absolute top-2 left-2 bg-[#A83324] text-white font-mono text-[9px] px-1.5 py-0.5 rounded-xs">
+                    {t.card?.featured || 'विशिष्ट ग्रंथ'}
                   </div>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div className="w-full max-w-[260px] flex flex-col gap-2.5 mt-5">
+              <div className="w-full max-w-[240px] flex flex-col gap-2 mt-5">
                 <button
                   onClick={() => {
                     onClose();
                     onOpenReader(book);
                   }}
-                  className="w-full py-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-lg flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2.5 bg-[#161514] hover:bg-[#A83324] text-white text-xs font-mono font-medium rounded-xs flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <BookOpen className="w-4 h-4" />
-                  <span>{t.details.startReading}</span>
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>{t.details?.startReading || 'ग्रंथ वाचन आरंभ करें'}</span>
                 </button>
 
                 <button
                   onClick={() => onDownloadBook(book)}
-                  className="w-full py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs hover:shadow flex items-center justify-center gap-2 transition cursor-pointer"
+                  className="w-full py-2 bg-[#1E3D34] hover:bg-[#152a24] text-white text-xs font-mono font-medium rounded-xs flex items-center justify-center gap-2 transition cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
-                  <span>{t.details.downloadNow}</span>
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{t.details?.downloadNow || 'PDF डाउनलोड'}</span>
                 </button>
 
                 <button
                   onClick={handleShare}
-                  className="w-full py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition cursor-pointer border border-stone-200"
+                  className="w-full py-1.5 bg-[#F4F1EA] hover:bg-white text-[#161514] text-xs font-mono rounded-xs flex items-center justify-center gap-2 transition cursor-pointer border border-[#D5CFC4]"
                 >
-                  {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? t.details.linkCopied : t.details.share}</span>
+                  {copiedLink ? <Check className="w-3.5 h-3.5 text-[#1E3D34]" /> : <Share2 className="w-3.5 h-3.5 text-[#7A746B]" />}
+                  <span>{copiedLink ? (t.details?.linkCopied || 'लिंक कॉपी हो गया') : (t.details?.share || 'साझा करें')}</span>
                 </button>
               </div>
             </div>
 
-            {/* Right Column: Metadata, Citation Generator & Overview */}
-            <div className="md:col-span-7 flex flex-col justify-between">
+            {/* Right Column: Intellectual Dossier, Description & Metadata */}
+            <div className="md:col-span-8 flex flex-col justify-between">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 font-rekhta-serif leading-tight">
+                {/* 1. Title */}
+                <h1 className="text-2xl sm:text-3xl font-editorial font-bold text-[#161514] leading-tight">
                   {title}
                 </h1>
 
-                {book.title_en && book.title_en !== title && (
-                  <p className="text-sm font-medium text-stone-500 italic mt-0.5">
-                    {book.title_en}
+                {secondaryTitle && (
+                  <p className="text-sm font-mono text-[#7A746B] mt-1">
+                    {secondaryTitle}
                   </p>
                 )}
 
-                {/* Author Name */}
-                <div className="mt-3 pb-3 border-b border-stone-200">
-                  <p className="text-xs text-stone-500 font-medium uppercase tracking-wider">{t.details.author}</p>
-                  <p className="text-base font-bold text-stone-900 font-hindi-serif mt-0.5">
+                {/* 2. Author */}
+                <div className="mt-3 pb-3 border-b border-[#D5CFC4]">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[#7A746B] block">
+                    {t.details?.author || 'रचनाकार'}
+                  </span>
+                  <span className="text-base font-editorial italic font-medium text-[#161514] mt-0.5 block">
                     {author}
-                  </p>
+                  </span>
                 </div>
 
-                {/* Metadata Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-4 text-xs">
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.pubYear}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.year ? `${book.year} CE` : '—'}</span>
+                {/* 3. Description / Overview in Prominent Position */}
+                {treatiseDescription && (
+                  <div className="my-4">
+                    <h3 className="text-[11px] font-mono uppercase tracking-wider text-[#7A746B] mb-1.5">
+                      {t.details?.description || 'ग्रंथ विमर्श व अवलोकन'}
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#161514] leading-relaxed bg-[#F4F1EA] p-3.5 border border-[#D5CFC4] rounded-xs font-serif">
+                      {treatiseDescription}
+                    </p>
+                  </div>
+                )}
+
+                {/* 4. Factual Metadata Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 my-4 text-xs font-mono">
+                  <div className="bg-[#F4F1EA] p-2 border border-[#D5CFC4]">
+                    <span className="text-[#7A746B] block text-[10px] uppercase">{t.details?.pubYear || 'प्रकाशन वर्ष'}</span>
+                    <span className="font-bold text-[#161514] text-xs mt-0.5 block">{book.year ? `${book.year} CE` : '—'}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.language}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block truncate">{localizedLang}</span>
+                  <div className="bg-[#F4F1EA] p-2 border border-[#D5CFC4]">
+                    <span className="text-[#7A746B] block text-[10px] uppercase">{t.details?.language || 'भाषा'}</span>
+                    <span className="font-bold text-[#161514] text-xs mt-0.5 block truncate">{localizedLang}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.pageCount}</span>
-                    <span className="font-bold text-stone-800 text-xs mt-0.5 block">{book.pages || 150} {t.card.pages}</span>
+                  <div className="bg-[#F4F1EA] p-2 border border-[#D5CFC4]">
+                    <span className="text-[#7A746B] block text-[10px] uppercase">{t.details?.pageCount || 'पृष्ठ'}</span>
+                    <span className="font-bold text-[#161514] text-xs mt-0.5 block">{book.pages || 150}</span>
                   </div>
 
-                  <div className="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
-                    <span className="text-stone-500 block font-medium">{t.details.totalDownloads}</span>
-                    <span className="font-bold text-emerald-700 text-xs mt-0.5 block">{(book.downloads_count || 0).toLocaleString()}</span>
+                  <div className="bg-[#F4F1EA] p-2 border border-[#D5CFC4]">
+                    <span className="text-[#7A746B] block text-[10px] uppercase">{t.details?.totalDownloads || 'डाउनलोड'}</span>
+                    <span className="font-bold text-[#1E3D34] text-xs mt-0.5 block">{(book.downloads_count || 0).toLocaleString()}</span>
                   </div>
                 </div>
 
-                {/* Era & Genre */}
-                <div className="mb-3 text-xs flex flex-wrap items-center gap-2 text-stone-600">
-                  {localizedEra && (
-                    <span className="px-2.5 py-0.5 bg-blue-50 text-blue-800 rounded-md font-medium border border-blue-200">
-                      {localizedEra}
-                    </span>
-                  )}
-                  {book.genre && (
-                    <span className="px-2.5 py-0.5 bg-amber-50 text-amber-900 rounded-md font-medium border border-amber-200">
-                      {book.genre}
-                    </span>
-                  )}
-                </div>
+                {/* Era & Genre tags if present */}
+                {(localizedEra || book.genre) && (
+                  <div className="mb-4 text-xs font-mono flex flex-wrap items-center gap-1.5">
+                    {localizedEra && (
+                      <span className="px-2 py-0.5 bg-[#EAE6DC] text-[#161514] border border-[#D5CFC4] rounded-xs">
+                        {localizedEra}
+                      </span>
+                    )}
+                    {book.genre && (
+                      <span className="px-2 py-0.5 bg-[#EAE6DC] text-[#161514] border border-[#D5CFC4] rounded-xs">
+                        {book.genre}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-                {/* Description */}
-                <div className="mb-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-1">
-                    {t.details.description}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-stone-700 leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-200">
-                    {book[`description_${lang}`] || book.description || book.description_en}
-                  </p>
-                </div>
-
-                {/* Academic Citation Generator Box */}
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs">
+                {/* 5. Academic Citation Generator */}
+                <div className="bg-[#EAE6DC] p-3 border border-[#D5CFC4] rounded-xs text-xs">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                      <Quote className="w-3.5 h-3.5 text-[#1d4ed8]" />
-                      <span>{t.details.cite}</span>
+                    <div className="flex items-center gap-1.5 font-mono text-[11px] text-[#161514] uppercase font-bold">
+                      <Quote className="w-3 h-3 text-[#A83324]" />
+                      <span>{t.details?.cite || 'संदर्भ उद्धरण (Citation)'}</span>
                     </div>
 
                     {/* Format Selector */}
-                    <div className="flex items-center gap-1 bg-white p-0.5 rounded border border-slate-300">
+                    <div className="flex items-center gap-1 bg-[#FAF8F5] p-0.5 border border-[#D5CFC4] rounded-xs">
                       {['chicago', 'apa', 'mla', 'humanities'].map((fmt) => (
                         <button
                           key={fmt}
                           onClick={() => setCitationFormat(fmt)}
-                          className={`px-1.5 py-0.5 rounded text-[10px] uppercase font-bold transition cursor-pointer ${
-                            citationFormat === fmt ? 'bg-[#1d4ed8] text-white' : 'text-slate-600 hover:bg-slate-100'
+                          className={`px-1.5 py-0.5 text-[9.5px] uppercase font-mono transition cursor-pointer ${
+                            citationFormat === fmt ? 'bg-[#161514] text-white font-bold' : 'text-[#7A746B] hover:text-[#161514]'
                           }`}
                         >
                           {fmt}
@@ -218,26 +253,26 @@ export default function BookDetailModal({
                     </div>
                   </div>
 
-                  <p className="font-mono text-[11px] text-slate-700 bg-white p-2 rounded border border-slate-200 select-all">
+                  <p className="font-mono text-[10.5px] text-[#161514] bg-[#FAF8F5] p-2 border border-[#D5CFC4] select-all leading-relaxed">
                     {citations[citationFormat] || citations.chicago}
                   </p>
 
                   <div className="flex justify-end mt-2">
                     <button
                       onClick={handleCopyCitation}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[11px] font-semibold rounded cursor-pointer transition"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#161514] hover:bg-[#A83324] text-white text-[11px] font-mono rounded-xs cursor-pointer transition"
                     >
                       {copiedCitation ? <Check className="w-3 h-3 text-white" /> : <Quote className="w-3 h-3 text-white" />}
-                      <span>{copiedCitation ? t.details.citationCopied : t.details.copyCitation}</span>
+                      <span>{copiedCitation ? (t.details?.citationCopied || 'कॉपी हो गया') : (t.details?.copyCitation || 'कॉपी उद्धरण')}</span>
                     </button>
                   </div>
                 </div>
 
               </div>
 
-              {/* Bottom Note */}
-              <div className="mt-4 pt-2 border-t border-stone-200 text-[11px] text-stone-400 flex items-center justify-between">
-                <span>{t.details.footerNote}</span>
+              {/* Bottom Provenance Footnote */}
+              <div className="mt-4 pt-2 border-t border-[#D5CFC4] text-[10.5px] font-mono text-[#7A746B] flex items-center justify-between">
+                <span>{t.details?.footerNote || 'चेतना मुक्त पुस्तकालय — सार्वभौमिक बौद्धिक संपदा'}</span>
                 <span>ID: {book.id}</span>
               </div>
             </div>

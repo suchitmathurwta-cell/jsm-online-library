@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Download, Eye, Sparkles, FileCheck, Edit3 } from 'lucide-react';
+import { BookOpen, Download, Eye, FileText, Edit3 } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 
 export default function BookCard({
@@ -13,37 +13,53 @@ export default function BookCard({
 }) {
   const title = book[`title_${lang}`] || book.title_hi || book.title_en;
   const author = book[`author_${lang}`] || book.author_hi || book.author_en;
-  const secondaryTitle = lang === 'en' ? (book.title_hi || book.title_ur) : book.title_en;
+  
+  // Secondary title: only show if the other script actually exists and is not identical
+  let secondaryTitle = null;
+  if (lang === 'en' && book.title_hi) {
+    secondaryTitle = book.title_hi;
+  } else if (lang === 'hi' && book.title_en && book.title_en !== book.title_hi) {
+    secondaryTitle = book.title_en;
+  } else if (lang === 'ur') {
+    if (book.title_hi) secondaryTitle = book.title_hi;
+    else if (book.title_en) secondaryTitle = book.title_en;
+  }
+
   const isUserUploaded = book.id && book.id.startsWith('chetna-17');
 
   return (
-    <div className="group bg-white rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden hover:-translate-y-1.5">
+    <article className="group bg-[#FAF8F5] border border-[#D5CFC4] hover:border-[#161514] transition-all duration-200 flex flex-col justify-between overflow-hidden">
       
-      {/* Top Cover Image Area */}
+      {/* Plate Header / Cover Area */}
       <div
         onClick={() => onSelectBook(book)}
-        className="relative bg-gradient-to-b from-stone-50 via-stone-100/50 to-stone-100 p-3.5 flex items-center justify-center cursor-pointer overflow-hidden border-b border-stone-100"
+        className="relative bg-[#F4F1EA] p-3 flex items-center justify-center cursor-pointer overflow-hidden border-b border-[#D5CFC4]"
       >
-        <div className="relative w-full aspect-[3/4] max-h-56 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow bg-stone-900 flex items-center justify-center">
-          <img
-            src={book.cover_url}
-            alt={title}
-            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
+        <div className="relative w-full aspect-[3/4] max-h-52 bg-[#EAE6DC] border border-[#D5CFC4] overflow-hidden flex items-center justify-center">
+          {book.cover_url ? (
+            <img
+              src={book.cover_url}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center p-3 text-center text-[#7A746B]">
+              <FileText className="w-8 h-8 mb-1" />
+              <span className="font-editorial text-xs italic">{title}</span>
+            </div>
+          )}
 
-          <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none"></div>
-
-          {/* Hover Overlay Buttons to Read & Download */}
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
+          {/* Quiet Monograph Action Overlay */}
+          <div className="absolute inset-0 bg-[#161514]/75 opacity-0 group-hover:opacity-100 transition-opacity duration-150 flex flex-col items-center justify-center gap-2 p-3">
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onOpenReader(book);
               }}
-              className="px-4 py-2 bg-white text-stone-900 font-bold text-xs rounded-xl shadow-md hover:bg-stone-50 flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
+              className="w-full max-w-[140px] py-1.5 px-3 bg-[#F4F1EA] hover:bg-white text-[#161514] text-xs font-mono font-medium rounded-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
             >
-              <BookOpen className="w-3.5 h-3.5 text-[#1d4ed8]" />
+              <BookOpen className="w-3.5 h-3.5 text-[#A83324]" />
               <span>{t.card.readOnline}</span>
             </button>
             <button
@@ -51,7 +67,7 @@ export default function BookCard({
                 e.stopPropagation();
                 onDownloadBook(book);
               }}
-              className="px-3.5 py-1.5 bg-[#1d4ed8] text-white font-semibold text-[11px] rounded-xl shadow-md hover:bg-[#1e40af] flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
+              className="w-full max-w-[140px] py-1 px-3 bg-[#A83324] hover:bg-[#8C2A1E] text-white text-[11px] font-mono rounded-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
             >
               <Download className="w-3 h-3" />
               <span>{t.card.downloadPdf}</span>
@@ -59,16 +75,14 @@ export default function BookCard({
           </div>
         </div>
 
-        {/* User Uploaded vs Featured Badge */}
+        {/* Factual Monograph Badges */}
         {isUserUploaded ? (
-          <div className="absolute top-2.5 left-2.5 bg-emerald-600 text-white font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-            <FileCheck className="w-2.5 h-2.5" />
-            <span>{t.card.uploadedEdition}</span>
+          <div className="absolute top-2 left-2 bg-[#161514] text-[#F4F1EA] font-mono text-[9px] px-1.5 py-0.5 rounded-xs border border-[#161514]">
+            {t.card.uploadedEdition}
           </div>
         ) : book.is_featured ? (
-          <div className="absolute top-2.5 left-2.5 bg-amber-500 text-stone-950 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5" />
-            <span>{t.card.featured}</span>
+          <div className="absolute top-2 left-2 bg-[#A83324] text-white font-mono text-[9px] px-1.5 py-0.5 rounded-xs">
+            {t.card.featured}
           </div>
         ) : null}
 
@@ -80,52 +94,52 @@ export default function BookCard({
                 e.stopPropagation();
                 onEditBook(book);
               }}
-              title={t.admin.editBtn}
-              className="absolute top-2.5 right-2.5 p-1.5 bg-stone-900/90 hover:bg-stone-900 text-amber-400 rounded-lg shadow-md border border-stone-700 transition cursor-pointer"
+              title={t.admin?.editBtn || 'संपादित करें'}
+              className="absolute top-2 right-2 p-1 bg-[#161514] text-[#EAE6DC] hover:text-[#A83324] rounded-xs border border-[#4A463F] transition cursor-pointer"
             >
               <Edit3 className="w-3 h-3" />
             </button>
           </AdminOnly>
         )}
 
-        {/* Year Badge */}
+        {/* Temporal Year Plate */}
         {book.year && (
-          <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-xs text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-amber-400/30">
+          <div className="absolute bottom-2 right-2 bg-[#161514]/85 text-[#F4F1EA] font-mono text-[9.5px] px-1.5 py-0.5 rounded-xs">
             {book.year}
           </div>
         )}
       </div>
 
-      {/* Book Metadata Section */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      {/* Plate Body */}
+      <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
           <h3
             onClick={() => onSelectBook(book)}
-            className="font-hindi-serif font-bold text-stone-900 text-[14.5px] leading-snug group-hover:text-[#1d4ed8] transition-colors cursor-pointer line-clamp-2"
+            className="font-editorial font-bold text-[#161514] text-[15px] leading-snug group-hover:text-[#A83324] transition-colors cursor-pointer line-clamp-2"
             title={title}
           >
             {title}
           </h3>
 
-          {secondaryTitle && secondaryTitle !== title && (
-            <p className="text-[11px] text-stone-400 italic mt-0.5 line-clamp-1">
+          {secondaryTitle && (
+            <p className="text-[11px] font-mono text-[#7A746B] mt-0.5 line-clamp-1">
               {secondaryTitle}
             </p>
           )}
 
-          <p className="text-xs font-semibold text-[#1d4ed8] mt-1.5 line-clamp-1">
+          <p className="text-xs font-serif text-[#4A463F] mt-1.5 line-clamp-1 italic">
             {author}
           </p>
         </div>
 
-        {/* Stats & Actions */}
-        <div className="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-          <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-0.5" title={`${book.views_count || 0} ${t.card.views}`}>
-              <Eye className="w-3 h-3 text-stone-400" />
+        {/* Quiet Rule & Metadata Bar */}
+        <div className="mt-3 pt-2.5 border-t border-[#D5CFC4] flex items-center justify-between text-[10.5px] font-mono text-[#7A746B]">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1" title={`${book.views_count || 0} ${t.card.views}`}>
+              <Eye className="w-3 h-3 text-[#7A746B]" />
               <span>{(book.views_count || 0).toLocaleString()}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-emerald-700 font-medium" title={`${book.downloads_count || 0} ${t.card.downloads}`}>
+            <span className="flex items-center gap-1 text-[#1E3D34]" title={`${book.downloads_count || 0} ${t.card.downloads}`}>
               <Download className="w-3 h-3" />
               <span>{(book.downloads_count || 0).toLocaleString()}</span>
             </span>
@@ -135,14 +149,14 @@ export default function BookCard({
             <button
               onClick={() => onOpenReader(book)}
               title={t.card.readOnline}
-              className="p-1.5 text-stone-500 hover:text-white hover:bg-[#1d4ed8] rounded-lg transition cursor-pointer"
+              className="p-1 text-[#7A746B] hover:text-[#161514] hover:bg-[#EAE6DC] rounded-xs transition cursor-pointer"
             >
               <BookOpen className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => onDownloadBook(book)}
               title={t.card.downloadPdf}
-              className="p-1.5 text-stone-500 hover:text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
+              className="p-1 text-[#7A746B] hover:text-[#1E3D34] hover:bg-[#EAE6DC] rounded-xs transition cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
             </button>
@@ -151,6 +165,7 @@ export default function BookCard({
 
       </div>
 
-    </div>
+    </article>
   );
 }
+
