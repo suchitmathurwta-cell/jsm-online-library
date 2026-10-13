@@ -185,7 +185,7 @@ export default function HeroSection({
   ];
 
   return (
-    <section className="bg-[#080808] pt-14 pb-16 border-b border-white/[0.08] text-white">
+    <section className="bg-[#080808] pt-24 sm:pt-28 pb-16 border-b border-white/[0.08] text-white">
       <div className="max-w-[1440px] mx-auto px-6">
         
         {/* Top Monospace Tag */}

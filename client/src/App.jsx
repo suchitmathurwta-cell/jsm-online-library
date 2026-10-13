@@ -302,6 +302,8 @@ function MainApp() {
           const catElement = document.getElementById('catalog');
           if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
         }}
+        onSelectBook={(book) => setSelectedBook(book)}
+        onOpenReader={handleOpenReader}
       />
 
       {/* Dynamic Route Pages */}

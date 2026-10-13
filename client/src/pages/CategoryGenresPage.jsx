@@ -142,7 +142,7 @@ export default function CategoryGenresPage({
   const graphic = getCategoryGraphic(categorySlug);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-12 animate-fadeIn">
       {/* Layer 2 Breadcrumb */}
       <Breadcrumbs lang={lang} t={t} items={[{ label: categoryTitle }]} />
 
