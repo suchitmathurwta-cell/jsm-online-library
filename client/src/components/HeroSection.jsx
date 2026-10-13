@@ -9,9 +9,12 @@ import {
   BookOpen,
   ArrowRight,
   Loader2,
-  FileText
+  FileText,
+  Bookmark,
+  ExternalLink
 } from 'lucide-react';
 import { getBooks } from '../services/supabaseApi';
+import { Link } from 'react-router-dom';
 
 export default function HeroSection({
   t,
@@ -70,10 +73,8 @@ export default function HeroSection({
     setIsSearchingLive(true);
 
     debounceTimeoutRef.current = setTimeout(async () => {
-      // 1. Immediately sync global catalog query
       setSearchQuery?.(val.trim());
 
-      // 2. Query Supabase directly for fast live dropdown previews
       try {
         const results = await getBooks({ search: val.trim(), limit: 6 });
         setLiveResults(results || []);
@@ -145,35 +146,126 @@ export default function HeroSection({
     { hi: 'फ़ैज़ अहमद फ़ैज़', en: 'Faiz Ahmad Faiz', ur: 'فیض احمد فیض' }
   ];
 
+  // Curator Spotlight Acquisitions
+  const spotlightItems = [
+    {
+      titleEn: 'Godan (Complete Edition)',
+      titleHi: 'गोदान (सम्पूर्ण संस्करण)',
+      author: 'Munshi Premchand',
+      authorHi: 'मुंशी प्रेमचंद',
+      category: 'novel',
+      era: '1936 · Progressive Era',
+      tag: 'Curator Spotlight',
+      desc: 'The definitive epic of rural peasant struggle and colonial feudalism in northern India.'
+    },
+    {
+      titleEn: 'Gitanjali (Song Offerings)',
+      titleHi: 'गीतांजलि (काव्य संकलन)',
+      author: 'Rabindranath Tagore',
+      authorHi: 'रवींद्रनाथ टैगोर',
+      category: 'poetry',
+      era: '1910 · Bengal Renaissance',
+      tag: 'Featured Acquisition',
+      desc: 'Nobel-laureate verses exploring humanity, divine love, and cultural harmony.'
+    },
+    {
+      titleEn: 'Divan-e-Ghalib (Urdu-Hindi)',
+      titleHi: 'दीवान-ए-ग़ालिब',
+      author: 'Mirza Asadullah Khan Ghalib',
+      authorHi: 'मिर्ज़ा ग़ालिब',
+      category: 'poetry',
+      era: '1841 · Late Mughal',
+      tag: 'Rare Folio',
+      desc: 'Foundational Ghazal prosody illuminating existential irony and philosophical doubt.'
+    }
+  ];
+
   return (
     <section className="bg-[#FAFAFA] pt-14 pb-16 border-b border-black/[0.05]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
-        {/* Title & Badge with High-Key Minimalist Studio Typography */}
-        <div className="mb-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-[#111111] font-sans tracking-tight leading-tight flex flex-wrap items-center gap-3">
+        {/* Top Minimalist Tag */}
+        <div className="flex items-center gap-2 mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
+          <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 font-medium">
+            Featured Acquisitions · Curator Spotlight
+          </span>
+        </div>
+
+        {/* Title & Mission Header in Geist Sans */}
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-[#111111] font-sans tracking-tight leading-tight flex flex-wrap items-center gap-3">
             <span>{t.hero.title}</span>
-            <span className="text-xs font-mono font-medium text-zinc-600 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200/80">
+            <span className="text-xs font-mono font-medium text-zinc-600 bg-zinc-100 px-3 py-1 rounded-full border border-black/[0.06]">
               {t.hero.openAccessBadge || 'Open Access Digital Archive'}
             </span>
           </h1>
+
+          <div className="text-zinc-500 text-sm sm:text-[15px] font-sans leading-relaxed mt-3 relative max-w-3xl">
+            <p className={`${expanded ? '' : 'line-clamp-2'} transition-all`}>
+              {t.hero.descriptionMain}
+            </p>
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] hover:underline mt-2 cursor-pointer transition-colors"
+            >
+              <span>{expanded ? t.hero.readLess || 'Less' : t.hero.readMore || 'Read More'}</span>
+              {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
 
-        {/* Mission Statement Accordion */}
-        <div className="text-zinc-500 text-sm sm:text-[15px] font-sans leading-relaxed mb-8 relative max-w-3xl">
-          <p className={`${expanded ? '' : 'line-clamp-2'} transition-all`}>
-            {t.hero.descriptionMain}
-          </p>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] hover:underline mt-2 cursor-pointer transition-colors"
-          >
-            <span>{expanded ? t.hero.readLess || 'Less' : t.hero.readMore || 'Read More'}</span>
-            {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+        {/* Curator Spotlight Showcase Grid (3 Asymmetrical Minimalist Studio Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+          {spotlightItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="group p-5 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.05)] hover:border-black/15 transition-all duration-300 flex flex-col justify-between"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-black/[0.04]">
+                    {item.tag}
+                  </span>
+                  <span className="text-[11px] font-mono text-zinc-400">
+                    {item.era}
+                  </span>
+                </div>
+
+                <div className="text-xs text-zinc-400 font-sans mb-1">
+                  {lang === 'hi' ? item.authorHi : item.author}
+                </div>
+                <h3 className="text-base font-bold text-[#111111] tracking-tight font-sans group-hover:text-black">
+                  {lang === 'hi' ? item.titleHi : item.titleEn}
+                </h3>
+                <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2">
+                  {item.desc}
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-black/[0.05] flex items-center justify-between">
+                <span className="text-[11px] font-mono text-zinc-400 uppercase">
+                  {item.category}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLocalQuery(lang === 'hi' ? item.titleHi : item.titleEn);
+                    setSearchQuery?.(lang === 'hi' ? item.titleHi : item.titleEn);
+                    const catElement = document.getElementById('catalog');
+                    if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] group-hover:translate-x-0.5 transition-transform cursor-pointer"
+                >
+                  <span>Explore In Catalog</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-black" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Minimalist Floating Search Container */}
+        {/* Minimalist Studio Search Bar (⌘K integrated) */}
         <div ref={searchBoxRef} className="relative max-w-3xl z-30">
           <form
             onSubmit={handleFormSubmit}
@@ -188,6 +280,7 @@ export default function HeroSection({
             </div>
 
             <input
+              id="catalog-search-input"
               type="text"
               value={localQuery}
               onChange={handleInputChange}
@@ -233,7 +326,6 @@ export default function HeroSection({
           {/* Live Search Autocomplete Dropdown */}
           {dropdownOpen && localQuery.trim() && (
             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-black/[0.08] overflow-hidden z-50 animate-fadeIn">
-              
               <div className="p-3 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between text-xs font-medium text-zinc-600">
                 <span className="flex items-center gap-1.5">
                   <Search className="w-3.5 h-3.5 text-zinc-500" />
@@ -303,10 +395,9 @@ export default function HeroSection({
                                 setDropdownOpen(false);
                                 onOpenReader(book);
                               }}
-                              className="px-3 py-1 bg-[#111111] hover:bg-black text-white text-[11px] font-medium rounded-full shadow-2xs flex items-center gap-1 transition cursor-pointer"
+                              className="px-3 py-1 bg-zinc-100 hover:bg-black hover:text-white text-zinc-700 text-xs font-medium rounded-lg transition"
                             >
-                              <BookOpen className="w-3 h-3" />
-                              <span>{t.card.readOnline}</span>
+                              Read
                             </button>
                           )}
                         </div>
@@ -315,46 +406,34 @@ export default function HeroSection({
                   })
                 )}
               </div>
-
-              {/* View all in catalog footer */}
-              <button
-                type="button"
-                onClick={handleFormSubmit}
-                className="w-full py-2.5 px-4 bg-zinc-50 hover:bg-zinc-100 border-t border-zinc-100 text-xs font-medium text-[#111111] flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
-                <span>Filter full catalog results for "{localQuery}"</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
             </div>
           )}
-
-          {/* Minimalist Author & Thinker Chips */}
-          <div className="flex flex-wrap items-center gap-2 mt-5 text-xs text-zinc-500">
-            <span className="font-medium text-[#111111] flex items-center gap-1.5 mr-1 font-sans">
-              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
-              {t.hero.keyThinkers || 'Key Thinkers'}:
-            </span>
-            {thinkerChips.map((s, idx) => {
-              const label = s[lang] || s.hi;
-              return (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    const q = s.en || s.hi;
-                    setLocalQuery(q);
-                    setSearchQuery?.(q);
-                    if (onSearchSubmit) onSearchSubmit(q);
-                  }}
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-zinc-100 text-zinc-700 hover:text-black border border-zinc-200 shadow-[0_2px_6px_rgba(0,0,0,0.02)] transition-all cursor-pointer"
-                >
-                  {label}
-                </button>
-              );
-            })}
-          </div>
         </div>
 
+        {/* Thinker / Author Quick Search Pills */}
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider mr-1">
+            {t.hero.popularAuthors || 'Archive Masters:'}
+          </span>
+          {thinkerChips.slice(0, 7).map((tObj, idx) => {
+            const authorLabel = tObj[lang] || tObj.hi || tObj.en;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => {
+                  setLocalQuery(authorLabel);
+                  setSearchQuery?.(authorLabel);
+                  const catElement = document.getElementById('catalog');
+                  if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-3 py-1 bg-white hover:bg-zinc-100 border border-black/[0.06] text-zinc-600 hover:text-black text-xs font-sans rounded-full transition-colors cursor-pointer"
+              >
+                {authorLabel}
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

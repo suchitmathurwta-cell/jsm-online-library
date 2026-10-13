@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "npm --prefix client install && npm --prefix client run build && node -e \"const fs=require('fs'); fs.rmSync('dist', {recursive:true,force:true}); fs.cpSync('client/dist', 'dist', {recursive:true});\" && npm --prefix server install",
+    "build": "npm --prefix client install --legacy-peer-deps && npm --prefix client run build && node -e \"const fs=require('fs'); fs.rmSync('dist', {recursive:true,force:true}); fs.cpSync('client/dist', 'dist', {recursive:true});\" && npm --prefix server install --legacy-peer-deps",
     "start": "node server/index.js",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev"
+  },
+  "dependencies": {
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
+    "framer-motion": "^14.2.0",
+    "pdfjs-dist": "^3.4.120"
   }
 }

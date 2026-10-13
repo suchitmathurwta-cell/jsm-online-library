@@ -8,9 +8,11 @@ import SubGenresPage from './pages/SubGenresPage';
 import BooksListingPage from './pages/BooksListingPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import ReaderPage from './pages/ReaderPage';
+import DedicatedReaderPage from './pages/DedicatedReaderPage';
 import BookDetailModal from './components/BookDetailModal';
 import HikmahPdfReader from './components/HikmahPdfReader';
 import UploadBookModal from './components/UploadBookModal';
+import UploaderModal from './components/admin/UploaderModal';
 import AdminManageModal from './components/AdminManageModal';
 import EditBookModal from './components/EditBookModal';
 import SuggestBookModal from './components/SuggestBookModal';
@@ -253,20 +255,26 @@ function MainApp() {
     const bookId = book.id || book._id || book.slug;
     if (bookId) {
       incrementViews(bookId).catch(console.error);
-      window.open(`/reader/${bookId}`, '_blank');
+      window.open(`/read/${bookId}`, '_blank');
     }
   };
 
-  const isReaderRoute = location.pathname.startsWith('/reader/');
+  const isReaderRoute = location.pathname.startsWith('/reader/') || location.pathname.startsWith('/read/');
 
   if (isReaderRoute) {
     return (
-      <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#18181b] text-white">
+      <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#FAFAFA] text-[#111111]">
         <Routes>
           <Route
             path="/reader/:bookId"
             element={
-              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+            }
+          />
+          <Route
+            path="/read/:bookId"
+            element={
+              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
             }
           />
         </Routes>
@@ -381,7 +389,13 @@ function MainApp() {
           <Route
             path="/reader/:bookId"
             element={
-              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+            }
+          />
+          <Route
+            path="/read/:bookId"
+            element={
+              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
             }
           />
         </Routes>
@@ -419,15 +433,16 @@ function MainApp() {
         />
       )}
 
-      {/* Upload Modal with Supabase Integration (Admin Only) */}
+      {/* Upload Modal with Supabase Integration (Mugen Studio Uploader - Admin Only) */}
       {isUploadOpen && (
-        <UploadBookModal
+        <UploaderModal
           isOpen={isUploadOpen}
           onClose={() => setIsUploadOpen(false)}
           onSuccess={() => {
             fetchBooksData();
             fetchCategories();
           }}
+          categories={categories}
           lang={lang}
           t={t}
         />

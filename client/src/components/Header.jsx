@@ -91,7 +91,20 @@ export default function Header({
   return (
     <>
       {/* Floating Center Segmented Pill: ScriptToggle & Quick Controls */}
-      <FloatingNavPill lang={lang} setLang={setLang} t={t} />
+      <FloatingNavPill
+        lang={lang}
+        setLang={setLang}
+        t={t}
+        onOpenUpload={onOpenUpload}
+        onSearchClick={() => {
+          const el = document.getElementById('catalog-search-input') || document.getElementById('catalog');
+          el?.scrollIntoView({ behavior: 'smooth' });
+          setTimeout(() => {
+            const input = document.getElementById('catalog-search-input');
+            input?.focus();
+          }, 300);
+        }}
+      />
 
       {/* Main High-Key Minimalist Header Bar */}
       <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/[0.05]">
