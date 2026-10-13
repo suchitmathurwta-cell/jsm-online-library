@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, LogOut, Search, Mic, Plus, Settings, Menu, X } from 'lucide-react';
+import { User as UserIcon, LogOut, Search, Mic, Plus, Settings, Menu, X, ArrowUpRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { AdminOnly } from './AdminGuard';
-import FloatingNavPill from './FloatingNavPill';
 
 export default function Header({
   lang = 'hi',
@@ -19,12 +19,18 @@ export default function Header({
   onSelectCategory
 }) {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [localHeaderSearch, setLocalHeaderSearch] = useState(searchQuery || '');
   const debounceRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  const scriptOptions = [
+    { id: 'hi', label: 'Devanagari', vernacular: 'देवनागरी', code: 'HI' },
+    { id: 'ur', label: 'Nastaliq', vernacular: 'نستعلیق', code: 'UR' },
+    { id: 'en', label: 'Romanized', vernacular: 'Roman', code: 'EN' }
+  ];
 
   // ⌘K / Ctrl+K keyboard shortcut to focus header search
   useEffect(() => {
@@ -52,14 +58,28 @@ export default function Header({
     }, 200);
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearchQuery?.(localHeaderSearch);
+    if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
+    const catElement = document.getElementById('catalog');
+    if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
+  };
+
   const handleVoiceSearch = () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert(lang === 'hi' ? 'आपके ब्राउज़र में वॉइस सर्च समर्थित नहीं है।' : (lang === 'ur' ? 'آپ کے براؤزر میں وائس سرچ کی سہولت موجود نہیں۔' : 'Voice search is not supported in this browser.'));
+      alert(
+        lang === 'hi'
+          ? 'आपके ब्राउज़र में वॉइस सर्च समर्थित नहीं है।'
+          : lang === 'ur'
+          ? 'آپ کے براؤزر میں وائس سرچ کی سہولت موجود نہیں۔'
+          : 'Voice search is not supported in this browser.'
+      );
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'hi' ? 'hi-IN' : (lang === 'ur' ? 'ur-PK' : 'en-US');
+    recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'ur' ? 'ur-PK' : 'en-US';
     recognition.interimResults = false;
 
     setIsListening(true);
@@ -89,198 +109,264 @@ export default function Header({
   ];
 
   return (
-    <>
-      {/* Floating Center Segmented Pill: ScriptToggle & Quick Controls */}
-      <FloatingNavPill
-        lang={lang}
-        setLang={setLang}
-        t={t}
-        onOpenUpload={onOpenUpload}
-        onSearchClick={() => {
-          const el = document.getElementById('catalog-search-input') || document.getElementById('catalog');
-          el?.scrollIntoView({ behavior: 'smooth' });
-          setTimeout(() => {
-            const input = document.getElementById('catalog-search-input');
-            input?.focus();
-          }, 300);
-        }}
-      />
+    <header className="sticky top-0 z-50 bg-[#080808]/90 backdrop-blur-xl border-b border-white/[0.08]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
+          
+          {/* ========================================================================= */}
+          {/* 1. LEFT: Brand Lockup                                                     */}
+          {/* ========================================================================= */}
+          <div className="flex items-center gap-3 shrink-0">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-[10px] bg-white flex items-center justify-center text-black font-sans font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+                <span>{lang === 'ur' ? 'چ' : lang === 'en' ? 'CH' : 'चे'}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="font-sans text-base font-bold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
+                  {lang === 'ur' ? 'چیتنا' : lang === 'en' ? 'CHETNA' : 'चेतना'}
+                </span>
+                <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-zinc-400 border border-white/[0.1] px-2 py-0.5 rounded-full hidden md:inline">
+                  {lang === 'ur' ? 'کتب خانہ' : lang === 'en' ? 'DIGITAL ARCHIVE' : 'डिजिटल अभिलेखागार'}
+                </span>
+              </div>
+            </Link>
+          </div>
 
-      {/* Main High-Key Minimalist Header Bar */}
-      <header className="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-md border-b border-white/[0.08]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center justify-between h-16 gap-4">
-            
-            {/* Left: Brand Identity in Minimalist Studio Aesthetic */}
-            <div className="flex items-center gap-3 shrink-0">
-              <Link to="/" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-sans font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
-                  <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'CH' : 'चे')}</span>
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <span className="font-sans text-lg font-bold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
-                      {lang === 'ur' ? 'چیتنا' : (lang === 'en' ? 'CHETNA' : 'चेतना')}
-                    </span>
-                    <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 border-l border-white/[0.1] pl-2 hidden sm:inline">
-                      {lang === 'ur' ? 'کتب خانہ' : (lang === 'en' ? 'ARCHIVE' : 'ई-पुस्तकालय')}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            {/* Center Spacer to allow FloatingNavPill to be the focal segmented control */}
-            <div className="hidden lg:flex flex-1 max-w-xs xl:max-w-sm justify-center pointer-events-none">
-              {/* Center spacing preserved for FloatingNavPill */}
-            </div>
-
-            {/* Right: Quick Search, Actions, Auth & Admin */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              
-              {/* Minimalist ⌘K Search Input */}
-              <div className="hidden md:flex items-center relative w-48 lg:w-60">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={localHeaderSearch}
-                  onChange={handleHeaderInputChange}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      setSearchQuery?.(localHeaderSearch);
-                      if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
-                    }
-                  }}
-                  placeholder={t.hero?.searchPlaceholder || 'Search title, author...'}
-                  autoComplete="off"
-                  className="w-full pl-8 pr-12 py-1.5 text-xs bg-[#141414] hover:bg-[#181818] focus:bg-[#181818] border border-white/[0.08] focus:border-white/30 focus:ring-1 focus:ring-white/30 rounded-full outline-hidden transition text-white placeholder-zinc-500 font-sans"
-                />
-                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 pointer-events-none" />
-                <div className="absolute right-2 flex items-center gap-1">
-                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-400 bg-white/[0.06] px-1 py-0.5 rounded border border-white/[0.08]">
-                    ⌘K
-                  </kbd>
+          {/* ========================================================================= */}
+          {/* 2. CENTER: Segmented Script Switcher (Docked Studio Capsule)             */}
+          {/* ========================================================================= */}
+          <nav
+            aria-label="Script Selection"
+            className="hidden md:flex items-center justify-center"
+          >
+            <div className="flex items-center gap-1 p-1 rounded-full bg-[#141414] border border-white/[0.08] shadow-inner">
+              {scriptOptions.map((opt) => {
+                const isActive = lang === opt.id;
+                return (
                   <button
+                    key={opt.id}
                     type="button"
-                    onClick={handleVoiceSearch}
-                    title="Voice Search"
-                    className={`p-0.5 text-zinc-400 hover:text-white transition cursor-pointer ${
-                      isListening ? 'animate-pulse text-red-500' : ''
+                    onClick={() => setLang(opt.id)}
+                    className={`relative px-3 sm:px-3.5 py-1 text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-full ${
+                      isActive ? 'text-black' : 'text-zinc-400 hover:text-white'
                     }`}
                   >
-                    <Mic className="w-3 h-3" />
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeScriptBubble"
+                        className="absolute inset-0 bg-white rounded-full shadow-xs"
+                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      <span>{opt.vernacular}</span>
+                      <span className={`text-[9px] font-mono tracking-widest ${isActive ? 'text-zinc-700' : 'text-zinc-400'}`}>
+                        {opt.code}
+                      </span>
+                    </span>
                   </button>
-                </div>
-              </div>
+                );
+              })}
+            </div>
+          </nav>
 
-              {/* User Profile / Auth */}
-              {user ? (
-                <div className="flex items-center gap-2 bg-[#141414] border border-white/[0.08] px-2.5 py-1 rounded-full text-xs">
-                  <div className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px]">
-                    {user.email?.[0]?.toUpperCase() || 'U'}
-                  </div>
-                  <span className="max-w-[85px] truncate text-[11px] font-medium text-zinc-300 hidden lg:inline">
-                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => signOut()}
-                    title="Sign Out"
-                    className="text-zinc-400 hover:text-red-400 transition p-0.5 cursor-pointer"
-                  >
-                    <LogOut className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
+          {/* ========================================================================= */}
+          {/* 3. RIGHT: Search, Upload Action & Profile Suite                           */}
+          {/* ========================================================================= */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            
+            {/* Minimalist ⌘K Search Input */}
+            <form onSubmit={handleSearchSubmit} className="relative hidden lg:flex items-center">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={localHeaderSearch}
+                onChange={handleHeaderInputChange}
+                placeholder={t.hero?.searchPlaceholder || 'Search title, author...'}
+                autoComplete="off"
+                className="w-44 xl:w-56 pl-8 pr-14 py-1.5 text-xs bg-[#141414] hover:bg-[#181818] focus:bg-[#181818] border border-white/[0.08] focus:border-white/30 rounded-full outline-hidden transition text-white placeholder-zinc-500 font-sans"
+              />
+              <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 pointer-events-none" />
+              <div className="absolute right-2 flex items-center gap-1">
+                <kbd className="text-[9px] font-mono text-zinc-400 bg-white/[0.06] px-1 py-0.5 rounded border border-white/[0.08]">
+                  ⌘K
+                </kbd>
                 <button
                   type="button"
-                  onClick={onOpenAuth}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-[#141414] hover:bg-[#1a1a1a] text-white text-xs font-mono uppercase tracking-wider transition cursor-pointer"
+                  onClick={handleVoiceSearch}
+                  title="Voice Search"
+                  className={`p-0.5 text-zinc-400 hover:text-white transition cursor-pointer ${
+                    isListening ? 'animate-pulse text-red-500' : ''
+                  }`}
                 >
-                  <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
-                  <span>{t.nav.login}</span>
+                  <Mic className="w-3 h-3" />
                 </button>
-              )}
+              </div>
+            </form>
 
-              {/* Minimalist Studio Upload CTA Pill */}
+            {/* Quick Search Button (for screens where full input is hidden) */}
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('catalog-search-input') || document.getElementById('catalog');
+                el?.scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                  const input = document.getElementById('catalog-search-input');
+                  input?.focus();
+                }, 300);
+              }}
+              className="lg:hidden p-2 text-zinc-400 hover:text-white rounded-full bg-[#141414] border border-white/[0.08] hover:bg-white/[0.06] transition cursor-pointer"
+              title="Search (⌘K)"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+
+            {/* High-Contrast "Upload Work" CTA Pill */}
+            <button
+              type="button"
+              onClick={onOpenUpload}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-semibold font-mono uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02]"
+              title={t.nav.uploadBook || 'Upload Work'}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t.nav.uploadBook || 'Upload Work'}</span>
+            </button>
+
+            {/* Admin Management Cog (Admin Only) */}
+            <AdminOnly>
               <button
-                onClick={onOpenUpload}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-semibold font-mono uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02]"
-                title={t.nav.uploadBook}
+                type="button"
+                onClick={onOpenAdmin}
+                title={t.nav.manageLibrary || 'Admin Portal'}
+                className="p-2 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-full transition cursor-pointer border border-transparent hover:border-white/[0.08]"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">{t.nav.uploadBook}</span>
+                <Settings className="w-4 h-4" />
               </button>
+            </AdminOnly>
 
-              {/* Admin Panel Quick Trigger */}
-              <AdminOnly>
+            {/* User Profile / Auth Button */}
+            {user ? (
+              <div className="flex items-center gap-2 bg-[#141414] border border-white/[0.08] px-2.5 py-1 rounded-full text-xs">
+                <div className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px]">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <span className="max-w-[75px] truncate text-[11px] font-medium text-zinc-300 hidden xl:inline">
+                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                </span>
                 <button
-                  onClick={onOpenAdmin}
-                  title={t.nav.manageLibrary}
-                  className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-full transition cursor-pointer"
+                  type="button"
+                  onClick={() => signOut()}
+                  title="Sign Out"
+                  className="text-zinc-400 hover:text-red-400 transition p-0.5 cursor-pointer"
                 >
-                  <Settings className="w-4 h-4" />
+                  <LogOut className="w-3 h-3" />
                 </button>
-              </AdminOnly>
-
-              {/* Mobile Drawer Trigger */}
+              </div>
+            ) : (
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-1.5 text-[#111111] xl:hidden rounded-lg hover:bg-zinc-100 cursor-pointer"
-                aria-label="Toggle menu"
+                type="button"
+                onClick={onOpenAuth}
+                className="p-2 text-zinc-300 hover:text-white rounded-full bg-[#141414] hover:bg-white/[0.06] border border-white/[0.08] transition cursor-pointer flex items-center gap-1.5 sm:px-3 sm:py-1.5"
+                title={t.nav.login || 'Sign In'}
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
+                <span className="hidden sm:inline text-xs font-mono uppercase tracking-wider">{t.nav.login || 'Sign In'}</span>
               </button>
+            )}
 
-            </div>
+            {/* Mobile Navigation Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-zinc-300 hover:text-white bg-[#141414] hover:bg-white/[0.06] border border-white/[0.08] rounded-full transition cursor-pointer md:hidden"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
 
           </div>
-        </div>
 
-        {/* Mobile Navigation Drawer */}
-        {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-black/[0.05] py-3 px-4 bg-white/98 backdrop-blur-md animate-fadeIn">
-            {/* Quick Genres Grid */}
-            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
-              {t.sections.browseBy || 'Domains & Genres'}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 4. MOBILE DRAWER: Dark Studio Glass Sheet                                 */}
+      {/* ========================================================================= */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-white/[0.08] py-4 px-4 bg-[#0e0e0e]/95 backdrop-blur-xl animate-fadeIn text-white">
+          
+          {/* Mobile Script Switcher */}
+          <div className="mb-4">
+            <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 mb-2">
+              Script / भाषा / رسم الخط
             </p>
-            <div className="grid grid-cols-2 gap-1.5 text-xs mb-3">
-              {navItems.map((item) => (
+            <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-[#141414] border border-white/[0.08]">
+              {scriptOptions.map((opt) => (
                 <button
-                  key={item.key}
+                  key={opt.id}
+                  type="button"
                   onClick={() => {
-                    navigate('/category/' + item.key);
-                    if (onSelectCategory) onSelectCategory(item.key);
-                    setMobileMenuOpen(false);
+                    setLang(opt.id);
                   }}
-                  className="p-2 rounded-lg hover:bg-zinc-100 text-[#111111] text-left transition cursor-pointer font-medium"
+                  className={`py-1.5 text-xs rounded-xl font-medium transition cursor-pointer text-center ${
+                    lang === opt.id ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+                  }`}
                 >
-                  {item.label}
+                  {opt.vernacular}
                 </button>
               ))}
             </div>
-
-            {/* Mobile Actions */}
-            <div className="pt-2 border-t border-zinc-100 flex items-center gap-2">
-              <button
-                onClick={() => { onOpenUpload(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center bg-[#111111] text-white rounded-full font-medium transition cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t.nav.uploadBook}</span>
-              </button>
-              {!user && (
-                <button
-                  onClick={() => { onOpenAuth(); setMobileMenuOpen(false); }}
-                  className="flex-1 py-2 text-xs text-center border border-zinc-200 bg-white rounded-full text-[#111111] font-medium transition cursor-pointer"
-                >
-                  <span>{t.nav.login}</span>
-                </button>
-              )}
-            </div>
           </div>
-        )}
-      </header>
-    </>
+
+          {/* Quick Browse Domains */}
+          <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 mb-2">
+            {t.sections?.browseBy || 'Archival Domains'}
+          </p>
+          <div className="grid grid-cols-2 gap-1.5 text-xs mb-4">
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => {
+                  navigate('/category/' + item.key);
+                  if (onSelectCategory) onSelectCategory(item.key);
+                  setMobileMenuOpen(false);
+                }}
+                className="p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] text-zinc-200 text-left transition cursor-pointer font-sans"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Mobile Actions */}
+          <div className="pt-3 border-t border-white/[0.08] flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenUpload();
+                setMobileMenuOpen(false);
+              }}
+              className="flex-1 py-2 text-xs text-center bg-white hover:bg-zinc-200 text-black rounded-full font-mono uppercase tracking-wider font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{t.nav.uploadBook || 'Upload Work'}</span>
+            </button>
+            {!user && (
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenAuth();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex-1 py-2 text-xs text-center border border-white/[0.1] bg-[#141414] hover:bg-white/[0.06] rounded-full text-white font-mono uppercase tracking-wider transition cursor-pointer"
+              >
+                <span>{t.nav.login || 'Sign In'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   );
 }
