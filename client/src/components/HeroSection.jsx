@@ -226,13 +226,13 @@ export default function HeroSection({
               key={idx}
               className="group relative overflow-hidden p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between"
             >
-              {/* Graphical Visual Layer */}
+              {/* Graphical Visual Layer (reduced dark shade by 40%) */}
               <div
-                className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 ease-out group-hover:scale-105 opacity-35 group-hover:opacity-50"
+                className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 ease-out group-hover:scale-105 opacity-60 group-hover:opacity-80"
                 style={{ backgroundImage: `url(${item.image || item.remoteFallback})` }}
               />
-              <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient || 'from-zinc-900/60 via-black/80 to-black'} z-10 opacity-90`} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-15 pointer-events-none" />
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient || 'from-zinc-900/40 via-black/50 to-black/60'} z-10 opacity-55`} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/25 to-transparent z-15 pointer-events-none" />
 
               <div className="relative z-20">
                 <div className="flex items-center justify-between mb-4">

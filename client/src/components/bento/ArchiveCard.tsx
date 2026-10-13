@@ -57,22 +57,22 @@ export function ArchiveCard({
         <span className="sr-only">Open {displayTitle}</span>
       </Link>
 
-      {/* Ambient Archival Visual / Cover Layer */}
+      {/* Ambient Archival Visual / Cover Layer (reduced dark shade by 40% for clearer graphics) */}
       {resolvedCover && (
         <div
-          className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700 ease-out group-hover:scale-105 opacity-40 group-hover:opacity-60"
+          className="absolute inset-0 bg-cover bg-center z-0 transition-all duration-700 ease-out group-hover:scale-105 opacity-65 group-hover:opacity-85"
           style={{ backgroundImage: `url(${resolvedCover})` }}
         />
       )}
 
-      {/* Multi-stop ambient dark gradient for high legibility */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} z-10 transition-transform duration-700 ease-out group-hover:scale-105 opacity-90`} />
+      {/* Multi-stop ambient gradient (lightened by 40% from opacity-90 to opacity-55) */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradientClass} z-10 transition-transform duration-700 ease-out group-hover:scale-105 opacity-55`} />
 
-      {/* Deep vignette at the bottom behind pinned typography */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-15 pointer-events-none" />
+      {/* Vignette at the bottom behind pinned typography (reduced dark shade by 40%) */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/25 to-transparent z-15 pointer-events-none" />
 
       {/* Subtle geometric grid / archival radial texture */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.05),transparent_70%)] z-15 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.06),transparent_70%)] z-15 pointer-events-none" />
 
       {/* Top Floating Badges */}
       <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">

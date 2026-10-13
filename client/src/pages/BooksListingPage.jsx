@@ -129,11 +129,11 @@ export default function BooksListingPage({
         {graphic && (
           <>
             <div
-              className="absolute inset-0 bg-cover bg-center z-0 opacity-20"
+              className="absolute inset-0 bg-cover bg-center z-0 opacity-55"
               style={{ backgroundImage: `url(${graphic.image || graphic.remoteFallback})` }}
             />
-            <div className={`absolute inset-0 bg-gradient-to-r ${graphic.accentGradient || 'from-black via-black/80 to-transparent'} z-5`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-5 pointer-events-none" />
+            <div className={`absolute inset-0 bg-gradient-to-r ${graphic.accentGradient || 'from-black/70 via-black/50 to-transparent'} z-5`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/35 to-transparent z-5 pointer-events-none" />
           </>
         )}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
