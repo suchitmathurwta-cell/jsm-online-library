@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
+  Globe,
   User as UserIcon,
   LogOut,
   Search,
@@ -12,7 +13,6 @@ import {
   ArrowRight,
   BookOpen,
   Loader2,
-  Sparkles,
   Command
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -38,20 +38,27 @@ export default function Header({
   const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
   const [spotlightQuery, setSpotlightQuery] = useState(searchQuery || '');
   const [spotlightResults, setSpotlightResults] = useState([]);
   const [isSearchingLive, setIsSearchingLive] = useState(false);
   const [isListening, setIsListening] = useState(false);
 
+  const langDropdownRef = useRef(null);
   const spotlightInputRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
 
-  const scriptOptions = [
-    { id: 'hi', label: 'Devanagari', vernacular: 'देवनागरी', code: 'HI' },
-    { id: 'ur', label: 'Nastaliq', vernacular: 'نستعلیق', code: 'UR' },
-    { id: 'en', label: 'Romanized', vernacular: 'Roman', code: 'EN' }
-  ];
+  // Close language dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(e.target)) {
+        setLangDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // ⌘K / Ctrl+K keyboard shortcut to open Spotlight Search
   useEffect(() => {
@@ -175,6 +182,12 @@ export default function Header({
     'महादेवी वर्मा'
   ];
 
+  const getLangCode = () => {
+    if (lang === 'hi') return 'HIN';
+    if (lang === 'ur') return 'URD';
+    return 'ENG';
+  };
+
   return (
     <>
       {/* ========================================================================= */}
@@ -205,47 +218,9 @@ export default function Header({
           </Link>
 
           {/* Hairline Divider */}
-          <span className="h-4 w-px bg-white/[0.1] hidden md:block shrink-0" />
-
-          {/* 1.2 Segmented Script Switcher (Devanagari, Nastaliq, Roman) */}
-          <div className="hidden md:flex items-center gap-0.5 shrink-0 bg-black/40 p-0.5 rounded-full border border-white/[0.05]">
-            {scriptOptions.map((opt) => {
-              const isActive = lang === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setLang(opt.id)}
-                  className={`relative px-2.5 sm:px-3 py-1 text-xs font-sans font-medium transition-colors cursor-pointer rounded-full ${
-                    isActive ? 'text-black font-semibold' : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeStudioDockBubble"
-                      className="absolute inset-0 bg-white rounded-full shadow-xs"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span className="relative z-10 flex items-center gap-1">
-                    <span>{opt.vernacular}</span>
-                    <span
-                      className={`text-[9px] font-mono tracking-wider ${
-                        isActive ? 'text-zinc-700' : 'text-zinc-500'
-                      }`}
-                    >
-                      {opt.code}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Hairline Divider */}
           <span className="h-4 w-px bg-white/[0.1] hidden sm:block shrink-0" />
 
-          {/* 1.3 Universal ⌘K Spotlight Trigger Capsule */}
+          {/* 1.2 Universal ⌘K Spotlight Trigger Capsule */}
           <button
             type="button"
             onClick={() => setSpotlightOpen(true)}
@@ -260,6 +235,75 @@ export default function Header({
               ⌘K
             </kbd>
           </button>
+
+          {/* Hairline Divider */}
+          <span className="h-4 w-px bg-white/[0.1] hidden sm:block shrink-0" />
+
+          {/* 1.3 Previous Language Selector Dropdown (HIN, ENG, URD) in Studio Aesthetic */}
+          <div ref={langDropdownRef} className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 text-xs font-mono font-medium text-zinc-200 bg-white/[0.04] hover:bg-white/[0.08] rounded-full border border-white/[0.08] hover:border-white/20 transition cursor-pointer select-none"
+              title="Select Language / भाषा चुनें"
+            >
+              <Globe className="w-3.5 h-3.5 text-zinc-400" />
+              <span className="uppercase text-[11px] font-bold tracking-wider">{getLangCode()}</span>
+              <span className="text-[8px] text-zinc-400">▼</span>
+            </button>
+
+            <AnimatePresence>
+              {langDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 w-40 bg-[#141414]/95 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.85)] border border-white/[0.1] py-1.5 text-xs z-50 text-white"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('hi');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
+                      lang === 'hi' ? 'font-bold text-white bg-white/[0.1]' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span>हिंदी (HIN)</span>
+                    {lang === 'hi' && <span className="text-white font-bold">✓</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('en');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
+                      lang === 'en' ? 'font-bold text-white bg-white/[0.1]' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span>English (ENG)</span>
+                    {lang === 'en' && <span className="text-white font-bold">✓</span>}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('ur');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-xl ${
+                      lang === 'ur' ? 'font-bold text-white bg-white/[0.1]' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span>اردو (URD)</span>
+                    {lang === 'ur' && <span className="text-white font-bold">✓</span>}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Hairline Divider */}
           <span className="h-4 w-px bg-white/[0.1] hidden sm:block shrink-0" />
@@ -562,26 +606,39 @@ export default function Header({
             transition={{ duration: 0.2 }}
             className="fixed top-18 sm:top-20 inset-x-4 max-w-lg mx-auto z-50 p-4 rounded-3xl bg-[#121212]/96 backdrop-blur-2xl border border-white/[0.1] shadow-2xl text-white md:hidden"
           >
-            {/* Mobile Script Switcher */}
+            {/* Mobile Language Selector (Reverted to Previous States: HIN, ENG, URD) */}
             <div className="mb-4">
               <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 mb-2">
-                Script / भाषा / رسم الخط
+                Language / भाषा / زبان
               </p>
               <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-black/40 border border-white/[0.08]">
-                {scriptOptions.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => {
-                      setLang(opt.id);
-                    }}
-                    className={`py-1.5 text-xs rounded-xl font-medium transition cursor-pointer text-center ${
-                      lang === opt.id ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    {opt.vernacular}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setLang('hi')}
+                  className={`py-1.5 text-xs rounded-xl font-medium transition cursor-pointer text-center ${
+                    lang === 'hi' ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  हिंदी (HIN)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLang('en')}
+                  className={`py-1.5 text-xs rounded-xl font-medium transition cursor-pointer text-center ${
+                    lang === 'en' ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  English (ENG)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLang('ur')}
+                  className={`py-1.5 text-xs rounded-xl font-urdu font-medium transition cursor-pointer text-center ${
+                    lang === 'ur' ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  اردو (URD)
+                </button>
               </div>
             </div>
 
