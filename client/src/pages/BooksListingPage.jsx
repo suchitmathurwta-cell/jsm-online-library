@@ -18,6 +18,7 @@ import BookCard from '../components/BookCard';
 import { getBooks, deleteSubgenre } from '../services/supabaseApi';
 import { AdminOnly } from '../components/AdminGuard';
 import { getLocalizedEra } from '../locales/translations';
+import { getCategoryGraphic } from '../data/categoryGraphics';
 
 export default function BooksListingPage({
   t,
@@ -108,6 +109,7 @@ export default function BooksListingPage({
   };
 
   const hl = t.hierarchyLayers || {};
+  const graphic = getCategoryGraphic(categorySlug);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
@@ -124,7 +126,17 @@ export default function BooksListingPage({
 
       {/* Layer 4 Header Banner: Mugen Studio Container */}
       <div className="mt-4 p-6 sm:p-8 rounded-[24px] bg-[#141414] border border-white/[0.08] relative overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {graphic && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center z-0 opacity-20"
+              style={{ backgroundImage: `url(${graphic.image || graphic.remoteFallback})` }}
+            />
+            <div className={`absolute inset-0 bg-gradient-to-r ${graphic.accentGradient || 'from-black via-black/80 to-transparent'} z-5`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-5 pointer-events-none" />
+          </>
+        )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] text-zinc-400 text-[10px] font-mono tracking-[0.2em] uppercase border border-white/[0.08]">
               <span>{hl.layer4Badge || 'Level 4: Catalog'}</span>

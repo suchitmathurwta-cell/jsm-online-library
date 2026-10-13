@@ -18,6 +18,7 @@ import { createSubgenre, deleteSubgenre, updateSubgenre } from '../services/supa
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
 import { containerVariants, itemVariants } from '../components/BentoGrid';
+import { getCategoryGraphic } from '../data/categoryGraphics';
 
 export default function SubGenresPage({
   t,
@@ -147,6 +148,7 @@ export default function SubGenresPage({
   };
 
   const hl = t.hierarchyLayers || {};
+  const graphic = getCategoryGraphic(categorySlug);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
@@ -161,8 +163,18 @@ export default function SubGenresPage({
       />
 
       {/* Layer 3 Header: Mugen Studio Presentation */}
-      <div className="mt-4 p-6 sm:p-8 rounded-[24px] bg-[#141414] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] text-white">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/[0.08]">
+      <div className="mt-4 p-6 sm:p-8 rounded-[24px] bg-[#141414] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] text-white relative overflow-hidden">
+        {graphic && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center z-0 opacity-25"
+              style={{ backgroundImage: `url(${graphic.image || graphic.remoteFallback})` }}
+            />
+            <div className={`absolute inset-0 bg-gradient-to-r ${graphic.accentGradient || 'from-black via-black/80 to-transparent'} z-5`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-5 pointer-events-none" />
+          </>
+        )}
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-white/[0.08]">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-white rounded-full inline-block" />

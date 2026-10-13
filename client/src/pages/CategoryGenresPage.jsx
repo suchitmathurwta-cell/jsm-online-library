@@ -18,6 +18,7 @@ import { createGenre, deleteGenre, updateGenre } from '../services/supabaseApi';
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
 import { containerVariants, itemVariants } from '../components/BentoGrid';
+import { getCategoryGraphic } from '../data/categoryGraphics';
 
 export default function CategoryGenresPage({
   t,
@@ -138,6 +139,8 @@ export default function CategoryGenresPage({
 
   const hl = t.hierarchyLayers || {};
 
+  const graphic = getCategoryGraphic(categorySlug);
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
       {/* Layer 2 Breadcrumb */}
@@ -145,6 +148,16 @@ export default function CategoryGenresPage({
 
       {/* Layer 2 Header Banner: Mugen Studio Presentation */}
       <div className="mt-4 p-6 sm:p-8 rounded-[24px] bg-[#141414] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] relative overflow-hidden">
+        {graphic && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center z-0 opacity-30"
+              style={{ backgroundImage: `url(${graphic.image || graphic.remoteFallback})` }}
+            />
+            <div className={`absolute inset-0 bg-gradient-to-r ${graphic.accentGradient || 'from-black via-black/80 to-transparent'} z-5`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-5 pointer-events-none" />
+          </>
+        )}
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] text-zinc-300 text-xs font-mono uppercase tracking-wider border border-white/[0.08]">

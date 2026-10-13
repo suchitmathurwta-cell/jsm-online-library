@@ -151,7 +151,10 @@ export default function HeroSection({
       category: 'novel',
       era: '1936 · Progressive Era',
       tag: 'Curator Spotlight',
-      desc: 'The definitive epic of rural peasant struggle and colonial feudalism in northern India.'
+      desc: 'The definitive epic of rural peasant struggle and colonial feudalism in northern India.',
+      image: '/images/categories/spotlight-godan.jpg',
+      remoteFallback: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
+      gradient: 'from-amber-950/40 via-zinc-950/80 to-black'
     },
     {
       titleEn: 'Gitanjali (Song Offerings)',
@@ -161,7 +164,10 @@ export default function HeroSection({
       category: 'poetry',
       era: '1910 · Bengal Renaissance',
       tag: 'Featured Acquisition',
-      desc: 'Nobel-laureate verses exploring humanity, divine love, and cultural harmony.'
+      desc: 'Nobel-laureate verses exploring humanity, divine love, and cultural harmony.',
+      image: '/images/categories/poetry.jpg',
+      remoteFallback: 'https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?auto=format&fit=crop&w=1000&q=80',
+      gradient: 'from-purple-950/40 via-zinc-950/80 to-black'
     },
     {
       titleEn: 'Divan-e-Ghalib (Urdu-Hindi)',
@@ -171,7 +177,10 @@ export default function HeroSection({
       category: 'poetry',
       era: '1841 · Late Mughal',
       tag: 'Rare Folio',
-      desc: 'Foundational Ghazal prosody illuminating existential irony and philosophical doubt.'
+      desc: 'Foundational Ghazal prosody illuminating existential irony and philosophical doubt.',
+      image: '/images/categories/spotlight-faiz.jpg',
+      remoteFallback: 'https://images.unsplash.com/photo-1516962215378-7fa2e137ae93?auto=format&fit=crop&w=1000&q=80',
+      gradient: 'from-blue-950/40 via-zinc-950/80 to-black'
     }
   ];
 
@@ -215,31 +224,39 @@ export default function HeroSection({
           {spotlightItems.map((item, idx) => (
             <div
               key={idx}
-              className="group p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between"
+              className="group relative overflow-hidden p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between"
             >
-              <div>
+              {/* Graphical Visual Layer */}
+              <div
+                className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 ease-out group-hover:scale-105 opacity-35 group-hover:opacity-50"
+                style={{ backgroundImage: `url(${item.image || item.remoteFallback})` }}
+              />
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.gradient || 'from-zinc-900/60 via-black/80 to-black'} z-10 opacity-90`} />
+              <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-15 pointer-events-none" />
+
+              <div className="relative z-20">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-white/[0.08] text-zinc-200 border border-white/[0.12] backdrop-blur-md">
                     {item.tag}
                   </span>
-                  <span className="font-mono text-[10px] tracking-wider text-zinc-500">
+                  <span className="font-mono text-[10px] tracking-wider text-zinc-400 bg-black/40 px-2 py-0.5 rounded-full border border-white/[0.06]">
                     {item.era}
                   </span>
                 </div>
 
-                <div className="text-xs text-zinc-400 mb-1">
+                <div className="text-xs text-zinc-300 font-medium mb-1">
                   {lang === 'hi' ? item.authorHi : item.author}
                 </div>
-                <h3 className="text-lg font-bold text-white tracking-[-0.03em] group-hover:text-zinc-200">
+                <h3 className="text-lg font-bold text-white tracking-[-0.03em] group-hover:text-zinc-100">
                   {lang === 'hi' ? item.titleHi : item.titleEn}
                 </h3>
-                <p className="text-xs text-zinc-400 mt-2 leading-relaxed line-clamp-2">
+                <p className="text-xs text-zinc-300 mt-2 leading-relaxed line-clamp-2">
                   {item.desc}
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center justify-between">
-                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">
+              <div className="relative z-20 mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-between">
+                <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">
                   {item.category}
                 </span>
                 <button
