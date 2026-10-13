@@ -107,22 +107,22 @@ export default function Header({
       />
 
       {/* Main High-Key Minimalist Header Bar */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/[0.05]">
+      <header className="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-md border-b border-white/[0.08]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16 gap-4">
             
             {/* Left: Brand Identity in Minimalist Studio Aesthetic */}
             <div className="flex items-center gap-3 shrink-0">
               <Link to="/" className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-[#111111] flex items-center justify-center text-white font-sans font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
+                <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-sans font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
                   <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'CH' : 'चे')}</span>
                 </div>
                 <div className="flex flex-col">
                   <div className="flex items-center gap-2">
-                    <span className="font-sans text-lg font-bold tracking-tight text-[#111111] group-hover:text-black transition-colors">
+                    <span className="font-sans text-lg font-bold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
                       {lang === 'ur' ? 'چیتنا' : (lang === 'en' ? 'CHETNA' : 'चेतना')}
                     </span>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 border-l border-zinc-200 pl-2 hidden sm:inline">
+                    <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 border-l border-white/[0.1] pl-2 hidden sm:inline">
                       {lang === 'ur' ? 'کتب خانہ' : (lang === 'en' ? 'ARCHIVE' : 'ई-पुस्तकालय')}
                     </span>
                   </div>
@@ -153,18 +153,18 @@ export default function Header({
                   }}
                   placeholder={t.hero?.searchPlaceholder || 'Search title, author...'}
                   autoComplete="off"
-                  className="w-full pl-8 pr-12 py-1.5 text-xs bg-zinc-50 hover:bg-white focus:bg-white border border-zinc-200/90 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 rounded-full outline-hidden transition text-[#111111] placeholder-zinc-400"
+                  className="w-full pl-8 pr-12 py-1.5 text-xs bg-[#141414] hover:bg-[#181818] focus:bg-[#181818] border border-white/[0.08] focus:border-white/30 focus:ring-1 focus:ring-white/30 rounded-full outline-hidden transition text-white placeholder-zinc-500 font-sans"
                 />
                 <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 pointer-events-none" />
                 <div className="absolute right-2 flex items-center gap-1">
-                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-400 bg-white px-1 py-0.5 rounded border border-zinc-200">
+                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-400 bg-white/[0.06] px-1 py-0.5 rounded border border-white/[0.08]">
                     ⌘K
                   </kbd>
                   <button
                     type="button"
                     onClick={handleVoiceSearch}
                     title="Voice Search"
-                    className={`p-0.5 text-zinc-400 hover:text-black transition cursor-pointer ${
+                    className={`p-0.5 text-zinc-400 hover:text-white transition cursor-pointer ${
                       isListening ? 'animate-pulse text-red-500' : ''
                     }`}
                   >
@@ -175,18 +175,18 @@ export default function Header({
 
               {/* User Profile / Auth */}
               {user ? (
-                <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-2.5 py-1 rounded-full text-xs">
-                  <div className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[10px]">
+                <div className="flex items-center gap-2 bg-[#141414] border border-white/[0.08] px-2.5 py-1 rounded-full text-xs">
+                  <div className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px]">
                     {user.email?.[0]?.toUpperCase() || 'U'}
                   </div>
-                  <span className="max-w-[85px] truncate text-[11px] font-medium text-zinc-700 hidden lg:inline">
+                  <span className="max-w-[85px] truncate text-[11px] font-medium text-zinc-300 hidden lg:inline">
                     {user.user_metadata?.full_name || user.email?.split('@')[0]}
                   </span>
                   <button
                     type="button"
                     onClick={() => signOut()}
                     title="Sign Out"
-                    className="text-zinc-400 hover:text-red-600 transition p-0.5 cursor-pointer"
+                    className="text-zinc-400 hover:text-red-400 transition p-0.5 cursor-pointer"
                   >
                     <LogOut className="w-3 h-3" />
                   </button>
@@ -195,9 +195,9 @@ export default function Header({
                 <button
                   type="button"
                   onClick={onOpenAuth}
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-[#111111] text-xs font-medium transition cursor-pointer"
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/[0.08] bg-[#141414] hover:bg-[#1a1a1a] text-white text-xs font-mono uppercase tracking-wider transition cursor-pointer"
                 >
-                  <UserIcon className="w-3.5 h-3.5 text-zinc-500" />
+                  <UserIcon className="w-3.5 h-3.5 text-zinc-400" />
                   <span>{t.nav.login}</span>
                 </button>
               )}
@@ -205,7 +205,7 @@ export default function Header({
               {/* Minimalist Studio Upload CTA Pill */}
               <button
                 onClick={onOpenUpload}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-medium transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02]"
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-semibold font-mono uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02]"
                 title={t.nav.uploadBook}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -217,7 +217,7 @@ export default function Header({
                 <button
                   onClick={onOpenAdmin}
                   title={t.nav.manageLibrary}
-                  className="p-1.5 text-zinc-500 hover:text-black hover:bg-zinc-100 rounded-full transition cursor-pointer"
+                  className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-full transition cursor-pointer"
                 >
                   <Settings className="w-4 h-4" />
                 </button>

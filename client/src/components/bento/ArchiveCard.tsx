@@ -1,124 +1,98 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ArrowUpRight, BookOpen, Layers } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export interface ArchiveCardProps {
+  title: string;
+  vernacularTitle?: string;
+  category: string;
+  workCount: number;
+  slug: string;
+  colSpan?: string;
+  aspectRatio?: string;
+  coverImage?: string;
+  onClick?: () => void;
+  // Backward compatibility alias props
+  titleEn?: string;
   id?: string;
   indexNumber?: string | number;
-  titleEn: string;
-  titleVernacular?: string;
   subtitle?: string;
-  workCount?: number;
-  workCountLabel?: string;
   subdivisionCount?: number;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: any;
   href?: string;
-  onClick?: () => void;
-  className?: string;
-  colSpan?: string;
   isSelected?: boolean;
 }
 
-export const ArchiveCard: React.FC<ArchiveCardProps> = ({
-  id,
-  indexNumber,
-  titleEn,
-  titleVernacular,
-  subtitle,
+export function ArchiveCard({
+  title,
+  vernacularTitle,
+  category,
   workCount = 0,
-  workCountLabel,
-  subdivisionCount,
-  icon: Icon = BookOpen,
-  href,
+  slug,
+  colSpan = 'md:col-span-6',
+  aspectRatio = 'aspect-[16/11]',
+  coverImage,
   onClick,
-  className = '',
-  colSpan = 'col-span-12 md:col-span-6 lg:col-span-4',
-  isSelected = false,
-}) => {
-  const formattedIndex = indexNumber
-    ? String(indexNumber).padStart(2, '0')
-    : undefined;
+  titleEn,
+  id,
+  href,
+}: ArchiveCardProps) {
+  const displayTitle = title || titleEn || 'Archive Category';
+  const targetSlug = slug || id || '';
+  const destination = href || `/category/${targetSlug}`;
 
-  const countBadgeText = workCountLabel || `${workCount.toLocaleString()} works`;
-
-  const cardContent = (
+  return (
     <motion.div
-      whileHover={{ scale: 1.015, y: -4 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+      whileHover={{ y: -6 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       onClick={onClick}
-      className={`group relative flex flex-col justify-between rounded-3xl border border-black/[0.06] shadow-[0_4px_20px_rgba(0,0,0,0.02)] bg-white p-6 sm:p-7 transition-all duration-300 cursor-pointer overflow-hidden ${
-        isSelected ? 'ring-2 ring-[#111111] border-transparent' : 'hover:border-black/15 hover:shadow-[0_12px_32px_rgba(0,0,0,0.05)]'
-      } ${className}`}
+      className={`group relative overflow-hidden rounded-[24px] bg-[#141414] border border-white/[0.08] ${colSpan} ${aspectRatio}`}
     >
-      {/* Background ambient gradient accent on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-black/[0.015] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      <Link className="absolute inset-0 z-30" to={destination}>
+        <span className="sr-only">Open {displayTitle}</span>
+      </Link>
 
-      {/* Top Header Row */}
-      <div className="relative z-10 flex items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-2.5">
-          {formattedIndex && (
-            <span className="font-mono text-[11px] tracking-wider text-zinc-400 font-medium bg-zinc-100/80 px-2 py-0.5 rounded-full border border-black/[0.04]">
-              {formattedIndex}
-            </span>
-          )}
-          <div className="w-9 h-9 rounded-2xl bg-zinc-100/90 text-[#111111] flex items-center justify-center border border-black/[0.04] transition-transform duration-300 group-hover:scale-105">
-            <Icon className="w-4 h-4" />
-          </div>
-        </div>
+      {/* Ambient Archival Visual / Cover Layer */}
+      {coverImage ? (
+        <div
+          className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 ease-out group-hover:scale-105 opacity-30 group-hover:opacity-40"
+          style={{ backgroundImage: `url(${coverImage})` }}
+        />
+      ) : null}
 
-        {/* Work count pill badge */}
-        <span className="font-mono text-[11px] font-medium px-2.5 py-1 rounded-full bg-zinc-100/70 text-zinc-600 border border-black/[0.04] flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 group-hover:bg-black transition-colors" />
-          {countBadgeText}
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-800/20 via-zinc-900/60 to-black z-10 transition-transform duration-700 ease-out group-hover:scale-105" />
+
+      {/* Subtle geometric grid / archival radial texture */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.03),transparent_70%)] z-10 pointer-events-none" />
+
+      {/* Top Floating Badges */}
+      <div className="absolute top-6 left-6 right-6 z-20 flex items-center justify-between">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-zinc-300">
+          {category}
+        </span>
+        <span className="font-mono text-[10px] tracking-widest text-zinc-400">
+          [{workCount} WORKS]
         </span>
       </div>
 
-      {/* Central Content: Bilingual Titles */}
-      <div className="relative z-10 mb-6">
-        {titleVernacular && (
-          <div className="text-sm sm:text-base font-medium text-zinc-500 mb-1 tracking-tight font-sans">
-            {titleVernacular}
-          </div>
-        )}
-        <h3 className="text-xl sm:text-2xl font-bold text-[#111111] tracking-tight font-sans leading-tight group-hover:text-black transition-colors">
-          {titleEn}
-        </h3>
-        {subtitle && (
-          <p className="mt-2 text-xs sm:text-sm text-zinc-500 leading-relaxed font-sans line-clamp-2">
-            {subtitle}
+      {/* Bottom Pinned Typography */}
+      <div className="absolute bottom-6 left-6 right-6 z-20">
+        {vernacularTitle && (
+          <p className="font-sans text-sm text-zinc-400 mb-1 tracking-normal font-medium">
+            {vernacularTitle}
           </p>
         )}
-      </div>
-
-      {/* Bottom Utility Footer */}
-      <div className="relative z-10 pt-4 border-t border-black/[0.05] flex items-center justify-between">
-        <div className="text-[11px] font-mono text-zinc-400 flex items-center gap-1.5">
-          <Layers className="w-3.5 h-3.5 text-zinc-400" />
-          <span>
-            {subdivisionCount !== undefined
-              ? `${subdivisionCount} sub-divisions`
-              : 'Archive Layer'}
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-[-0.03em] text-white group-hover:text-zinc-200 transition-colors font-sans">
+            {displayTitle}
+          </h2>
+          <span className="text-zinc-400 group-hover:text-white group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform font-mono text-lg shrink-0">
+            ↗
           </span>
-        </div>
-
-        <div className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
-          <span className="font-sans">Access</span>
-          <ArrowUpRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-black transition-colors" />
         </div>
       </div>
     </motion.div>
   );
-
-  if (href) {
-    return (
-      <Link to={href} className={`${colSpan} block no-underline`}>
-        {cardContent}
-      </Link>
-    );
-  }
-
-  return <div className={colSpan}>{cardContent}</div>;
-};
+}
 
 export default ArchiveCard;

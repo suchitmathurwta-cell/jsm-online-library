@@ -1,49 +1,21 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  BookOpen,
-  Scroll,
-  Feather,
-  Theater,
-  Brain,
-  Smile,
-  FileText,
-  Newspaper,
-  MessagesSquare,
-  Layers,
-  ArrowRight,
-  Plus,
-  ChevronRight,
-  FolderOpen
-} from 'lucide-react';
+import { Plus, ChevronRight } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { createSubgenre } from '../services/supabaseApi';
 import ArchiveCard from './bento/ArchiveCard';
 
-const iconMap = {
-  novel: BookOpen,
-  story: Scroll,
-  poetry: Feather,
-  magazines: Newspaper,
-  vimarsh: Brain,
-  'cultural-conscience': Layers,
-  satire: Smile,
-  drama: Theater,
-  essays: FileText,
-  default: BookOpen
-};
-
-// Asymmetrical Mugen 12-column layout spans
-const bentoColSpans = [
-  'col-span-12 md:col-span-7 lg:col-span-7', // 01 Novel (Hero/Wide)
-  'col-span-12 md:col-span-5 lg:col-span-5', // 02 Story
-  'col-span-12 md:col-span-4 lg:col-span-4', // 03 Poetry
-  'col-span-12 md:col-span-4 lg:col-span-4', // 04 Magazines
-  'col-span-12 md:col-span-4 lg:col-span-4', // 05 Discourse
-  'col-span-12 md:col-span-6 lg:col-span-6', // 06 Conscience
-  'col-span-12 md:col-span-6 lg:col-span-6', // 07 Satire
-  'col-span-12 md:col-span-5 lg:col-span-5', // 08 Drama
-  'col-span-12 md:col-span-7 lg:col-span-7', // 09 Essays
+// Mugen Asymmetric Grid Specs for the 9 Categories
+const bentoLayouts = [
+  { colSpan: 'md:col-span-8', aspectRatio: 'aspect-[16/10]' }, // 01 Novel (Large Feature)
+  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 02 Story (Tall Secondary)
+  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 03 Poetry (Grid Regular)
+  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 04 Magazines (Grid Regular)
+  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 05 Discourse (Grid Regular)
+  { colSpan: 'md:col-span-6', aspectRatio: 'aspect-[16/11]' }, // 06 Conscience (Split Feature)
+  { colSpan: 'md:col-span-6', aspectRatio: 'aspect-[16/11]' }, // 07 Satire (Split Feature)
+  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 08 Drama (Secondary)
+  { colSpan: 'md:col-span-8', aspectRatio: 'aspect-[16/10]' }, // 09 Essays (Large Feature)
 ];
 
 const containerVariants = {
@@ -58,14 +30,14 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       type: 'spring',
       stiffness: 350,
-      damping: 28,
+      damping: 26,
     },
   },
 };
@@ -123,62 +95,64 @@ export default function CategoryTiles({
   };
 
   return (
-    <section className="py-12 bg-[#FAFAFA] border-b border-black/[0.05]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="bg-[#080808] text-white">
+      <div className="max-w-[1440px] mx-auto px-6 py-16">
         
-        {/* Section Header: Minimalist Mugen Studio Typography */}
-        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between mb-8 pb-4 border-b border-black/[0.06]">
+        {/* Mugen Massive Title Lockup */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-10 mb-12">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block" />
-              <h2 className="text-xs font-mono uppercase tracking-wider text-[#111111]">
-                {t.sections.browseBy || '4-Layer Literary Taxonomy · Categories'}
-              </h2>
-            </div>
-            <p className="text-xs text-zinc-500 mt-1 font-sans">
-              Asymmetrical 12-Column Archive Bento Grid
-            </p>
+            <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 block mb-3">
+              CHETNA DIGITAL ARCHIVE • VOL. 01
+            </span>
+            <h1 className="text-5xl md:text-8xl font-bold tracking-[-0.04em] text-white font-sans">
+              Open Repository.
+            </h1>
           </div>
-
-          <div className="mt-3 sm:mt-0 flex items-center gap-3 text-xs font-mono text-zinc-400">
-            <span>{categories.length} Taxonomy Domains</span>
-            <span>·</span>
-            <span>{categories.reduce((acc, c) => acc + (c.count || 0), 0)} Total Works</span>
+          <div className="mt-6 md:mt-0 max-w-sm">
+            <p className="font-mono text-xs text-zinc-400 leading-relaxed uppercase tracking-wider">
+              Preserving vernacular literature, progressive discourse & digitized manuscripts.
+            </p>
           </div>
         </div>
 
-        {/* 12-Column Mugen Bento Grid with ArchiveCard */}
+        {/* Mugen Asymmetric Showcase Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-12 gap-6"
+          className="grid grid-cols-1 md:grid-cols-12 gap-4"
         >
           {categories.map((cat, idx) => {
-            const Icon = iconMap[cat.id] || iconMap.default;
-            const isSelected = selectedCategory === cat.id;
+            const layout = bentoLayouts[idx % bentoLayouts.length];
             const titleEn = cat.name_en || cat.name_hi;
-            const titleVernacular = cat['name_' + lang] || cat.name_hi || cat.name_ur;
-            const subtitle = cat['subtitle_' + lang] || cat.subtitle_hi || cat.subtitle_en;
-            const colSpan = bentoColSpans[idx % bentoColSpans.length];
+            const vernacularTitle =
+              lang === 'hi'
+                ? cat.name_hi
+                : lang === 'ur'
+                ? cat.name_ur
+                : cat.name_hi !== cat.name_en
+                ? cat.name_hi
+                : undefined;
 
             return (
-              <motion.div key={cat.id} variants={itemVariants} className={colSpan}>
+              <motion.div
+                key={cat.id}
+                variants={itemVariants}
+                className={layout.colSpan}
+              >
                 <ArchiveCard
-                  id={cat.id}
-                  indexNumber={idx + 1}
-                  titleEn={titleEn}
-                  titleVernacular={titleVernacular !== titleEn ? titleVernacular : undefined}
-                  subtitle={subtitle}
+                  title={titleEn}
+                  vernacularTitle={vernacularTitle}
+                  category={cat.name_en || 'Taxonomy'}
                   workCount={cat.count || 0}
-                  subdivisionCount={cat.subgenres?.length || cat.genres?.length || 0}
-                  icon={Icon}
-                  colSpan="col-span-12"
-                  isSelected={isSelected}
+                  slug={cat.id}
+                  colSpan="w-full"
+                  aspectRatio={layout.aspectRatio}
+                  coverImage={cat.cover_url}
                   onClick={() => {
-                    const nextCat = isSelected ? 'all' : cat.id;
-                    onSelectCategory(nextCat);
-                    if (onSelectSubGenre) onSelectSubGenre('all');
+                    if (onSelectCategory) {
+                      onSelectCategory(cat.id);
+                    }
                   }}
                 />
               </motion.div>
@@ -187,18 +161,18 @@ export default function CategoryTiles({
         </motion.div>
 
         {/* Inline Sub-Genre Expansion Container (Layer 1 ➔ Layer 2 inline peek) */}
-        {selectedCategory !== 'all' && activeCategoryObj && (
+        {selectedCategory && selectedCategory !== 'all' && activeCategoryObj && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-8 p-6 sm:p-8 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)]"
+            className="mt-12 p-8 rounded-[24px] bg-[#141414] border border-white/[0.08]"
           >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-zinc-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                  <span>{t.hierarchyLayers?.subGenresAndSections || 'Sub-Divisions'}</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
-                  <span className="text-black font-semibold">
+                <span className="text-xs font-mono uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
+                  <span>{t.hierarchyLayers?.subGenresAndSections || 'SUB-DIVISIONS'}</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-zinc-500" />
+                  <span className="text-white font-semibold">
                     {activeCategoryObj['name_' + lang] || activeCategoryObj.name_hi || activeCategoryObj.name_en}
                   </span>
                 </span>
@@ -209,26 +183,26 @@ export default function CategoryTiles({
                 <button
                   type="button"
                   onClick={() => setShowSubGenrePrompt(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-xs font-medium transition cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-xs font-mono uppercase tracking-wider transition cursor-pointer border border-white/[0.08]"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{t.admin?.createSubGenre || '+ New Sub-Genre'}</span>
+                  <span>{t.admin?.createSubGenre || '+ NEW SUB-GENRE'}</span>
                 </button>
               </AdminOnly>
             </div>
 
             {/* Quick Filter Pill Buttons */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               <button
                 type="button"
                 onClick={() => onSelectSubGenre && onSelectSubGenre('all')}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium font-sans transition cursor-pointer ${
+                className={`px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition cursor-pointer ${
                   selectedSubGenre === 'all' || !selectedSubGenre
-                    ? 'bg-[#111111] text-white shadow-xs'
-                    : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200/60'
+                    ? 'bg-white text-black font-semibold'
+                    : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-white/[0.08]'
                 }`}
               >
-                {t.filters?.allSubGenres || 'All Sub-Divisions'}
+                {t.filters?.allSubGenres || 'ALL SECTIONS'}
               </button>
 
               {activeSubGenres.map((sg) => {
@@ -239,16 +213,16 @@ export default function CategoryTiles({
                     key={sg.id}
                     type="button"
                     onClick={() => onSelectSubGenre && onSelectSubGenre(sg.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-medium font-sans transition cursor-pointer flex items-center gap-1.5 ${
+                    className={`px-4 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition cursor-pointer flex items-center gap-2 ${
                       isSgActive
-                        ? 'bg-[#111111] text-white shadow-xs'
-                        : 'bg-zinc-50 text-zinc-600 hover:bg-zinc-100 border border-zinc-200/60'
+                        ? 'bg-white text-black font-semibold'
+                        : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-white/[0.08]'
                     }`}
                   >
                     <span>{sgName}</span>
                     {sg.count !== undefined && (
                       <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                        isSgActive ? 'bg-white/20 text-white' : 'bg-zinc-200/80 text-zinc-500'
+                        isSgActive ? 'bg-black/20 text-black' : 'bg-white/[0.08] text-zinc-400'
                       }`}>
                         {sg.count}
                       </span>
@@ -260,28 +234,28 @@ export default function CategoryTiles({
 
             {/* Inline Admin Form to Create New Sub-Genre */}
             {showSubGenrePrompt && (
-              <form onSubmit={handleCreateSubGenreInline} className="mt-4 p-4 rounded-2xl bg-zinc-50 border border-zinc-200/80 flex items-center gap-2">
+              <form onSubmit={handleCreateSubGenreInline} className="mt-6 p-4 rounded-2xl bg-black/50 border border-white/[0.08] flex items-center gap-2">
                 <input
                   type="text"
                   value={newSubName}
                   onChange={(e) => setNewSubName(e.target.value)}
-                  placeholder="Sub-Genre Title (उदा. दलित विमर्श / Romanticism)..."
-                  className="flex-1 px-3 py-2 bg-white rounded-xl border border-zinc-200 text-xs text-[#111111] focus:outline-none focus:ring-1 focus:ring-black"
+                  placeholder="Sub-Genre Title (e.g. Dalit Literature / Romanticism)..."
+                  className="flex-1 px-4 py-2.5 bg-[#141414] rounded-xl border border-white/[0.08] text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white"
                   autoFocus
                 />
                 <button
                   type="submit"
                   disabled={isSubmittingSub || !newSubName.trim()}
-                  className="px-4 py-2 bg-[#111111] text-white text-xs font-medium rounded-xl hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2.5 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl hover:bg-zinc-200 disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmittingSub ? 'Adding...' : 'Add'}
+                  {isSubmittingSub ? 'ADDING...' : 'ADD'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowSubGenrePrompt(false)}
-                  className="px-3 py-2 bg-zinc-200 text-zinc-600 text-xs font-medium rounded-xl hover:bg-zinc-300 cursor-pointer"
+                  className="px-3 py-2.5 bg-white/[0.06] text-zinc-400 hover:text-white text-xs font-mono uppercase rounded-xl cursor-pointer"
                 >
-                  Cancel
+                  CANCEL
                 </button>
               </form>
             )}

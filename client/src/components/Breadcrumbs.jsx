@@ -11,10 +11,10 @@ export default function Breadcrumbs({ items = [], lang, t }) {
   const homeLabel = tr.breadcrumbs?.home || (currentLang === 'hi' ? 'मुख्य पृष्ठ' : (currentLang === 'ur' ? 'مرکزی صفحہ' : 'Home'));
 
   return (
-    <nav className="flex items-center gap-1.5 text-xs text-zinc-500 py-3 flex-wrap font-sans animate-fadeIn" aria-label="Breadcrumb">
+    <nav className="flex items-center gap-1.5 text-xs text-zinc-400 py-3 flex-wrap font-sans animate-fadeIn" aria-label="Breadcrumb">
       <Link
         to="/"
-        className="flex items-center gap-1 hover:text-black transition-colors font-medium text-zinc-600"
+        className="flex items-center gap-1 hover:text-white transition-colors font-medium text-zinc-400"
       >
         <Home className="w-3.5 h-3.5" />
         <span>{homeLabel}</span>
@@ -24,15 +24,15 @@ export default function Breadcrumbs({ items = [], lang, t }) {
         const isLast = index === items.length - 1;
         return (
           <React.Fragment key={index}>
-            <ChevronRight className="w-3 h-3 text-zinc-300 shrink-0" />
+            <ChevronRight className="w-3 h-3 text-zinc-600 shrink-0" />
             {isLast || !item.url ? (
-              <span className="font-bold text-[#111111] truncate max-w-xs sm:max-w-md">
+              <span className="font-bold text-white truncate max-w-xs sm:max-w-md">
                 {item.label}
               </span>
             ) : (
               <Link
                 to={item.url}
-                className="hover:text-black transition-colors font-medium text-zinc-600 truncate max-w-xs"
+                className="hover:text-white transition-colors font-medium text-zinc-400 truncate max-w-xs"
               >
                 {item.label}
               </Link>

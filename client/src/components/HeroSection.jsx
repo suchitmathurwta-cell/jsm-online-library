@@ -5,16 +5,11 @@ import {
   ChevronDown,
   ChevronUp,
   X,
-  Sparkles,
-  BookOpen,
   ArrowRight,
   Loader2,
-  FileText,
-  Bookmark,
-  ExternalLink
+  FileText
 } from 'lucide-react';
 import { getBooks } from '../services/supabaseApi';
-import { Link } from 'react-router-dom';
 
 export default function HeroSection({
   t,
@@ -181,33 +176,33 @@ export default function HeroSection({
   ];
 
   return (
-    <section className="bg-[#FAFAFA] pt-14 pb-16 border-b border-black/[0.05]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="bg-[#080808] pt-14 pb-16 border-b border-white/[0.08] text-white">
+      <div className="max-w-[1440px] mx-auto px-6">
         
-        {/* Top Minimalist Tag */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#111111]" />
-          <span className="text-xs font-mono uppercase tracking-wider text-zinc-500 font-medium">
-            Featured Acquisitions · Curator Spotlight
+        {/* Top Monospace Tag */}
+        <div className="flex items-center gap-2.5 mb-4">
+          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-400">
+            FEATURED ACQUISITIONS • CURATOR SPOTLIGHT
           </span>
         </div>
 
-        {/* Title & Mission Header in Geist Sans */}
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-[#111111] font-sans tracking-tight leading-tight flex flex-wrap items-center gap-3">
+        {/* Title & Mission Header in Bold Neo-Grotesque */}
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white tracking-[-0.04em] leading-tight flex flex-wrap items-center gap-4">
             <span>{t.hero.title}</span>
-            <span className="text-xs font-mono font-medium text-zinc-600 bg-zinc-100 px-3 py-1 rounded-full border border-black/[0.06]">
-              {t.hero.openAccessBadge || 'Open Access Digital Archive'}
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-white/[0.06] backdrop-blur-md border border-white/[0.08] text-zinc-300">
+              {t.hero.openAccessBadge || 'OPEN ACCESS DIGITAL ARCHIVE'}
             </span>
           </h1>
 
-          <div className="text-zinc-500 text-sm sm:text-[15px] font-sans leading-relaxed mt-3 relative max-w-3xl">
+          <div className="text-zinc-400 text-sm sm:text-base leading-relaxed mt-4 max-w-3xl">
             <p className={`${expanded ? '' : 'line-clamp-2'} transition-all`}>
               {t.hero.descriptionMain}
             </p>
             <button
               onClick={() => setExpanded(!expanded)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] hover:underline mt-2 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-white hover:text-zinc-300 mt-2 cursor-pointer transition-colors"
             >
               <span>{expanded ? t.hero.readLess || 'Less' : t.hero.readMore || 'Read More'}</span>
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -215,50 +210,51 @@ export default function HeroSection({
           </div>
         </div>
 
-        {/* Curator Spotlight Showcase Grid (3 Asymmetrical Minimalist Studio Cards) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-10">
+        {/* Curator Spotlight Showcase Grid (3 Cinematic Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
           {spotlightItems.map((item, idx) => (
             <div
               key={idx}
-              className="group p-5 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.05)] hover:border-black/15 transition-all duration-300 flex flex-col justify-between"
+              className="group p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-black/[0.04]">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
                     {item.tag}
                   </span>
-                  <span className="text-[11px] font-mono text-zinc-400">
+                  <span className="font-mono text-[10px] tracking-wider text-zinc-500">
                     {item.era}
                   </span>
                 </div>
 
-                <div className="text-xs text-zinc-400 font-sans mb-1">
+                <div className="text-xs text-zinc-400 mb-1">
                   {lang === 'hi' ? item.authorHi : item.author}
                 </div>
-                <h3 className="text-base font-bold text-[#111111] tracking-tight font-sans group-hover:text-black">
+                <h3 className="text-lg font-bold text-white tracking-[-0.03em] group-hover:text-zinc-200">
                   {lang === 'hi' ? item.titleHi : item.titleEn}
                 </h3>
-                <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2">
+                <p className="text-xs text-zinc-400 mt-2 leading-relaxed line-clamp-2">
                   {item.desc}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-black/[0.05] flex items-center justify-between">
-                <span className="text-[11px] font-mono text-zinc-400 uppercase">
+              <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center justify-between">
+                <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">
                   {item.category}
                 </span>
                 <button
                   type="button"
                   onClick={() => {
-                    setLocalQuery(lang === 'hi' ? item.titleHi : item.titleEn);
-                    setSearchQuery?.(lang === 'hi' ? item.titleHi : item.titleEn);
+                    const query = lang === 'hi' ? item.titleHi : item.titleEn;
+                    setLocalQuery(query);
+                    setSearchQuery?.(query);
                     const catElement = document.getElementById('catalog');
                     if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] group-hover:translate-x-0.5 transition-transform cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-white group-hover:translate-x-1 transition-transform cursor-pointer"
                 >
-                  <span>Explore In Catalog</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-black" />
+                  <span>EXPLORE</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
                 </button>
               </div>
             </div>
@@ -269,11 +265,11 @@ export default function HeroSection({
         <div ref={searchBoxRef} className="relative max-w-3xl z-30">
           <form
             onSubmit={handleFormSubmit}
-            className="relative flex items-center p-1.5 sm:p-2 bg-white rounded-2xl border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] focus-within:shadow-[0_12px_36px_rgba(0,0,0,0.07)] focus-within:border-black/20 transition-all duration-300"
+            className="relative flex items-center p-2 bg-[#141414] rounded-2xl border border-white/[0.08] focus-within:border-white/30 transition-all duration-300 shadow-[0_8px_32px_rgba(0,0,0,0.5)]"
           >
             <div className="pl-3.5 pr-2 text-zinc-400 pointer-events-none flex items-center justify-center">
               {isSearchingLive ? (
-                <Loader2 className="w-5 h-5 text-zinc-700 animate-spin" />
+                <Loader2 className="w-5 h-5 text-white animate-spin" />
               ) : (
                 <Search className="w-5 h-5 text-zinc-400" />
               )}
@@ -289,14 +285,14 @@ export default function HeroSection({
               }}
               placeholder={t.hero.searchPlaceholder}
               autoComplete="off"
-              className="w-full py-2.5 sm:py-3 text-sm sm:text-base text-[#111111] placeholder-zinc-400 bg-transparent outline-hidden font-sans cursor-text font-normal"
+              className="w-full py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder-zinc-500 bg-transparent outline-hidden font-sans cursor-text font-normal"
             />
 
             {localQuery && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-1.5 mr-1 text-zinc-400 hover:text-black rounded-full hover:bg-zinc-100 transition cursor-pointer"
+                className="p-1.5 mr-1 text-zinc-400 hover:text-white rounded-full hover:bg-white/[0.06] transition cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -307,17 +303,17 @@ export default function HeroSection({
               type="button"
               onClick={handleVoiceSearch}
               title="Voice Search"
-              className={`p-2.5 mr-1.5 text-zinc-400 hover:text-black rounded-xl hover:bg-zinc-100 transition cursor-pointer ${
-                isListening ? 'animate-pulse text-red-500 bg-red-50' : ''
+              className={`p-2.5 mr-1.5 text-zinc-400 hover:text-white rounded-xl hover:bg-white/[0.06] transition cursor-pointer ${
+                isListening ? 'animate-pulse text-red-500 bg-red-950/40' : ''
               }`}
             >
               <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            {/* High-Key Minimalist Pill Search Button */}
+            {/* High-Contrast Search Pill Button */}
             <button
               type="submit"
-              className="hidden sm:flex items-center gap-1.5 px-6 py-2.5 bg-[#111111] hover:bg-black text-white text-xs sm:text-sm font-medium rounded-xl shadow-xs transition cursor-pointer shrink-0"
+              className="hidden sm:flex items-center gap-1.5 px-6 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer shrink-0"
             >
               <span>{t.hero.searchBtn}</span>
             </button>
@@ -325,10 +321,10 @@ export default function HeroSection({
 
           {/* Live Search Autocomplete Dropdown */}
           {dropdownOpen && localQuery.trim() && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-black/[0.08] overflow-hidden z-50 animate-fadeIn">
-              <div className="p-3 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between text-xs font-medium text-zinc-600">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-[#141414] rounded-2xl shadow-2xl border border-white/[0.1] overflow-hidden z-50 animate-fadeIn">
+              <div className="p-3 bg-black/60 border-b border-white/[0.06] flex items-center justify-between text-xs font-mono text-zinc-400 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5 text-zinc-500" />
+                  <Search className="w-3.5 h-3.5 text-zinc-400" />
                   <span>
                     {lang === 'hi'
                       ? `"${localQuery}" के खोज परिणाम`
@@ -337,18 +333,18 @@ export default function HeroSection({
                       : `Results for "${localQuery}"`}
                   </span>
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500 bg-white px-2 py-0.5 rounded-full border border-zinc-200">
+                <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full border border-white/[0.08]">
                   {liveResults.length} {t.sections.worksUnit || 'treatises'}
                 </span>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100">
+              <div className="max-h-80 overflow-y-auto divide-y divide-white/[0.06]">
                 {liveResults.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-zinc-500">
+                  <div className="p-6 text-center text-xs font-mono text-zinc-400 uppercase">
                     {isSearchingLive ? (
                       <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
-                        <span>Searching treatises...</span>
+                        <Loader2 className="w-4 h-4 text-white animate-spin" />
+                        <span>Searching catalog...</span>
                       </div>
                     ) : (
                       <span>{t.sections.noResults || 'No direct title matches found'}</span>
@@ -362,26 +358,26 @@ export default function HeroSection({
                     return (
                       <div
                         key={book.id}
-                        className="p-3 hover:bg-zinc-50 transition flex items-center justify-between gap-3 cursor-pointer group"
+                        className="p-3.5 hover:bg-white/[0.04] transition flex items-center justify-between gap-3 cursor-pointer group"
                         onClick={() => {
                           setDropdownOpen(false);
                           if (onSelectBook) onSelectBook(book);
                         }}
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="w-9 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-zinc-200">
+                          <div className="w-9 h-12 bg-black rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-white/[0.08]">
                             {book.cover_url ? (
                               <img src={book.cover_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <FileText className="w-4 h-4 text-zinc-400" />
+                              <FileText className="w-4 h-4 text-zinc-500" />
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-xs sm:text-sm font-bold text-[#111111] group-hover:text-black truncate font-sans">
+                            <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-zinc-200 truncate">
                               {title}
                             </h4>
-                            <p className="text-[11px] text-zinc-500 truncate mt-0.5 font-medium">
-                              {author} • <span className="text-zinc-700">{book.year || ''}</span>
+                            <p className="text-[11px] text-zinc-400 truncate mt-0.5 font-mono">
+                              {author} • <span>{book.year || ''}</span>
                             </p>
                           </div>
                         </div>
@@ -395,7 +391,7 @@ export default function HeroSection({
                                 setDropdownOpen(false);
                                 onOpenReader(book);
                               }}
-                              className="px-3 py-1 bg-zinc-100 hover:bg-black hover:text-white text-zinc-700 text-xs font-medium rounded-lg transition"
+                              className="px-3 py-1 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase font-semibold rounded-lg transition"
                             >
                               Read
                             </button>
@@ -411,9 +407,9 @@ export default function HeroSection({
         </div>
 
         {/* Thinker / Author Quick Search Pills */}
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider mr-1">
-            {t.hero.popularAuthors || 'Archive Masters:'}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-[0.2em] mr-1">
+            {t.hero.popularAuthors || 'ARCHIVE MASTERS:'}
           </span>
           {thinkerChips.slice(0, 7).map((tObj, idx) => {
             const authorLabel = tObj[lang] || tObj.hi || tObj.en;
@@ -427,7 +423,7 @@ export default function HeroSection({
                   const catElement = document.getElementById('catalog');
                   if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-3 py-1 bg-white hover:bg-zinc-100 border border-black/[0.06] text-zinc-600 hover:text-black text-xs font-sans rounded-full transition-colors cursor-pointer"
+                className="px-3 py-1 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-300 hover:text-white text-xs font-mono uppercase rounded-full transition-colors cursor-pointer"
               >
                 {authorLabel}
               </button>

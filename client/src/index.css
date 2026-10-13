@@ -3,12 +3,12 @@
 @layer base {
   body {
     font-family: 'Geist', 'Inter', 'Noto Sans Devanagari', 'Hind', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #FAFAFA;
-    color: #111111;
+    background-color: #080808;
+    color: #FFFFFF;
   }
 }
 
-/* Minimalist studio font aliases (Eliminating decorative and serif fonts) */
+/* Mugen Studio Neo-Grotesque Typography */
 .font-sans {
   font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -23,48 +23,39 @@
   font-family: 'Noto Sans Arabic', 'Geist', sans-serif;
 }
 
-/* High-Key Minimalist Studio Elevation & Borders */
+/* Mugen Studio Elevation & Hairline Glass Borders */
 .shadow-ambient {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .shadow-ambient-hover {
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
 }
 
 .border-hairline {
-  border-color: rgba(0, 0, 0, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Minimalist Studio Scrollbars */
+/* Mugen Studio Minimal Dark Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FAFAFA;
+  background: #080808;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #E4E4E7;
+  background: #27272A;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A1A1AA;
+  background: #3F3F46;
 }
 
 /* Modern Card Spine & Glass */
 .book-shadow {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
-}
-
-.book-spine {
-  border-left: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.glass-nav {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }

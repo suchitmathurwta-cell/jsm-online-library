@@ -143,39 +143,39 @@ export default function CategoryGenresPage({
       {/* Layer 2 Breadcrumb */}
       <Breadcrumbs lang={lang} t={t} items={[{ label: categoryTitle }]} />
 
-      {/* Layer 2 Header Banner: High-Key Minimalist Studio Presentation */}
-      <div className="mt-4 p-6 sm:p-8 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] relative overflow-hidden">
+      {/* Layer 2 Header Banner: Mugen Studio Presentation */}
+      <div className="mt-4 p-6 sm:p-8 rounded-[24px] bg-[#141414] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 text-zinc-700 text-xs font-mono border border-zinc-200/60">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] text-zinc-300 text-xs font-mono uppercase tracking-wider border border-white/[0.08]">
               <Layers className="w-3.5 h-3.5" />
-              <span>{hl.layer2Badge || 'Level 2: Genres'}</span>
+              <span>{hl.layer2Badge || 'LEVEL 2: GENRES'}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-[#111111] flex items-center gap-3">
+            <h1 className="text-2xl sm:text-4xl font-bold font-sans tracking-[-0.03em] text-white flex items-center gap-3">
               <span>{categoryTitle}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 font-sans leading-relaxed">
+            <p className="text-xs sm:text-sm text-zinc-400 font-sans leading-relaxed">
               {categorySub || hl.layer2Sub}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-            <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-2xl text-center">
-              <span className="text-lg font-bold font-mono text-[#111111]">{genres.length}</span>
-              <span className="text-[11px] text-zinc-500 block">{t.admin?.genresCount || 'Genres'}</span>
+            <div className="bg-black/50 border border-white/[0.08] px-4 py-2 rounded-2xl text-center">
+              <span className="text-lg font-bold font-mono text-white">{genres.length}</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">{t.admin?.genresCount || 'GENRES'}</span>
             </div>
-            <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-2xl text-center">
-              <span className="text-lg font-bold font-mono text-[#111111]">{categoryBooks.length}</span>
-              <span className="text-[11px] text-zinc-500 block">{t.admin?.worksCount || 'Works'}</span>
+            <div className="bg-black/50 border border-white/[0.08] px-4 py-2 rounded-2xl text-center">
+              <span className="text-lg font-bold font-mono text-white">{categoryBooks.length}</span>
+              <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 block">{t.admin?.worksCount || 'WORKS'}</span>
             </div>
 
             <AdminOnly>
               <button
                 onClick={() => setShowCreateGenre(!showCreateGenre)}
-                className="px-4 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full flex items-center gap-1.5 shadow-xs transition cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>{hl.addGenreBtn || '+ Add Genre'}</span>
+                <span>{hl.addGenreBtn || '+ ADD GENRE'}</span>
               </button>
             </AdminOnly>
           </div>
@@ -186,7 +186,7 @@ export default function CategoryGenresPage({
           <AdminOnly>
             <form
               onSubmit={handleCreateGenre}
-              className="mt-6 pt-5 border-t border-zinc-100 flex flex-col sm:flex-row gap-2.5 items-center animate-fadeIn"
+              className="mt-6 pt-5 border-t border-white/[0.08] flex flex-col sm:flex-row gap-2.5 items-center animate-fadeIn"
             >
               <input
                 type="text"
@@ -199,20 +199,20 @@ export default function CategoryGenresPage({
                     ? 'نئی ادبی صنف کا نام...'
                     : 'Enter new genre title...'
                 }
-                className="w-full sm:flex-1 px-4 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-hidden focus:border-black focus:bg-white"
+                className="w-full sm:flex-1 px-4 py-2 text-xs bg-black/60 border border-white/[0.1] text-white rounded-xl outline-hidden focus:border-white"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={isSubmitting || !newGenreName.trim()}
-                className="w-full sm:w-auto px-5 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-xl transition cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
               >
                 {isSubmitting ? '...' : '+ Create'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreateGenre(false)}
-                className="px-3 py-2 text-xs text-zinc-500 hover:text-black cursor-pointer"
+                className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
               >
                 Cancel
               </button>
@@ -223,15 +223,15 @@ export default function CategoryGenresPage({
 
       {/* Layer 2 Genres: Asymmetrical Bento Grid */}
       <div className="mt-10">
-        <div className="flex items-center justify-between mb-6 pb-3 border-b border-black/[0.06]">
+        <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block"></span>
-            <h2 className="text-sm font-mono uppercase tracking-wider text-[#111111]">
-              {hl.layer2Heading || 'Genres Catalog'} — {categoryTitle}
+            <span className="w-1.5 h-1.5 bg-white rounded-full inline-block"></span>
+            <h2 className="text-xs font-mono uppercase tracking-[0.25em] text-white">
+              {hl.layer2Heading || 'GENRES CATALOG'} — {categoryTitle}
             </h2>
           </div>
-          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">
-            {genres.length} genres registered
+          <span className="text-xs text-zinc-500 font-mono hidden sm:inline tracking-wider">
+            [{genres.length} GENRES REGISTERED]
           </span>
         </div>
 
@@ -246,7 +246,6 @@ export default function CategoryGenresPage({
               const gTitle = g[`name_${lang}`] || g.name_hi || g.name_en;
               const gDesc = g[`description_${lang}`] || g.description_hi || g.description_en;
               const subCount = g.subgenres_count || (g.subgenres && g.subgenres.length) || 0;
-              // Asymmetric bento span: first card spans 2 columns on 3-col layout if total > 2
               const isHeroBento = idx === 0 && genres.length > 2;
 
               return (
@@ -254,19 +253,19 @@ export default function CategoryGenresPage({
                   key={g.id}
                   variants={itemVariants}
                   onClick={() => navigate(`/category/${categorySlug}/${g.id}`)}
-                  className={`group relative p-6 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] hover:border-black/15 transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                  className={`group relative p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 cursor-pointer flex flex-col justify-between ${
                     isHeroBento ? 'sm:col-span-2' : 'col-span-1'
                   }`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-10 h-10 rounded-2xl bg-zinc-100 text-[#111111] flex items-center justify-center transition-transform group-hover:scale-105">
+                      <div className="w-10 h-10 rounded-2xl bg-white/[0.06] text-white flex items-center justify-center border border-white/[0.08] transition-transform group-hover:scale-105">
                         <FolderTree className="w-5 h-5" />
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-50 text-zinc-600 border border-zinc-200/60">
-                          {subCount} {lang === 'hi' ? 'उप-विधाएँ' : lang === 'ur' ? 'ذیلی اصناف' : 'Sub-Genres'}
+                        <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
+                          {subCount} {lang === 'hi' ? 'उप-विधाएँ' : lang === 'ur' ? 'ذیلی اصناف' : 'SUB-GENRES'}
                         </span>
 
                         {/* Admin Only Actions: Edit & Delete */}
@@ -293,24 +292,24 @@ export default function CategoryGenresPage({
                       </div>
                     </div>
 
-                    <h3 className="text-base font-bold text-[#111111] tracking-tight font-sans leading-snug">
+                    <h3 className="text-base font-bold text-white tracking-tight font-sans leading-snug">
                       {gTitle}
                     </h3>
 
                     {gDesc && (
-                      <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2 font-sans">
+                      <p className="text-xs text-zinc-400 mt-2 leading-relaxed line-clamp-2 font-sans">
                         {gDesc}
                       </p>
                     )}
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center justify-between">
+                  <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-between">
                     <span className="text-xs font-mono text-zinc-400">
                       {g.count || 0} {hl.layer2Works || 'works'}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] group-hover:translate-x-1 transition-transform">
+                    <span className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider text-white group-hover:translate-x-1 transition-transform">
                       <span>{hl.layer2Explore || 'Explore'}</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                      <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
                     </span>
                   </div>
                 </motion.div>
@@ -318,14 +317,14 @@ export default function CategoryGenresPage({
             })}
           </motion.div>
         ) : (
-          <div className="py-16 text-center bg-white rounded-3xl border border-black/[0.06] p-8 max-w-lg mx-auto shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-            <FolderTree className="w-8 h-8 text-zinc-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-[#111111] font-sans">{hl.noWorksFound || 'No genres registered yet'}</p>
-            <p className="text-xs text-zinc-500 mt-1 mb-4 font-sans">{hl.noWorksDesc || 'Add a genre to begin categorizing treatises.'}</p>
+          <div className="py-16 text-center bg-[#141414] rounded-[24px] border border-white/[0.08] p-8 max-w-lg mx-auto shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+            <FolderTree className="w-8 h-8 text-zinc-600 mx-auto mb-3" />
+            <p className="text-sm font-bold text-white font-sans">{hl.noWorksFound || 'No genres registered yet'}</p>
+            <p className="text-xs text-zinc-400 mt-1 mb-4 font-sans">{hl.noWorksDesc || 'Add a genre to begin categorizing treatises.'}</p>
             <AdminOnly>
               <button
                 onClick={() => setShowCreateGenre(true)}
-                className="px-4 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-full shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs cursor-pointer hover:bg-zinc-200"
               >
                 {hl.addGenreBtn || '+ Add Genre'}
               </button>

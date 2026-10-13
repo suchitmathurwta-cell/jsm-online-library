@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Plus, Sparkles } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -39,22 +39,22 @@ export default function FloatingNavPill({
   return (
     <nav
       aria-label="Studio navigation"
-      className="fixed top-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-white/85 backdrop-blur-md border border-black/[0.08] p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] flex items-center gap-1 sm:gap-2 max-w-[95vw]"
+      className="fixed top-5 left-1/2 -translate-x-1/2 z-50 rounded-full bg-[#141414]/90 backdrop-blur-md border border-white/[0.1] p-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex items-center gap-1 sm:gap-2 max-w-[95vw]"
     >
       {/* 1. Brand Name: Chetna */}
       <Link
         to="/"
-        className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold tracking-tight text-[#111111] hover:opacity-80 transition-opacity"
+        className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold tracking-tight text-white hover:text-zinc-200 transition-colors"
       >
-        <span className="w-5 h-5 rounded-md bg-[#111111] text-white flex items-center justify-center text-[10px] font-bold">
+        <span className="w-5 h-5 rounded-md bg-white text-black flex items-center justify-center text-[10px] font-bold">
           चे
         </span>
-        <span className="hidden sm:inline font-sans">Chetna</span>
+        <span className="hidden sm:inline font-sans font-bold">Chetna</span>
       </Link>
 
-      <span className="h-4 w-px bg-zinc-200" />
+      <span className="h-4 w-px bg-white/[0.1]" />
 
-      {/* 2. Script Switcher: Devanagari | Nastaliq | Romanized with animated spring active indicator */}
+      {/* 2. Script Switcher with spring indicator */}
       <div className="flex items-center gap-0.5">
         {scriptOptions.map((opt) => {
           const isActive = lang === opt.id;
@@ -64,13 +64,13 @@ export default function FloatingNavPill({
               type="button"
               onClick={() => setLang(opt.id)}
               className={`relative px-2.5 sm:px-3 py-1 text-[11px] sm:text-xs font-sans font-medium transition-colors cursor-pointer select-none rounded-full ${
-                isActive ? 'text-white' : 'text-zinc-600 hover:text-black'
+                isActive ? 'text-black' : 'text-zinc-400 hover:text-white'
               }`}
             >
               {isActive && (
                 <motion.div
                   layoutId="activeNavBubble"
-                  className="absolute inset-0 bg-[#111111] rounded-full shadow-xs"
+                  className="absolute inset-0 bg-white rounded-full shadow-xs"
                   transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                 />
               )}
@@ -85,7 +85,7 @@ export default function FloatingNavPill({
         })}
       </div>
 
-      <span className="h-4 w-px bg-zinc-200" />
+      <span className="h-4 w-px bg-white/[0.1]" />
 
       {/* 3. Search Trigger: ⌘K */}
       <button
@@ -102,11 +102,11 @@ export default function FloatingNavPill({
             }, 300);
           }
         }}
-        className="flex items-center gap-1 px-2.5 py-1 text-xs text-zinc-500 hover:text-black rounded-full hover:bg-zinc-100/80 transition-colors cursor-pointer"
+        className="flex items-center gap-1 px-2.5 py-1 text-xs text-zinc-400 hover:text-white rounded-full hover:bg-white/[0.06] transition-colors cursor-pointer"
         title="Search Catalog (⌘K)"
       >
         <Search className="w-3.5 h-3.5 text-zinc-400" />
-        <span className="hidden md:inline text-[11px] font-mono text-zinc-400 bg-zinc-100 px-1.5 py-0.2 rounded border border-black/[0.04]">
+        <span className="hidden md:inline text-[10px] font-mono text-zinc-400 bg-white/[0.06] px-1.5 py-0.2 rounded border border-white/[0.08]">
           ⌘K
         </span>
       </button>
@@ -114,11 +114,11 @@ export default function FloatingNavPill({
       {/* 4. Role-gated "Upload Work" button (Admin Only) */}
       {isAdmin && onOpenUpload && (
         <>
-          <span className="h-4 w-px bg-zinc-200" />
+          <span className="h-4 w-px bg-white/[0.1]" />
           <button
             type="button"
             onClick={onOpenUpload}
-            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#111111] hover:bg-black text-white text-[11px] sm:text-xs font-medium transition-all shadow-xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider transition-all shadow-xs cursor-pointer"
           >
             <Plus className="w-3 h-3" />
             <span>Upload Work</span>

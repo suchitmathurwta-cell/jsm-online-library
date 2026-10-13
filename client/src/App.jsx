@@ -263,7 +263,7 @@ function MainApp() {
 
   if (isReaderRoute) {
     return (
-      <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#FAFAFA] text-[#111111]">
+      <div dir={isRtl ? 'rtl' : 'ltr'} className="min-h-screen bg-[#080808] text-white">
         <Routes>
           <Route
             path="/reader/:bookId"
@@ -285,7 +285,7 @@ function MainApp() {
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={'min-h-screen flex flex-col bg-[#FAFAFA] text-[#111111] font-sans ' + (isRtl ? 'font-urdu' : '')}
+      className={'min-h-screen flex flex-col bg-[#080808] text-white font-sans ' + (isRtl ? 'font-urdu' : '')}
     >
       {/* Sticky Header */}
       <Header
