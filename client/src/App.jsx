@@ -12,7 +12,6 @@ import DedicatedReaderPage from './pages/DedicatedReaderPage';
 import BookDetailModal from './components/BookDetailModal';
 import HikmahPdfReader from './components/HikmahPdfReader';
 import UploadBookModal from './components/UploadBookModal';
-import UploaderModal from './components/admin/UploaderModal';
 import AdminManageModal from './components/AdminManageModal';
 import EditBookModal from './components/EditBookModal';
 import SuggestBookModal from './components/SuggestBookModal';
@@ -435,13 +434,19 @@ function MainApp() {
         />
       )}
 
-      {/* Upload Modal with Supabase Integration (Mugen Studio Uploader - Admin Only) */}
+      {/* Upload Modal with Supabase Integration - Admin Only */}
       {isUploadOpen && (
-        <UploaderModal
+        <UploadBookModal
           isOpen={isUploadOpen}
           onClose={() => setIsUploadOpen(false)}
-          onSuccess={() => {
+          onBookUploaded={() => {
             fetchBooksData();
+            fetchCategories();
+          }}
+          onCategoryCreated={() => {
+            fetchCategories();
+          }}
+          onSubGenreCreated={() => {
             fetchCategories();
           }}
           categories={categories}
