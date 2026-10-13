@@ -15,20 +15,12 @@ import {
   Layers,
   ChevronRight,
   ChevronLeft,
-  FolderTree
+  FolderTree,
+  FolderOpen
 } from 'lucide-react';
 import SearchableCombobox from './SearchableCombobox';
-import {
-  getCategoriesWithHierarchy,
-  uploadBookFile,
-  createBookRecord,
-  createFormat,
-  deleteFormat,
-  createGenre,
-  deleteGenre,
-  createSubgenre,
-  deleteSubgenre
-} from '../services/supabaseApi';
+import { getCategoriesWithHierarchy, uploadBookFile, createBookRecord, createFormat, deleteFormat, createGenre, deleteGenre, createSubgenre, deleteSubgenre } from '../services/supabaseApi';
+import { DEFAULT_CATEGORIES } from '../data/categoriesData';
 import { translations, getLocalizedEra } from '../locales/translations';
 import { transliterateAll, detectLanguage } from '../services/transliterationService';
 
@@ -66,7 +58,9 @@ export default function UploadBookModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
-  const [allCategories, setAllCategories] = useState(categories || []);
+  const [allCategories, setAllCategories] = useState(
+    categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES
+  );
   const [translatingField, setTranslatingField] = useState(null);
 
   const fileInputRef = useRef(null);
@@ -80,7 +74,7 @@ export default function UploadBookModal({
         setAllCategories(data);
       }
     } catch (e) {
-      console.error('Error fetching updated categories in modal:', e);
+      console.warn('Error fetching categories in UploadBookModal:', e);
     }
   };
 
@@ -127,7 +121,8 @@ export default function UploadBookModal({
       extractedTitle = cleanName.replace(/[-_]+/g, ' ').trim();
     }
 
-    const defaultFormat = allCategories[0] || { id: 'novel', genres: [] };
+    const catsList = (allCategories && allCategories.length > 0) ? allCategories : DEFAULT_CATEGORIES;
+    const defaultFormat = catsList[0] || { id: 'novel', genres: [] };
     const defaultGenre = defaultFormat.genres?.[0] || { id: 'social-realism', subgenres: [] };
     const defaultSub = defaultGenre.subgenres?.[0] || { id: 'general' };
 
@@ -215,10 +210,7 @@ export default function UploadBookModal({
     const files = Array.from(e.target.files || []).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
     if (files.length === 0) return;
 
-    setStatusMessage({
-      type: 'info',
-      text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`)
-    });
+    setStatusMessage({ type: 'info', text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`) });
     const newItems = [];
     for (const file of files) {
       const itm = await processSinglePdf(file);
@@ -236,10 +228,7 @@ export default function UploadBookModal({
     const files = Array.from(e.dataTransfer.files || []).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
     if (files.length === 0) return;
 
-    setStatusMessage({
-      type: 'info',
-      text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`)
-    });
+    setStatusMessage({ type: 'info', text: lang === 'hi' ? `${files.length} PDF फ़ाइलों का विश्लेषण हो रहा है...` : (lang === 'ur' ? `${files.length} فائلوں کی جانچ ہو رہی ہے...` : `Analyzing ${files.length} PDF files...`) });
     const newItems = [];
     for (const file of files) {
       const itm = await processSinglePdf(file);
@@ -322,8 +311,10 @@ export default function UploadBookModal({
     reader.readAsDataURL(file);
   };
 
+  const catsList = (allCategories && allCategories.length > 0) ? allCategories : DEFAULT_CATEGORIES;
+
   // Format options
-  const formatOptions = allCategories.map(c => ({
+  const formatOptions = catsList.map(c => ({
     id: c.id,
     label: c['name_' + lang] || c.name_hi || c.name_en || c.id,
     name_hi: c.name_hi,
@@ -332,10 +323,14 @@ export default function UploadBookModal({
   }));
 
   // Active format object
-  const activeFormatObj = allCategories.find(c => c.id === currentItem?.category) || allCategories[0];
+  const activeFormatObj = catsList.find(c => c.id === currentItem?.category) || catsList[0];
 
   // Genre options conditional on active format
-  const genreOptions = (activeFormatObj?.genres || []).map(g => ({
+  const availableGenres = (activeFormatObj?.genres && activeFormatObj.genres.length > 0)
+    ? activeFormatObj.genres
+    : (DEFAULT_CATEGORIES.find(c => c.id === (activeFormatObj?.id || currentItem?.category))?.genres || []);
+
+  const genreOptions = availableGenres.map(g => ({
     id: g.id,
     label: g['name_' + lang] || g.name_hi || g.name_en || g.id,
     name_hi: g.name_hi,
@@ -344,10 +339,14 @@ export default function UploadBookModal({
   }));
 
   // Active genre object
-  const activeGenreObj = (activeFormatObj?.genres || []).find(g => g.id === currentItem?.genre);
+  const activeGenreObj = availableGenres.find(g => g.id === currentItem?.genre) || availableGenres[0];
 
   // Subgenre options conditional on active genre
-  const subgenreOptions = (activeGenreObj?.subgenres || []).map(sg => ({
+  const availableSubgenres = (activeGenreObj?.subgenres && activeGenreObj.subgenres.length > 0)
+    ? activeGenreObj.subgenres
+    : (DEFAULT_CATEGORIES.find(c => c.id === activeFormatObj?.id)?.genres?.find(g => g.id === activeGenreObj?.id)?.subgenres || []);
+
+  const subgenreOptions = availableSubgenres.map(sg => ({
     id: sg.id,
     label: sg['name_' + lang] || sg.name_hi || sg.name_en || sg.name || sg.id,
     name_hi: sg.name_hi,
@@ -355,55 +354,118 @@ export default function UploadBookModal({
     raw: sg
   }));
 
-  // Hierarchy Handlers (Creation and Deletion)
+  // Hierarchy Handlers with Supabase sync and immediate UI responsiveness
   const handleCreateFormat = async (name) => {
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fmt-' + Date.now());
-    await createFormat({ id, name_hi: name, name_en: name });
-    await fetchUpdatedCategories();
+    try {
+      await createFormat({ id, name_hi: name, name_en: name });
+    } catch (e) {
+      console.warn('createFormat DB notice:', e);
+    }
+    const newFormat = { id, name_hi: name, name_en: name, genres: [] };
+    setAllCategories(prev => [...prev, newFormat]);
     updateCurrentItem({ category: id, genre: '', subgenre: '' });
-    if (onCategoryCreated) onCategoryCreated();
   };
 
   const handleDeleteFormat = async (id) => {
-    await deleteFormat(id);
-    await fetchUpdatedCategories();
-    if (onCategoryCreated) onCategoryCreated();
+    try {
+      await deleteFormat(id);
+    } catch (e) {
+      console.warn('deleteFormat DB notice:', e);
+    }
+    setAllCategories(prev => prev.filter(c => c.id !== id));
   };
 
   const handleCreateGenre = async (name) => {
-    if (!currentItem?.category) return;
+    const catId = currentItem?.category || activeFormatObj?.id;
+    if (!catId) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('gnr-' + Date.now());
-    await createGenre({ id, category_id: currentItem.category, name_hi: name, name_en: name });
-    await fetchUpdatedCategories();
+    try {
+      await createGenre({ id, category_id: catId, name_hi: name, name_en: name });
+    } catch (e) {
+      console.warn('createGenre DB notice:', e);
+    }
+    const newGenre = { id, category_id: catId, name_hi: name, name_en: name, subgenres: [] };
+    setAllCategories(prev => prev.map(c => {
+      if (c.id === catId) {
+        return { ...c, genres: [...(c.genres || []), newGenre] };
+      }
+      return c;
+    }));
     updateCurrentItem({ genre: id, subgenre: '' });
-    if (onCategoryCreated) onCategoryCreated();
   };
 
   const handleDeleteGenre = async (id) => {
-    await deleteGenre(id);
-    await fetchUpdatedCategories();
-    if (onCategoryCreated) onCategoryCreated();
+    const catId = currentItem?.category || activeFormatObj?.id;
+    try {
+      await deleteGenre(catId, id);
+    } catch (e) {
+      console.warn('deleteGenre DB notice:', e);
+    }
+    setAllCategories(prev => prev.map(c => {
+      if (c.id === catId) {
+        return { ...c, genres: (c.genres || []).filter(g => g.id !== id) };
+      }
+      return c;
+    }));
   };
 
   const handleCreateSubGenre = async (name) => {
-    if (!currentItem?.category) return;
+    const catId = currentItem?.category || activeFormatObj?.id;
+    const gnrId = currentItem?.genre || activeGenreObj?.id || 'general';
+    if (!catId) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sub-' + Date.now());
-    await createSubgenre({
-      id,
-      category_id: currentItem.category,
-      genre_id: currentItem.genre || 'general',
-      name_hi: name,
-      name_en: name
-    });
-    await fetchUpdatedCategories();
+    try {
+      await createSubgenre({
+        id,
+        category_id: catId,
+        genre_id: gnrId,
+        name_hi: name,
+        name_en: name
+      });
+    } catch (e) {
+      console.warn('createSubgenre DB notice:', e);
+    }
+    const newSub = { id, category_id: catId, genre_id: gnrId, name_hi: name, name_en: name };
+    setAllCategories(prev => prev.map(c => {
+      if (c.id === catId) {
+        return {
+          ...c,
+          genres: (c.genres || []).map(g => {
+            if (g.id === gnrId) {
+              return { ...g, subgenres: [...(g.subgenres || []), newSub] };
+            }
+            return g;
+          })
+        };
+      }
+      return c;
+    }));
     updateCurrentItem({ subgenre: id });
-    if (onSubGenreCreated) onSubGenreCreated();
   };
 
   const handleDeleteSubGenre = async (id) => {
-    await deleteSubgenre(id);
-    await fetchUpdatedCategories();
-    if (onSubGenreCreated) onSubGenreCreated();
+    const catId = currentItem?.category || activeFormatObj?.id;
+    const gnrId = currentItem?.genre || activeGenreObj?.id;
+    try {
+      await deleteSubgenre(catId, gnrId, id);
+    } catch (e) {
+      console.warn('deleteSubgenre DB notice:', e);
+    }
+    setAllCategories(prev => prev.map(c => {
+      if (c.id === catId) {
+        return {
+          ...c,
+          genres: (c.genres || []).map(g => {
+            if (g.id === gnrId) {
+              return { ...g, subgenres: (g.subgenres || []).filter(s => s.id !== id) };
+            }
+            return g;
+          })
+        };
+      }
+      return c;
+    }));
   };
 
   // Submission handler
@@ -424,7 +486,7 @@ export default function UploadBookModal({
 
     setIsSubmitting(true);
     setUploadProgress(5);
-    setStatusMessage({ type: 'info', text: u.uploading || 'Preserving works into digital archive...' });
+    setStatusMessage({ type: 'info', text: u.uploading });
 
     let successCount = 0;
 
@@ -534,7 +596,7 @@ export default function UploadBookModal({
     setIsSubmitting(false);
 
     if (successCount === fileQueue.length) {
-      setStatusMessage({ type: 'success', text: u.successMsg || 'Works successfully cataloged into repository!' });
+      setStatusMessage({ type: 'success', text: u.successMsg });
       setTimeout(() => {
         onClose();
       }, 1400);
@@ -547,33 +609,27 @@ export default function UploadBookModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md">
-      <div className="bg-[#0e0e0e] rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.95)] border border-white/[0.1] w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden animate-fadeIn text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-stone-900/60 backdrop-blur-xs">
+      <div className="bg-white rounded-2xl shadow-2xl border border-stone-200 w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden animate-fadeIn">
         
-        {/* 1. Studio Header */}
-        <div className="px-6 py-4.5 border-b border-white/[0.08] flex items-center justify-between bg-[#121212] shrink-0">
+        {/* 1. Header */}
+        <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white text-black flex items-center justify-center font-bold text-xs shadow-xs shrink-0">
-              <Layers className="w-5 h-5 text-black" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center border border-blue-200/80 shadow-2xs">
+              <Layers className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-white text-base sm:text-lg font-sans tracking-tight">
-                  {u.modalTitle || 'Archival Ingestion & Cataloging'}
-                </h3>
-                <span className="text-[9px] font-mono uppercase tracking-[0.2em] px-2 py-0.5 rounded-full bg-white/[0.08] text-zinc-300 border border-white/[0.1]">
-                  STUDIO UPLOADER
-                </span>
-              </div>
-              <p className="text-xs text-zinc-400 font-mono tracking-wider mt-0.5">
-                {u.modalSubtitle || 'Batch preserve treatises with automated metadata transliteration'}
+              <h3 className="font-extrabold text-stone-900 text-lg font-rekhta-serif tracking-tight">
+                {u.modalTitle}
+              </h3>
+              <p className="text-xs text-stone-500 font-medium">
+                {u.modalSubtitle}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-zinc-400 hover:text-white hover:bg-white/[0.08] rounded-full transition cursor-pointer"
-            title="Close"
+            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -581,19 +637,19 @@ export default function UploadBookModal({
 
         {/* Status Notification Bar */}
         {statusMessage.text && (
-          <div className={"px-6 py-2.5 text-xs font-mono uppercase tracking-wider flex items-center justify-between border-b " + (
-            statusMessage.type === 'error' ? 'bg-red-950/40 text-red-300 border-red-800/50' :
-            statusMessage.type === 'success' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/50' :
-            statusMessage.type === 'warning' ? 'bg-amber-950/40 text-amber-300 border-amber-800/50' :
-            'bg-zinc-900 text-zinc-200 border-white/[0.08]'
+          <div className={"px-6 py-2.5 text-xs font-semibold flex items-center justify-between border-b " + (
+            statusMessage.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
+            statusMessage.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+            statusMessage.type === 'warning' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+            'bg-blue-50 text-blue-800 border-blue-200'
           )}>
             <div className="flex items-center gap-2">
-              {statusMessage.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-              {statusMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-red-400" />}
-              {statusMessage.type === 'info' && <Loader2 className="w-4 h-4 text-white animate-spin" />}
+              {statusMessage.type === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+              {statusMessage.type === 'error' && <AlertCircle className="w-4 h-4 text-red-600" />}
+              {statusMessage.type === 'info' && <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />}
               <span>{statusMessage.text}</span>
             </div>
-            <button onClick={() => setStatusMessage({ type: '', text: '' })} className="text-zinc-400 hover:text-white cursor-pointer">
+            <button onClick={() => setStatusMessage({ type: '', text: '' })} className="text-stone-400 hover:text-stone-600">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -603,18 +659,18 @@ export default function UploadBookModal({
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           
           {/* Left Column: Upload Queue & File Dropzone */}
-          <div className="w-full md:w-72 lg:w-80 border-r border-white/[0.08] bg-[#121212] flex flex-col shrink-0">
-            <div className="p-3.5 border-b border-white/[0.08] flex items-center justify-between bg-[#141414]">
-              <span className="text-[11px] font-mono font-semibold text-zinc-300 tracking-[0.15em] uppercase">
-                {u.queueHeader || 'Queue'} ({fileQueue.length})
+          <div className="w-full md:w-72 lg:w-80 border-r border-stone-200 bg-stone-50/60 flex flex-col shrink-0">
+            <div className="p-3.5 border-b border-stone-200 flex items-center justify-between bg-white">
+              <span className="text-xs font-bold text-stone-700 tracking-wider uppercase">
+                {u.queueHeader} ({fileQueue.length})
               </span>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.12] text-white text-[11px] font-mono uppercase tracking-wider rounded-full border border-white/[0.1] flex items-center gap-1 transition cursor-pointer"
+                className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] text-xs font-bold rounded-lg border border-blue-200/80 flex items-center gap-1 transition cursor-pointer"
               >
-                <Plus className="w-3 h-3" />
-                <span>{u.addMoreFiles || '+ Add'}</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>{u.addMoreFiles}</span>
               </button>
             </div>
 
@@ -624,26 +680,26 @@ export default function UploadBookModal({
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={"m-3 p-4 border-2 border-dashed rounded-2xl text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 " + (
+              className={"m-3 p-4 border-2 border-dashed rounded-xl text-center cursor-pointer transition flex flex-col items-center justify-center gap-2 " + (
                 isDragging
-                  ? "border-white bg-white/10 scale-[0.99]"
-                  : "border-white/[0.1] hover:border-white/30 bg-[#161616] hover:bg-[#1a1a1a]"
+                  ? "border-[#1d4ed8] bg-blue-50/50 scale-[0.99]"
+                  : "border-stone-300 hover:border-[#1d4ed8] hover:bg-white bg-white/70"
               )}
             >
-              <Upload className="w-6 h-6 text-zinc-400 group-hover:text-white" />
-              <div className="text-xs font-semibold text-white">
-                {u.dragDrop || 'Drop PDF files here'}
+              <Upload className="w-7 h-7 text-[#1d4ed8]/70" />
+              <div className="text-xs font-bold text-stone-700">
+                {u.dragDrop}
               </div>
-              <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-                {u.dragDropSub || 'or browse filesystem'}
+              <div className="text-[10.5px] text-stone-400 font-medium">
+                {u.dragDropSub}
               </div>
             </div>
 
             {/* Scrollable File List */}
-            <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 divide-y divide-white/[0.03]">
+            <div className="flex-1 overflow-y-auto px-3 pb-3 space-y-1.5 divide-y divide-stone-100">
               {fileQueue.length === 0 ? (
-                <div className="text-center py-10 text-xs font-mono text-zinc-500 uppercase tracking-wider italic">
-                  {u.queueEmpty || 'Queue empty'}
+                <div className="text-center py-8 text-xs text-stone-400 italic">
+                  {u.queueEmpty}
                 </div>
               ) : (
                 fileQueue.map((item, idx) => {
@@ -652,25 +708,25 @@ export default function UploadBookModal({
                     <div
                       key={idx}
                       onClick={() => setSelectedIndex(idx)}
-                      className={"p-2.5 rounded-2xl text-xs flex items-center justify-between gap-2 transition cursor-pointer border " + (
+                      className={"p-2.5 rounded-xl text-xs flex items-center justify-between gap-2 transition cursor-pointer border " + (
                         isSelected
-                          ? "bg-[#222222] border-white/40 ring-1 ring-white/20 text-white font-medium shadow-xs"
-                          : "bg-[#161616] hover:bg-[#1a1a1a] border-white/[0.06] text-zinc-300"
+                          ? "bg-white border-[#1d4ed8] shadow-sm ring-1 ring-[#1d4ed8]/30 font-semibold"
+                          : "bg-white hover:bg-stone-100 border-stone-200/70 text-stone-700"
                       )}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-10 bg-black/60 rounded-lg border border-white/[0.08] flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-8 h-10 bg-stone-100 rounded-md border border-stone-200 flex items-center justify-center shrink-0 overflow-hidden">
                           {item.coverPreview ? (
                             <img src={item.coverPreview} alt="Cover" className="w-full h-full object-cover" />
                           ) : (
-                            <FileText className="w-4 h-4 text-zinc-500" />
+                            <FileText className="w-4 h-4 text-stone-400" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-xs text-white font-sans font-medium">
+                          <p className="truncate text-xs text-stone-900 font-hindi-serif">
                             {item['title_' + lang] || item.title_hi || item.title_en || item.fileName}
                           </p>
-                          <span className="text-[10px] font-mono text-zinc-400 block truncate mt-0.5">
+                          <span className="text-[10px] text-stone-400 block truncate">
                             {item.pages} {tr.card.pagesUnit} • {item['author_' + lang] || item.author_hi || item.author_en || ''}
                           </span>
                         </div>
@@ -679,8 +735,7 @@ export default function UploadBookModal({
                       <button
                         type="button"
                         onClick={(e) => handleRemoveFromQueue(idx, e)}
-                        className="p-1 text-zinc-500 hover:text-red-400 rounded-lg hover:bg-white/[0.06] transition shrink-0 cursor-pointer"
-                        title="Remove file"
+                        className="p-1 text-stone-400 hover:text-red-600 rounded-lg hover:bg-stone-100 transition shrink-0"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -701,29 +756,27 @@ export default function UploadBookModal({
           </div>
 
           {/* Right Column: Active Item Editor */}
-          <div className="flex-1 p-5 sm:p-6 overflow-y-auto space-y-4 bg-[#0e0e0e]">
+          <div className="flex-1 p-5 sm:p-6 overflow-y-auto space-y-4">
             {currentItem ? (
               <>
                 {/* 1. File Pagination Pill Header */}
-                <div className="bg-[#161616] border border-white/[0.08] rounded-2xl px-4 py-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-zinc-300 truncate">
-                    <FileText className="w-4 h-4 text-white shrink-0" />
-                    <span className="truncate">{selectedIndex + 1} / {fileQueue.length}: {currentItem.fileName}</span>
+                <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#1d4ed8]">
+                    <FileText className="w-4 h-4" />
+                    <span>{selectedIndex + 1} / {fileQueue.length}: {currentItem.fileName}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-zinc-400 shrink-0">
+                  <div className="flex items-center gap-1 text-stone-400">
                     <button
                       onClick={() => setSelectedIndex(Math.max(0, selectedIndex - 1))}
                       disabled={selectedIndex === 0}
-                      className="p-1 rounded-lg hover:bg-white/[0.08] text-zinc-300 disabled:opacity-20 cursor-pointer"
-                      title="Previous file"
+                      className="p-1 rounded hover:bg-blue-100 text-stone-600 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setSelectedIndex(Math.min(fileQueue.length - 1, selectedIndex + 1))}
                       disabled={selectedIndex === fileQueue.length - 1}
-                      className="p-1 rounded-lg hover:bg-white/[0.08] text-zinc-300 disabled:opacity-20 cursor-pointer"
-                      title="Next file"
+                      className="p-1 rounded hover:bg-blue-100 text-stone-600 disabled:opacity-30 cursor-pointer"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
@@ -731,26 +784,26 @@ export default function UploadBookModal({
                 </div>
 
                 {/* 2. Auto-Translation Notice */}
-                <div className="bg-white/[0.03] border border-white/[0.08] rounded-2xl p-3 flex items-start gap-2.5 text-xs text-zinc-300">
-                  <Sparkles className="w-4 h-4 text-white shrink-0 mt-0.5" />
-                  <div className="leading-relaxed font-sans">
-                    {u.autoTranslateNotice || 'Instant trilingual transliteration active across Hindi, English, and Urdu fields.'}
+                <div className="bg-amber-50/70 border border-amber-200/80 rounded-xl p-3 flex items-start gap-2.5 text-xs text-amber-900">
+                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="leading-relaxed">
+                    {u.autoTranslateNotice}
                   </div>
                 </div>
 
                 {/* 3. Centered Cover Image Block */}
-                <div className="flex items-center justify-center gap-6 p-4 bg-[#141414] rounded-2xl border border-white/[0.08]">
-                  <div className="w-24 aspect-[3/4] bg-black rounded-xl overflow-hidden border border-white/[0.1] shadow-md shrink-0 flex items-center justify-center">
+                <div className="flex items-center justify-center gap-6 p-4 bg-stone-50/60 rounded-xl border border-stone-200">
+                  <div className="w-24 aspect-[3/4] bg-stone-100 rounded-lg overflow-hidden border border-stone-200 shadow-sm shrink-0 flex items-center justify-center">
                     {currentItem.coverPreview ? (
                       <img src={currentItem.coverPreview} alt="Cover Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <ImageIcon className="w-7 h-7 text-zinc-600" />
+                      <ImageIcon className="w-7 h-7 text-stone-300" />
                     )}
                   </div>
                   <div className="space-y-1">
-                    <h5 className="text-xs font-mono uppercase tracking-wider text-white font-bold">{u.coverFileLabel || 'Manuscript Cover'}</h5>
-                    <p className="text-[11px] text-zinc-400 font-sans">
-                      {u.coverHelp || 'Auto-extracted from first page or upload custom artwork.'}
+                    <h5 className="text-xs font-bold text-stone-800">{u.coverFileLabel}</h5>
+                    <p className="text-[11px] text-stone-500">
+                      {u.coverHelp}
                     </p>
                     <div className="flex items-center gap-2 pt-1.5">
                       <input
@@ -763,9 +816,9 @@ export default function UploadBookModal({
                       <button
                         type="button"
                         onClick={() => coverInputRef.current?.click()}
-                        className="px-3.5 py-1.5 bg-[#1f1f1f] hover:bg-[#262626] border border-white/[0.1] rounded-full text-xs font-mono uppercase tracking-wider text-white transition cursor-pointer"
+                        className="px-3.5 py-1.5 bg-white border border-stone-300 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-2xs transition cursor-pointer"
                       >
-                        {u.chooseFile || 'Custom Cover'}
+                        {u.chooseFile}
                       </button>
                     </div>
                   </div>
@@ -774,16 +827,16 @@ export default function UploadBookModal({
                 {/* 4. Multi-Script Title Inputs */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 flex items-center gap-1.5 font-semibold">
+                    <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                       <span>{lang === 'hi' ? 'रचना का शीर्षक' : (lang === 'ur' ? 'کتاب کا عنوان' : 'Book Title')}</span>
-                      <span className="text-[10px] text-zinc-500 font-normal">
+                      <span className="text-[10.5px] text-stone-400 font-normal">
                         ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
                       </span>
                     </label>
                     <div className="flex items-center gap-2">
                       {translatingField === 'title' ? (
-                        <span className="text-[10px] font-mono text-zinc-300 flex items-center gap-1 animate-pulse">
-                          <Loader2 className="w-3 h-3 text-white animate-spin" />
+                        <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" />
                           <span>{u.transliterating || 'Transliterating...'}</span>
                         </span>
                       ) : (
@@ -793,7 +846,7 @@ export default function UploadBookModal({
                             const val = currentItem.title_en || currentItem.title_hi || currentItem.title_ur;
                             if (val) handleAutoTranslateField('title', val, currentItem.title_en ? 'en' : (currentItem.title_hi ? 'hi' : 'ur'), true);
                           }}
-                          className="text-[10px] font-mono uppercase tracking-wider text-black bg-white hover:bg-zinc-200 px-2.5 py-1 rounded-full transition cursor-pointer flex items-center gap-1 shadow-xs"
+                          className="text-[10px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200/80 transition cursor-pointer flex items-center gap-1"
                           title="Click to automatically fill title in all 3 languages"
                         >
                           <Sparkles className="w-3 h-3" />
@@ -816,9 +869,9 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('title', e.target.value, 'hi', true);
                         }}
-                        className="w-full pl-3.5 pr-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-hindi-serif"
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
                       />
-                      <span className="absolute top-2 right-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
                     </div>
                     <div className="relative">
                       <input
@@ -833,9 +886,9 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('title', e.target.value, 'en', true);
                         }}
-                        className="w-full pl-3.5 pr-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-sans"
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
                       />
-                      <span className="absolute top-2 right-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
                     </div>
                     <div className="relative">
                       <input
@@ -851,9 +904,9 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('title', e.target.value, 'ur', true);
                         }}
-                        className="w-full pr-3.5 pl-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-urdu text-right"
+                        className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
                       />
-                      <span className="absolute top-2 left-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                      <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
                     </div>
                   </div>
                 </div>
@@ -861,16 +914,16 @@ export default function UploadBookModal({
                 {/* 5. Multi-Script Author Inputs */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-mono uppercase tracking-wider text-zinc-300 flex items-center gap-1.5 font-semibold">
+                    <label className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
                       <span>{lang === 'hi' ? 'रचनाकार / लेखक' : (lang === 'ur' ? 'مصنف / تخلیق کار' : 'Author / Creator')}</span>
-                      <span className="text-[10px] text-zinc-500 font-normal">
+                      <span className="text-[10.5px] text-stone-400 font-normal">
                         ({lang === 'hi' ? 'हिंदी • English • उर्दू' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
                       </span>
                     </label>
                     <div className="flex items-center gap-2">
                       {translatingField === 'author' ? (
-                        <span className="text-[10px] font-mono text-zinc-300 flex items-center gap-1 animate-pulse">
-                          <Loader2 className="w-3 h-3 text-white animate-spin" />
+                        <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                          <Loader2 className="w-3 h-3 animate-spin" />
                           <span>{u.transliterating || 'Transliterating...'}</span>
                         </span>
                       ) : (
@@ -880,7 +933,7 @@ export default function UploadBookModal({
                             const val = currentItem.author_en || currentItem.author_hi || currentItem.author_ur;
                             if (val) handleAutoTranslateField('author', val, currentItem.author_en ? 'en' : (currentItem.author_hi ? 'hi' : 'ur'), true);
                           }}
-                          className="text-[10px] font-mono uppercase tracking-wider text-black bg-white hover:bg-zinc-200 px-2.5 py-1 rounded-full transition cursor-pointer flex items-center gap-1 shadow-xs"
+                          className="text-[10px] font-semibold text-[#1d4ed8] hover:text-[#1e40af] bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200/80 transition cursor-pointer flex items-center gap-1"
                           title="Click to automatically fill author in all 3 languages"
                         >
                           <Sparkles className="w-3 h-3" />
@@ -903,9 +956,9 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('author', e.target.value, 'hi', true);
                         }}
-                        className="w-full pl-3.5 pr-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-hindi-serif"
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-hindi-serif shadow-2xs"
                       />
-                      <span className="absolute top-2 right-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
                     </div>
                     <div className="relative">
                       <input
@@ -920,9 +973,9 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('author', e.target.value, 'en', true);
                         }}
-                        className="w-full pl-3.5 pr-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-sans"
+                        className="w-full pl-3.5 pr-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 shadow-2xs"
                       />
-                      <span className="absolute top-2 right-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                      <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
                     </div>
                     <div className="relative">
                       <input
@@ -938,19 +991,19 @@ export default function UploadBookModal({
                         onBlur={(e) => {
                           if (e.target.value) handleAutoTranslateField('author', e.target.value, 'ur', true);
                         }}
-                        className="w-full pr-3.5 pl-12 py-2 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 font-urdu text-right"
+                        className="w-full pr-3.5 pl-11 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] focus:border-[#1d4ed8] outline-hidden bg-white text-stone-900 font-urdu shadow-2xs text-right"
                       />
-                      <span className="absolute top-2 left-2 text-[9px] font-mono text-zinc-400 bg-white/[0.06] border border-white/[0.1] px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                      <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
                     </div>
                   </div>
                 </div>
 
-                {/* 6. 3-TIER HIERARCHY (Format -> Genre -> Subgenre) */}
-                <div className="space-y-3 p-4 bg-[#141414] rounded-2xl border border-white/[0.08]">
-                  <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
-                    <FolderTree className="w-4 h-4 text-white" />
-                    <span className="text-xs font-mono uppercase tracking-[0.2em] text-zinc-300 font-bold">
-                      {u.tierHeader || '3-Tier Literary Classification'}
+                {/* 6. 3-TIER HIERARCHY */}
+                <div className="space-y-3 p-4 bg-stone-50/90 rounded-2xl border border-stone-200">
+                  <div className="flex items-center gap-2 pb-1 border-b border-stone-200/80">
+                    <FolderTree className="w-4 h-4 text-[#1d4ed8]" />
+                    <span className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                      {u.tierHeader}
                     </span>
                   </div>
 
@@ -958,13 +1011,14 @@ export default function UploadBookModal({
                     {/* Level 1: Format */}
                     <div>
                       <SearchableCombobox
-                        label={u.formatLabel || 'Category / Domain'}
+                        label={u.formatLabel}
                         type="format"
                         value={currentItem.category}
                         options={formatOptions}
-                        searchPlaceholder={u.category || 'Search or create domain...'}
+                        searchPlaceholder={u.category}
+                        lang={lang}
                         onChange={(catId, opt) => {
-                          const targetCat = allCategories.find(c => c.id === catId);
+                          const targetCat = catsList.find(c => c.id === catId);
                           const firstGenre = targetCat?.genres?.[0];
                           const firstSub = firstGenre?.subgenres?.[0];
                           updateCurrentItem({
@@ -981,13 +1035,14 @@ export default function UploadBookModal({
                     {/* Level 2: Genre */}
                     <div>
                       <SearchableCombobox
-                        label={u.genreLabel || 'Genre / विधा'}
+                        label={u.genreLabel}
                         type="genre"
                         value={currentItem.genre}
                         options={genreOptions}
-                        searchPlaceholder={u.genre || 'Search or create genre...'}
+                        searchPlaceholder={u.genre}
+                        lang={lang}
                         onChange={(genreId, opt) => {
-                          const targetGenre = (activeFormatObj?.genres || []).find(g => g.id === genreId);
+                          const targetGenre = availableGenres.find(g => g.id === genreId);
                           const firstSub = targetGenre?.subgenres?.[0];
                           updateCurrentItem({
                             genre: genreId,
@@ -1002,11 +1057,12 @@ export default function UploadBookModal({
                     {/* Level 3: Subgenre */}
                     <div>
                       <SearchableCombobox
-                        label={u.subgenreLabel || 'Sub-Genre / उप-विधा'}
+                        label={u.subgenreLabel}
                         type="subgenre"
                         value={currentItem.subgenre}
                         options={subgenreOptions}
-                        searchPlaceholder={u.subgenre || 'Search or create subgenre...'}
+                        searchPlaceholder={u.subgenre}
+                        lang={lang}
                         onChange={(subId, opt) => {
                           updateCurrentItem({ subgenre: subId });
                         }}
@@ -1020,30 +1076,30 @@ export default function UploadBookModal({
                 {/* 7. Era & Year */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5 font-semibold">
-                      {u.era || 'Historical Era'}
+                    <label className="text-xs font-bold text-stone-800 block mb-1">
+                      {u.era}
                     </label>
                     <select
                       value={currentItem.era}
                       onChange={(e) => updateCurrentItem({ era: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white cursor-pointer"
+                      className="w-full px-3 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs cursor-pointer"
                     >
                       {HISTORICAL_ERA_KEYS.map(k => (
-                        <option key={k} value={k} className="bg-[#161616] text-white">{getLocalizedEra(k, lang)}</option>
+                        <option key={k} value={k}>{getLocalizedEra(k, lang)}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5 font-semibold">
-                      {u.year || 'Publication Year'}
+                    <label className="text-xs font-bold text-stone-800 block mb-1">
+                      {u.year}
                     </label>
                     <input
                       type="text"
                       placeholder="e.g. 1936"
                       value={currentItem.year}
                       onChange={(e) => updateCurrentItem({ year: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500"
+                      className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs"
                     />
                   </div>
                 </div>
@@ -1051,64 +1107,64 @@ export default function UploadBookModal({
                 {/* 8. Publisher & Page Count */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5 font-semibold">
-                      {u.publisher || 'Publisher / Editorial'}
+                    <label className="text-xs font-bold text-stone-800 block mb-1">
+                      {u.publisher}
                     </label>
                     <input
                       type="text"
-                      placeholder={u.publisher || 'Publisher'}
+                      placeholder={u.publisher}
                       value={currentItem.publisher}
                       onChange={(e) => updateCurrentItem({ publisher: e.target.value })}
-                      className="w-full px-3.5 py-2.5 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500"
+                      className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5 font-semibold">
-                      {u.pages || 'Folio / Page Count'}
+                    <label className="text-xs font-bold text-stone-800 block mb-1">
+                      {u.pages}
                     </label>
                     <input
                       type="number"
                       value={currentItem.pages}
                       onChange={(e) => updateCurrentItem({ pages: parseInt(e.target.value) || 1 })}
-                      className="w-full px-3.5 py-2.5 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500"
+                      className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs"
                     />
                   </div>
                 </div>
 
                 {/* 9. Description */}
                 <div>
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5 font-semibold">
-                    {u.description || 'Scholarly Abstract / Synopsis'}
+                  <label className="text-xs font-bold text-stone-800 block mb-1">
+                    {u.description}
                   </label>
                   <textarea
                     rows={2}
-                    placeholder={u.description || 'Contextual summary...'}
+                    placeholder={u.description}
                     value={currentItem.description}
                     onChange={(e) => updateCurrentItem({ description: e.target.value })}
-                    className="w-full px-3.5 py-2.5 text-xs border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden bg-[#161616] text-white placeholder-zinc-500 resize-none font-sans"
+                    className="w-full px-3.5 py-2 text-xs border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#1d4ed8] outline-hidden bg-white shadow-2xs resize-none"
                   />
                 </div>
 
                 {/* 10. Featured Flag */}
-                <div className="flex items-center gap-2.5 pt-1">
+                <div className="flex items-center gap-2 pt-1">
                   <input
                     type="checkbox"
                     id="featuredCheckbox"
                     checked={currentItem.is_featured}
                     onChange={(e) => updateCurrentItem({ is_featured: e.target.checked })}
-                    className="w-4 h-4 accent-white rounded border-white/20 bg-[#161616] cursor-pointer"
+                    className="w-4 h-4 text-[#1d4ed8] rounded border-stone-300 focus:ring-[#1d4ed8] cursor-pointer"
                   />
-                  <label htmlFor="featuredCheckbox" className="text-xs font-mono uppercase tracking-wider text-zinc-300 cursor-pointer select-none">
-                    {u.highlightLandmark || 'Highlight as Curator Spotlight'}
+                  <label htmlFor="featuredCheckbox" className="text-xs font-semibold text-stone-700 cursor-pointer">
+                    {u.highlightLandmark}
                   </label>
                 </div>
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-64 text-center text-zinc-500 space-y-2">
-                <FileText className="w-12 h-12 stroke-[1.2] text-zinc-600" />
-                <p className="text-sm font-semibold text-zinc-400">{u.noFileSelected || 'No file selected'}</p>
-                <p className="text-xs font-mono uppercase tracking-wider text-zinc-600">{u.noFileSelectedSub || 'Select a file from queue to configure metadata'}</p>
+              <div className="flex flex-col items-center justify-center h-64 text-center text-stone-400 space-y-2">
+                <FileText className="w-12 h-12 stroke-[1.5]" />
+                <p className="text-sm font-semibold">{u.noFileSelected}</p>
+                <p className="text-xs">{u.noFileSelectedSub}</p>
               </div>
             )}
           </div>
@@ -1116,12 +1172,12 @@ export default function UploadBookModal({
         </div>
 
         {/* 3. Footer Action Bar */}
-        <div className="px-6 py-4 border-t border-white/[0.08] bg-[#121212] flex items-center justify-between shrink-0">
-          <div className="text-xs font-mono text-zinc-400 uppercase tracking-wider">
+        <div className="px-6 py-3.5 border-t border-stone-200 bg-stone-50 flex items-center justify-between shrink-0">
+          <div className="text-xs text-stone-500 font-medium">
             {fileQueue.length > 0 ? (
-              <span><strong className="text-white">{fileQueue.length}</strong> {u.readyToPreserve || 'works in queue'}</span>
+              <span><strong>{fileQueue.length}</strong> {u.readyToPreserve}</span>
             ) : (
-              <span>{u.queueEmpty || 'Queue empty'}</span>
+              <span>{u.queueEmpty}</span>
             )}
           </div>
 
@@ -1129,25 +1185,25 @@ export default function UploadBookModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-mono uppercase tracking-wider text-zinc-400 hover:text-white hover:bg-white/[0.06] rounded-full transition cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-stone-600 hover:bg-stone-200/60 rounded-xl transition cursor-pointer"
             >
-              {u.cancel || 'Cancel'}
+              {u.cancel}
             </button>
             <button
               type="button"
               onClick={handleSubmitAll}
               disabled={isSubmitting || fileQueue.length === 0}
-              className="px-6 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs transition flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-black animate-spin" />
-                  <span>{u.uploading || 'Ingesting'} ({uploadProgress}%)</span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>{u.uploading} ({uploadProgress}%)</span>
                 </>
               ) : (
                 <>
-                  <Upload className="w-4 h-4 text-black" />
-                  <span>{u.uploadAll || 'Catalog All'} ({fileQueue.length})</span>
+                  <Upload className="w-4 h-4" />
+                  <span>{u.uploadAll} ({fileQueue.length})</span>
                 </>
               )}
             </button>

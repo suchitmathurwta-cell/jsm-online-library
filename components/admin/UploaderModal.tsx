@@ -1,2 +1,2 @@
-export * from '../../client/src/components/admin/UploaderModal';
-export { default } from '../../client/src/components/admin/UploaderModal';
+export * from '../../client/src/components/UploadBookModal';
+export { default } from '../../client/src/components/UploadBookModal';

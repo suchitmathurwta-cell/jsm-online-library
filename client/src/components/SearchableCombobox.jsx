@@ -111,22 +111,40 @@ export default function SearchableCombobox({
   };
 
   const notFoundTitle = type === "format"
-    ? (currentLang === 'hi' ? 'फॉर्मेट / श्रेणी उपलब्ध नहीं है' : (currentLang === 'ur' ? 'فارمیٹ نہیں ملا' : 'Format not found'))
+    ? (currentLang === 'hi' ? 'प्रारूप उपलब्ध नहीं है' : (currentLang === 'ur' ? 'فارمیٹ نہیں ملا' : 'Format not found'))
     : type === "genre"
-    ? (currentLang === 'hi' ? 'विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'صنف نہیں ملی' : 'Genre not found'))
-    : (currentLang === 'hi' ? 'उप-विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'ذیلی صنف نہیں ملی' : 'Sub-Genre not found'));
+      ? (currentLang === 'hi' ? 'विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'صنف نہیں ملی' : 'Genre not found'))
+      : (currentLang === 'hi' ? 'उप-विधा उपलब्ध नहीं है' : (currentLang === 'ur' ? 'ذیلی صنف نہیں ملی' : 'Sub-Genre not found'));
 
-  const notFoundDesc = currentLang === 'hi'
-    ? `"${searchQuery}" नाम से कोई विकल्प नहीं मिला।`
-    : (currentLang === 'ur'
-      ? `"${searchQuery}" کے نام سے کوئی آپشن نہیں ملا۔`
-      : `No existing option matches "${searchQuery}".`);
+  const typeName = type === "format"
+    ? (currentLang === 'hi' ? 'प्रारूप' : (currentLang === 'ur' ? 'فارمیٹ' : 'format'))
+    : type === "genre"
+      ? (currentLang === 'hi' ? 'विधा' : (currentLang === 'ur' ? 'صنف' : 'genre'))
+      : (currentLang === 'hi' ? 'उप-विधा' : (currentLang === 'ur' ? 'ذیلی صنف' : 'sub-genre'));
 
-  const createBtnText = currentLang === 'hi'
-    ? `+ "${searchQuery.trim()}" नया जोड़ें`
-    : (currentLang === 'ur'
-      ? `+ "${searchQuery.trim()}" نیا بنائیں`
-      : `+ Create "${searchQuery.trim()}"`);
+  const notFoundDesc = searchQuery.trim()
+    ? (currentLang === 'hi'
+      ? `"${searchQuery}" नाम से कोई ${typeName} नहीं मिला।`
+      : (currentLang === 'ur'
+        ? `"${searchQuery}" کے نام سے کوئی ${typeName} نہیں ملا۔`
+        : `No existing ${typeName} matches "${searchQuery}".`))
+    : (currentLang === 'hi'
+      ? `इस वर्ग में कोई ${typeName} उपलब्ध नहीं है। नया जोड़ने के लिए ऊपर नाम टाइप करें।`
+      : (currentLang === 'ur'
+        ? `اس میں کوئی ${typeName} دستیاب نہیں ہے۔ نیا بنانے کے لیے نام درج کریں۔`
+        : `No ${typeName} found in this category. Type above to create one.`));
+
+  const createBtnText = searchQuery.trim()
+    ? (currentLang === 'hi'
+      ? `+ "${searchQuery.trim()}" नया जोड़ें`
+      : (currentLang === 'ur'
+        ? `+ "${searchQuery.trim()}" نیا بنائیں`
+        : `+ Create "${searchQuery.trim()}"`))
+    : (currentLang === 'hi'
+      ? `+ नया ${typeName} जोड़ें`
+      : (currentLang === 'ur'
+        ? `+ نیا ${typeName} بنائیں`
+        : `+ Create new ${typeName}`));
 
   const creatingText = currentLang === 'hi'
     ? 'जोड़ा जा रहा है...'
@@ -137,7 +155,7 @@ export default function SearchableCombobox({
   return (
     <div ref={containerRef} className="relative w-full">
       {label && (
-        <label className="text-[11px] font-mono uppercase tracking-wider text-zinc-300 block mb-1.5">
+        <label className="text-xs font-bold text-stone-800 block mb-1">
           {label}
         </label>
       )}
@@ -147,49 +165,49 @@ export default function SearchableCombobox({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={"w-full px-3.5 py-2.5 text-xs rounded-xl flex items-center justify-between text-left transition cursor-pointer select-none " + (
+        className={"w-full px-3.5 py-2.5 text-xs border rounded-xl flex items-center justify-between text-left transition shadow-2xs cursor-pointer " + (
           isOpen
-            ? "border-white/40 ring-1 ring-white/20 bg-[#1e1e1e] text-white"
-            : "border border-white/[0.08] hover:border-white/20 bg-[#161616] text-white"
-        ) + (disabled ? " opacity-40 cursor-not-allowed bg-black/40" : "")}
+            ? "border-[#1d4ed8] ring-2 ring-[#1d4ed8]/20 bg-white"
+            : "border-stone-300 hover:border-stone-400 bg-white"
+        ) + (disabled ? " opacity-50 cursor-not-allowed bg-stone-50" : "")}
       >
-        <span className={"truncate font-sans " + (!selectedOption && !value ? "text-zinc-500 font-normal" : "text-white font-medium")}>
+        <span className={"truncate font-medium " + (!selectedOption && !value ? "text-stone-400" : "text-stone-900 font-semibold")}>
           {displayLabel}
         </span>
-        <ChevronDown className={"w-4 h-4 text-zinc-400 shrink-0 ml-1.5 transition-transform duration-200 " + (isOpen ? "rotate-180 text-white" : "")} />
+        <ChevronDown className={"w-4 h-4 text-stone-400 shrink-0 ml-1.5 transition-transform duration-200 " + (isOpen ? "rotate-180 text-[#1d4ed8]" : "")} />
       </button>
 
-      {/* Floating Dropdown Menu (Mugen Dark Studio Glass Container) */}
+      {/* Floating Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#141414]/98 backdrop-blur-2xl rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9)] border border-white/[0.1] overflow-hidden z-[9999] animate-fadeIn text-white">
+        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-2xl border border-stone-200 overflow-hidden z-[9999] animate-fadeIn">
           
           {/* Sticky Search Input Box */}
-          <div className="p-2.5 border-b border-white/[0.06] bg-black/40">
+          <div className="p-2.5 border-b border-stone-100 bg-stone-50/90">
             <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 pointer-events-none" />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full pl-8 pr-3 py-2 text-xs bg-[#1a1a1a] border border-white/[0.08] focus:border-white/30 rounded-xl outline-hidden text-white placeholder-zinc-500 font-medium"
+                className="w-full pl-8 pr-3 py-2 text-xs bg-white border border-stone-300 rounded-lg focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 outline-hidden text-stone-900 placeholder-stone-400 font-medium"
               />
             </div>
           </div>
 
           {/* Options List */}
-          <div className="max-h-60 overflow-y-auto p-1.5 space-y-0.5 divide-y divide-white/[0.03]">
+          <div className="max-h-60 overflow-y-auto p-1 divide-y divide-stone-50">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = selectedOption && selectedOption.id === opt.id;
                 return (
                   <div
                     key={opt.id}
-                    className={"w-full px-3 py-2 text-xs rounded-xl flex items-center justify-between transition group cursor-pointer " + (
+                    className={"w-full px-3 py-2 text-xs rounded-lg flex items-center justify-between transition group cursor-pointer " + (
                       isSelected
-                        ? "bg-white/[0.12] text-white font-bold"
-                        : "text-zinc-300 hover:bg-white/[0.06] hover:text-white font-normal"
+                        ? "bg-blue-50 text-[#1d4ed8] font-bold"
+                        : "text-stone-700 hover:bg-stone-50 font-normal"
                     )}
                     onClick={() => {
                       onChange(opt.id, opt);
@@ -197,15 +215,15 @@ export default function SearchableCombobox({
                       setSearchQuery('');
                     }}
                   >
-                    <span className="truncate flex-1 font-sans">{opt.label}</span>
+                    <span className="truncate flex-1">{opt.label}</span>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      {isSelected && <Check className="w-4 h-4 text-white" />}
+                      {isSelected && <Check className="w-4 h-4 text-[#1d4ed8]" />}
                       {onDelete && (
                         <button
                           type="button"
                           onClick={(e) => handleDeleteItem(e, opt)}
                           title="Delete option"
-                          className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-red-400 hover:bg-white/[0.08] rounded-lg transition"
+                          className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -217,43 +235,45 @@ export default function SearchableCombobox({
             ) : (
               /* If No Matches Found: Show Notice and Create Option */
               <div className="p-4 text-center space-y-2.5">
-                <div className="flex items-center justify-center gap-1.5 text-xs text-amber-300 font-medium bg-amber-950/40 py-1.5 px-2.5 rounded-xl border border-amber-800/40">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 py-1.5 px-2.5 rounded-lg border border-amber-200">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{notFoundTitle}</span>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
+                <p className="text-xs text-stone-500">
                   {notFoundDesc}
                 </p>
-                <button
-                  type="button"
-                  onClick={handleCreate}
-                  disabled={isCreating}
-                  className="w-full py-2.5 px-3 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
-                >
-                  {isCreating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>{creatingText}</span>
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="w-4 h-4" />
-                      <span>{createBtnText}</span>
-                    </>
-                  )}
-                </button>
+                {searchQuery.trim() && (
+                  <button
+                    type="button"
+                    onClick={handleCreate}
+                    disabled={isCreating}
+                    className="w-full py-2.5 px-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>{creatingText}</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        <span>{createBtnText}</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </div>
 
           {/* Quick Create Footer if typing text that doesn't have an exact match */}
           {searchQuery.trim() && filteredOptions.length > 0 && (
-            <div className="p-2 border-t border-white/[0.06] bg-black/40">
+            <div className="p-2 border-t border-stone-100 bg-stone-50/70">
               <button
                 type="button"
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="w-full py-2 px-3 bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/[0.08] text-xs font-mono uppercase tracking-wider font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer shadow-xs disabled:opacity-50"
+                className="w-full py-2 px-3 bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] border border-blue-200/80 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs disabled:opacity-50"
               >
                 {isCreating ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
