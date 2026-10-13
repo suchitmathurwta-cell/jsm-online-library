@@ -1,56 +1,70 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 @layer base {
   body {
-    font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Geist', 'Inter', 'Noto Sans Devanagari', 'Hind', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #FAFAFA;
+    color: #111111;
   }
 }
 
-.font-rekhta-serif {
-  font-family: 'Rozha One', 'Noto Serif Devanagari', 'Cormorant Garamond', Georgia, serif;
+/* Minimalist studio font aliases (Eliminating decorative and serif fonts) */
+.font-sans {
+  font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.font-hindi-serif {
-  font-family: 'Noto Serif Devanagari', 'Rozha One', Georgia, serif;
+.font-rekhta-serif,
+.font-hindi-serif,
+.font-english-serif {
+  font-family: 'Geist', 'Inter', 'Noto Sans Devanagari', 'Hind', sans-serif;
 }
 
 .font-urdu {
-  font-family: 'Noto Nastaliq Urdu', 'Amiri', serif;
+  font-family: 'Noto Sans Arabic', 'Geist', sans-serif;
 }
 
-.font-english-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+/* High-Key Minimalist Studio Elevation & Borders */
+.shadow-ambient {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.03);
 }
 
-/* Custom Scrollbars */
+.shadow-ambient-hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+}
+
+.border-hairline {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Minimalist Studio Scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1ede6;
+  background: #FAFAFA;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d4c5b3;
-  border-radius: 4px;
+  background: #E4E4E7;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8927b;
+  background: #A1A1AA;
 }
 
-/* Subtle page shadows & vintage book effects */
+/* Modern Card Spine & Glass */
 .book-shadow {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
 }
 
 .book-spine {
-  box-shadow: inset 4px 0 8px -2px rgba(0,0,0,0.4), inset -2px 0 4px -1px rgba(255,255,255,0.2);
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .glass-nav {
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
 }

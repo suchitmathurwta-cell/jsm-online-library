@@ -108,15 +108,24 @@ export async function getBooks(filters = {}) {
 
   if (filters.search && filters.search.trim()) {
     const q = filters.search.trim().toLowerCase();
-    books = books.filter(b => (
-      (b.title_hi && b.title_hi.toLowerCase().includes(q)) ||
-      (b.title_en && b.title_en.toLowerCase().includes(q)) ||
-      (b.author_hi && b.author_hi.toLowerCase().includes(q)) ||
-      (b.author_en && b.author_en.toLowerCase().includes(q)) ||
-      (b.genre && b.genre.toLowerCase().includes(q)) ||
-      (b.subgenre && b.subgenre.toLowerCase().includes(q)) ||
-      (b.description && b.description.toLowerCase().includes(q))
-    ));
+    const normQ = q.replace(/\u093C/g, '').replace(/\u095E/g, 'फ').replace(/\u095B/g, 'ज').replace(/\u095A/g, 'ग').replace(/\u0959/g, 'ख').replace(/\u0958/g, 'क');
+    books = books.filter(b => {
+      const directMatch = (
+        (b.title_hi && b.title_hi.toLowerCase().includes(q)) ||
+        (b.title_en && b.title_en.toLowerCase().includes(q)) ||
+        (b.title_ur && b.title_ur.toLowerCase().includes(q)) ||
+        (b.author_hi && b.author_hi.toLowerCase().includes(q)) ||
+        (b.author_en && b.author_en.toLowerCase().includes(q)) ||
+        (b.author_ur && b.author_ur.toLowerCase().includes(q)) ||
+        (b.genre && b.genre.toLowerCase().includes(q)) ||
+        (b.subgenre && b.subgenre.toLowerCase().includes(q)) ||
+        (b.description && b.description.toLowerCase().includes(q))
+      );
+      if (directMatch) return true;
+      const tHiNorm = (b.title_hi || '').toLowerCase().replace(/\u093C/g, '').replace(/\u095E/g, 'फ').replace(/\u095B/g, 'ज').replace(/\u095A/g, 'ग').replace(/\u0959/g, 'ख').replace(/\u0958/g, 'क');
+      const aHiNorm = (b.author_hi || '').toLowerCase().replace(/\u093C/g, '').replace(/\u095E/g, 'फ').replace(/\u095B/g, 'ज').replace(/\u095A/g, 'ग').replace(/\u0959/g, 'ख').replace(/\u0958/g, 'क');
+      return tHiNorm.includes(normQ) || aHiNorm.includes(normQ);
+    });
   }
 
   return books;

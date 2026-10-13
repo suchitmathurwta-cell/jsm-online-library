@@ -1,17 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User as UserIcon, LogOut, BookMarked, Sparkles } from 'lucide-react';
+import { User as UserIcon, LogOut, Search, Mic, Plus, Settings, Menu, X } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Search,
-  Mic,
-  PlusCircle,
-  Settings,
-  Globe,
-  Menu,
-  X
-} from 'lucide-react';
-import { AdminOnly, VisitorOnly } from './AdminGuard';
+import { AdminOnly } from './AdminGuard';
+import FloatingNavPill from './FloatingNavPill';
 
 export default function Header({
   lang = 'hi',
@@ -27,12 +19,24 @@ export default function Header({
   onSelectCategory
 }) {
   const navigate = useNavigate();
-  const { user, signOut, isAdmin } = useAuth();
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [localHeaderSearch, setLocalHeaderSearch] = useState(searchQuery || '');
   const debounceRef = useRef(null);
+  const searchInputRef = useRef(null);
+
+  // ⌘K / Ctrl+K keyboard shortcut to focus header search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setLocalHeaderSearch(searchQuery || '');
@@ -45,7 +49,7 @@ export default function Header({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchQuery?.(val);
-    }, 250);
+    }, 200);
   };
 
   const handleVoiceSearch = () => {
@@ -85,205 +89,149 @@ export default function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
-      {/* Top Banner Notice with Clean Minimal Style */}
-      <div className="bg-[#0f172a] text-stone-300 text-[11.5px] py-1.5 px-4 text-center font-medium tracking-wide flex justify-center items-center gap-4">
-        <span>✨ {t.tagline}</span>
-        <AdminOnly>
-          <button
-            onClick={onOpenAdmin}
-            className="underline hover:text-amber-400 cursor-pointer hidden md:inline text-amber-300/90 font-semibold transition-colors"
-          >
-            {t.nav.manageLibrary} ⚙️
-          </button>
-        </AdminOnly>
-      </div>
+    <>
+      {/* Floating Center Segmented Pill: ScriptToggle & Quick Controls */}
+      <FloatingNavPill lang={lang} setLang={setLang} t={t} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16 gap-3 sm:gap-5">
-          
-          {/* Logo with Elevated Cultural Typography */}
-          <div className="flex items-center gap-3 shrink-0">
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-600 via-blue-800 to-indigo-950 flex items-center justify-center text-amber-300 font-bold text-lg shadow-xs border border-amber-400/30 group-hover:scale-105 transition-transform">
-                <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'C' : 'चे')}</span>
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-2">
-                  <span className="font-rekhta-serif text-2xl font-extrabold tracking-tight text-[#0f2852] group-hover:text-[#1d4ed8] transition-colors">
-                    {t.brand}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200/70">
-                    {t.brandSubtitle}
-                  </span>
-                </div>
-                <span className="text-[10px] text-stone-400 font-medium hidden sm:block -mt-0.5">
-                  {t.brandTagline}
-                </span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Navigation Links for Genres (Desktop) navigating directly to /category/:slug */}
-          <nav className="hidden xl:flex items-center gap-1 text-[13px] font-medium text-stone-600">
-            {navItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => {
-                  navigate('/category/' + item.key);
-                  if (onSelectCategory) onSelectCategory(item.key);
-                }}
-                className={`px-2.5 py-1.5 rounded-lg transition-all duration-150 cursor-pointer ${
-                  item.key === 'magazines' || item.key === 'vimarsh'
-                    ? 'font-bold text-[#1d4ed8] bg-blue-50/70 hover:bg-blue-100/70'
-                    : 'hover:text-[#1d4ed8] hover:bg-stone-50'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
-
-          {/* Quick Header Search Bar with Refined Style */}
-          <div className="hidden md:flex items-center flex-1 max-w-xs lg:max-w-sm relative">
-            <input
-              type="text"
-              value={localHeaderSearch}
-              onChange={handleHeaderInputChange}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setSearchQuery?.(localHeaderSearch);
-                  if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
-                }
-              }}
-              placeholder={t.hero.searchPlaceholder}
-              autoComplete="off"
-              className="w-full pl-9 pr-8 py-1.5 text-xs bg-stone-50 hover:bg-white focus:bg-white border border-stone-200 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 rounded-full outline-hidden transition text-stone-900 cursor-text font-normal shadow-2xs"
-            />
-            <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 pointer-events-none" />
-            <button
-              type="button"
-              onClick={handleVoiceSearch}
-              title="Voice Search"
-              className={`absolute right-2.5 p-1 text-stone-400 hover:text-[#1d4ed8] transition cursor-pointer ${isListening ? 'animate-pulse text-red-600' : ''}`}
-            >
-              <Mic className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          {/* Right Action Tools */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
+      {/* Main High-Key Minimalist Header Bar */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/[0.05]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 gap-4">
             
-            {/* User Profile / Auth Button */}
-            {user ? (
-              <div className="flex items-center gap-2 bg-blue-50/80 border border-blue-200/80 px-2.5 py-1.5 rounded-full text-xs">
-                <div className="w-5 h-5 rounded-full bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-[10px]">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
+            {/* Left: Brand Identity in Minimalist Studio Aesthetic */}
+            <div className="flex items-center gap-3 shrink-0">
+              <Link to="/" className="flex items-center gap-2.5 group">
+                <div className="w-8 h-8 rounded-lg bg-[#111111] flex items-center justify-center text-white font-sans font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
+                  <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'CH' : 'चे')}</span>
                 </div>
-                <span className="max-w-[100px] truncate text-[11px] font-semibold text-stone-700 hidden md:inline">
-                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => signOut()}
-                  title="Sign Out"
-                  className="text-stone-400 hover:text-red-600 transition p-0.5 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onOpenAuth}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200/80 transition cursor-pointer"
-              >
-                <UserIcon className="w-3.5 h-3.5 text-stone-500" />
-                <span>{t.nav.login}</span>
-              </button>
-            )}
-
-            {/* Direct Primary Upload PDF Button */}
-            <button
-              onClick={onOpenUpload}
-              className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold shadow-xs hover:shadow-md transition duration-150 cursor-pointer hover:-translate-y-0.5"
-              title={t.nav.uploadBook}
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.nav.uploadBook}</span>
-              <span className="sm:hidden">+</span>
-            </button>
-
-            {/* Language Selector Dropdown (HIN, ENG, URD) */}
-            <div className="relative">
-              <button
-                onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-stone-700 bg-stone-50 hover:bg-stone-100 rounded-lg border border-stone-200/80 shadow-2xs cursor-pointer transition"
-              >
-                <Globe className="w-3.5 h-3.5 text-stone-500" />
-                <span className="uppercase">{lang}</span>
-                <span className="text-[10px] text-stone-400">▼</span>
-              </button>
-
-              {langDropdownOpen && (
-                <div className="absolute right-0 mt-1.5 w-38 bg-white rounded-xl shadow-xl border border-stone-100 py-1.5 text-xs z-50 animate-fadeIn">
-                  <button
-                    onClick={() => { setLang('hi'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'hi' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>हिंदी (HIN)</span>
-                    {lang === 'hi' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => { setLang('en'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 transition ${
-                      lang === 'en' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>English (ENG)</span>
-                    {lang === 'en' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
-                  <button
-                    onClick={() => { setLang('ur'); setLangDropdownOpen(false); }}
-                    className={`w-full text-left px-3.5 py-2 flex items-center justify-between hover:bg-stone-50 font-urdu transition ${
-                      lang === 'ur' ? 'font-bold text-[#1d4ed8] bg-blue-50/50' : 'text-stone-700'
-                    }`}
-                  >
-                    <span>اردو (URD)</span>
-                    {lang === 'ur' && <span className="text-[#1d4ed8]">✓</span>}
-                  </button>
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="font-sans text-lg font-bold tracking-tight text-[#111111] group-hover:text-black transition-colors">
+                      {lang === 'ur' ? 'چیتنا' : (lang === 'en' ? 'CHETNA' : 'चेतना')}
+                    </span>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 border-l border-zinc-200 pl-2 hidden sm:inline">
+                      {lang === 'ur' ? 'کتب خانہ' : (lang === 'en' ? 'ARCHIVE' : 'ई-पुस्तकालय')}
+                    </span>
+                  </div>
                 </div>
-              )}
+              </Link>
             </div>
 
-            {/* Admin / Management Button (Admin Only) */}
-            <AdminOnly>
-              <button
-                onClick={onOpenAdmin}
-                title={t.nav.manageLibrary}
-                className="p-2 text-stone-500 hover:text-[#1d4ed8] hover:bg-stone-50 rounded-lg transition cursor-pointer border border-transparent hover:border-stone-200/60"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
-            </AdminOnly>
+            {/* Center Spacer to allow FloatingNavPill to be the focal segmented control */}
+            <div className="hidden lg:flex flex-1 max-w-xs xl:max-w-sm justify-center pointer-events-none">
+              {/* Center spacing preserved for FloatingNavPill */}
+            </div>
 
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-stone-600 hover:text-stone-900 xl:hidden rounded-lg hover:bg-stone-50 cursor-pointer"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+            {/* Right: Quick Search, Actions, Auth & Admin */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              
+              {/* Minimalist ⌘K Search Input */}
+              <div className="hidden md:flex items-center relative w-48 lg:w-60">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={localHeaderSearch}
+                  onChange={handleHeaderInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setSearchQuery?.(localHeaderSearch);
+                      if (onSearchSubmit) onSearchSubmit(localHeaderSearch);
+                    }
+                  }}
+                  placeholder={t.hero?.searchPlaceholder || 'Search title, author...'}
+                  autoComplete="off"
+                  className="w-full pl-8 pr-12 py-1.5 text-xs bg-zinc-50 hover:bg-white focus:bg-white border border-zinc-200/90 focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 rounded-full outline-hidden transition text-[#111111] placeholder-zinc-400"
+                />
+                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 pointer-events-none" />
+                <div className="absolute right-2 flex items-center gap-1">
+                  <kbd className="hidden lg:inline text-[9px] font-mono text-zinc-400 bg-white px-1 py-0.5 rounded border border-zinc-200">
+                    ⌘K
+                  </kbd>
+                  <button
+                    type="button"
+                    onClick={handleVoiceSearch}
+                    title="Voice Search"
+                    className={`p-0.5 text-zinc-400 hover:text-black transition cursor-pointer ${
+                      isListening ? 'animate-pulse text-red-500' : ''
+                    }`}
+                  >
+                    <Mic className="w-3 h-3" />
+                  </button>
+                </div>
+              </div>
+
+              {/* User Profile / Auth */}
+              {user ? (
+                <div className="flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-2.5 py-1 rounded-full text-xs">
+                  <div className="w-5 h-5 rounded-full bg-[#111111] text-white flex items-center justify-center font-bold text-[10px]">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <span className="max-w-[85px] truncate text-[11px] font-medium text-zinc-700 hidden lg:inline">
+                    {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => signOut()}
+                    title="Sign Out"
+                    className="text-zinc-400 hover:text-red-600 transition p-0.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onOpenAuth}
+                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-[#111111] text-xs font-medium transition cursor-pointer"
+                >
+                  <UserIcon className="w-3.5 h-3.5 text-zinc-500" />
+                  <span>{t.nav.login}</span>
+                </button>
+              )}
+
+              {/* Minimalist Studio Upload CTA Pill */}
+              <button
+                onClick={onOpenUpload}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#111111] hover:bg-black text-white text-xs font-medium transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02]"
+                title={t.nav.uploadBook}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">{t.nav.uploadBook}</span>
+              </button>
+
+              {/* Admin Panel Quick Trigger */}
+              <AdminOnly>
+                <button
+                  onClick={onOpenAdmin}
+                  title={t.nav.manageLibrary}
+                  className="p-1.5 text-zinc-500 hover:text-black hover:bg-zinc-100 rounded-full transition cursor-pointer"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+              </AdminOnly>
+
+              {/* Mobile Drawer Trigger */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-1.5 text-[#111111] xl:hidden rounded-lg hover:bg-zinc-100 cursor-pointer"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+
+            </div>
 
           </div>
         </div>
 
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-stone-100 py-3.5 px-2 space-y-2 bg-white animate-fadeIn">
-            <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="xl:hidden border-t border-black/[0.05] py-3 px-4 bg-white/98 backdrop-blur-md animate-fadeIn">
+            {/* Quick Genres Grid */}
+            <p className="text-[11px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
+              {t.sections.browseBy || 'Domains & Genres'}
+            </p>
+            <div className="grid grid-cols-2 gap-1.5 text-xs mb-3">
               {navItems.map((item) => (
                 <button
                   key={item.key}
@@ -292,32 +240,34 @@ export default function Header({
                     if (onSelectCategory) onSelectCategory(item.key);
                     setMobileMenuOpen(false);
                   }}
-                  className="p-2.5 rounded-lg hover:bg-stone-50 text-stone-700 text-left font-medium transition cursor-pointer"
+                  className="p-2 rounded-lg hover:bg-zinc-100 text-[#111111] text-left transition cursor-pointer font-medium"
                 >
                   {item.label}
                 </button>
               ))}
             </div>
-            
-            <div className="pt-2.5 border-t border-stone-100 flex gap-2">
+
+            {/* Mobile Actions */}
+            <div className="pt-2 border-t border-zinc-100 flex items-center gap-2">
               <button
                 onClick={() => { onOpenUpload(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center bg-[#1d4ed8] text-white rounded-lg font-bold hover:bg-[#1e40af] transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-2 text-xs text-center bg-[#111111] text-white rounded-full font-medium transition cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <PlusCircle className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5" />
                 <span>{t.nav.uploadBook}</span>
               </button>
-              <button
-                onClick={() => { onOpenAdmin(); setMobileMenuOpen(false); }}
-                className="flex-1 py-2 text-xs text-center border border-stone-200 rounded-lg font-medium text-stone-700 hover:bg-stone-50 transition cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <span>⚙️ {t.nav.manageLibrary}</span>
-              </button>
+              {!user && (
+                <button
+                  onClick={() => { onOpenAuth(); setMobileMenuOpen(false); }}
+                  className="flex-1 py-2 text-xs text-center border border-zinc-200 bg-white rounded-full text-[#111111] font-medium transition cursor-pointer"
+                >
+                  <span>{t.nav.login}</span>
+                </button>
+              )}
             </div>
           </div>
         )}
-
-      </div>
-    </header>
+      </header>
+    </>
   );
 }

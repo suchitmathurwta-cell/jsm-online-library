@@ -277,7 +277,7 @@ function MainApp() {
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={'min-h-screen flex flex-col bg-[#faf8f5] text-[#1e293b] ' + (isRtl ? 'font-urdu' : '')}
+      className={'min-h-screen flex flex-col bg-[#FAFAFA] text-[#111111] font-sans ' + (isRtl ? 'font-urdu' : '')}
     >
       {/* Sticky Header */}
       <Header

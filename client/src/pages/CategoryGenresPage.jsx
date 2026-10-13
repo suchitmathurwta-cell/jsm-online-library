@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   FolderTree,
   ChevronRight,
@@ -16,6 +17,7 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import { createGenre, deleteGenre, updateGenre } from '../services/supabaseApi';
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
+import { containerVariants, itemVariants } from '../components/BentoGrid';
 
 export default function CategoryGenresPage({
   t,
@@ -45,7 +47,7 @@ export default function CategoryGenresPage({
   const [deletingGenre, setDeletingGenre] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const category = categories.find(c => c.id === categorySlug) || {
+  const category = categories.find((c) => c.id === categorySlug) || {
     id: categorySlug,
     name_hi: categorySlug,
     name_en: categorySlug,
@@ -57,14 +59,19 @@ export default function CategoryGenresPage({
   const genres = category.genres || [];
 
   // Books in this category
-  const categoryBooks = books.filter(b => b.category === categorySlug);
+  const categoryBooks = books.filter((b) => b.category === categorySlug);
 
   const handleCreateGenre = async (e) => {
     e.preventDefault();
     if (!newGenreName.trim()) return;
     setIsSubmitting(true);
     try {
-      const genreId = newGenreName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('genre-' + Date.now());
+      const genreId =
+        newGenreName
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '') || 'genre-' + Date.now();
       await createGenre({
         id: genreId,
         category_id: categorySlug,
@@ -132,44 +139,43 @@ export default function CategoryGenresPage({
   const hl = t.hierarchyLayers || {};
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 animate-fadeIn">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 animate-fadeIn">
       {/* Layer 2 Breadcrumb */}
       <Breadcrumbs lang={lang} t={t} items={[{ label: categoryTitle }]} />
 
-      {/* Layer 2 Header Banner */}
-      <div className="mt-3 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-stone-900 via-stone-800 to-indigo-950 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-8 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Layer 2 Header Banner: High-Key Minimalist Studio Presentation */}
+      <div className="mt-4 p-6 sm:p-8 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-amber-300 text-xs font-semibold border border-white/10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 text-zinc-700 text-xs font-mono border border-zinc-200/60">
               <Layers className="w-3.5 h-3.5" />
-              <span>{hl.layer2Badge}</span>
+              <span>{hl.layer2Badge || 'Level 2: Genres'}</span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold font-rekhta-serif tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-[#111111] flex items-center gap-3">
               <span>{categoryTitle}</span>
             </h1>
-            <p className="text-xs sm:text-sm text-stone-300 font-normal leading-relaxed">
+            <p className="text-xs sm:text-sm text-zinc-500 font-sans leading-relaxed">
               {categorySub || hl.layer2Sub}
             </p>
           </div>
 
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl text-center">
-              <span className="text-lg font-bold text-amber-300">{genres.length}</span>
-              <span className="text-xs text-stone-300 block">{t.admin.genresCount}</span>
+            <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-2xl text-center">
+              <span className="text-lg font-bold font-mono text-[#111111]">{genres.length}</span>
+              <span className="text-[11px] text-zinc-500 block">{t.admin?.genresCount || 'Genres'}</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 px-4 py-2.5 rounded-2xl text-center">
-              <span className="text-lg font-bold text-white">{categoryBooks.length}</span>
-              <span className="text-xs text-stone-300 block">{t.admin.worksCount}</span>
+            <div className="bg-zinc-50 border border-zinc-200/80 px-4 py-2 rounded-2xl text-center">
+              <span className="text-lg font-bold font-mono text-[#111111]">{categoryBooks.length}</span>
+              <span className="text-[11px] text-zinc-500 block">{t.admin?.worksCount || 'Works'}</span>
             </div>
-            
+
             <AdminOnly>
               <button
                 onClick={() => setShowCreateGenre(!showCreateGenre)}
-                className="px-4 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-2xl flex items-center gap-1.5 shadow-md transition cursor-pointer"
+                className="px-4 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-full flex items-center gap-1.5 shadow-xs transition cursor-pointer"
               >
-                <Plus className="w-4 h-4" />
-                <span>{hl.addGenreBtn}</span>
+                <Plus className="w-3.5 h-3.5" />
+                <span>{hl.addGenreBtn || '+ Add Genre'}</span>
               </button>
             </AdminOnly>
           </div>
@@ -178,129 +184,150 @@ export default function CategoryGenresPage({
         {/* Inline Create Genre Form (Admin Only) */}
         {showCreateGenre && (
           <AdminOnly>
-            <form onSubmit={handleCreateGenre} className="mt-6 pt-5 border-t border-white/10 flex items-center gap-2 max-w-xl animate-fadeIn">
+            <form
+              onSubmit={handleCreateGenre}
+              className="mt-6 pt-5 border-t border-zinc-100 flex flex-col sm:flex-row gap-2.5 items-center animate-fadeIn"
+            >
               <input
                 type="text"
                 value={newGenreName}
                 onChange={(e) => setNewGenreName(e.target.value)}
-                placeholder={lang === 'hi' ? 'नई विधा का नाम दर्ज करें...' : (lang === 'ur' ? 'نئی صنف کا نام درج کریں...' : 'Enter new genre name...')}
-                className="flex-1 px-4 py-2 text-xs bg-white text-stone-900 rounded-xl outline-hidden font-medium"
+                placeholder={
+                  lang === 'hi'
+                    ? 'नई साहित्यिक विधा का नाम...'
+                    : lang === 'ur'
+                    ? 'نئی ادبی صنف کا نام...'
+                    : 'Enter new genre title...'
+                }
+                className="w-full sm:flex-1 px-4 py-2 text-xs bg-zinc-50 border border-zinc-200 rounded-xl outline-hidden focus:border-black focus:bg-white"
                 autoFocus
               />
               <button
                 type="submit"
                 disabled={isSubmitting || !newGenreName.trim()}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-stone-950 text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-5 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-xl transition cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting ? '...' : (lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Create'))}
+                {isSubmitting ? '...' : '+ Create'}
               </button>
               <button
                 type="button"
                 onClick={() => setShowCreateGenre(false)}
-                className="px-3 py-2 text-stone-300 hover:text-white text-xs cursor-pointer"
+                className="px-3 py-2 text-xs text-zinc-500 hover:text-black cursor-pointer"
               >
-                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                Cancel
               </button>
             </form>
           </AdminOnly>
         )}
       </div>
 
-      {/* Layer 2: Genres Grid */}
+      {/* Layer 2 Genres: Asymmetrical Bento Grid */}
       <div className="mt-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
-            <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-rekhta-serif">
-              {hl.layer2Heading} {categoryTitle}
+        <div className="flex items-center justify-between mb-6 pb-3 border-b border-black/[0.06]">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block"></span>
+            <h2 className="text-sm font-mono uppercase tracking-wider text-[#111111]">
+              {hl.layer2Heading || 'Genres Catalog'} — {categoryTitle}
             </h2>
           </div>
-          <span className="text-xs text-stone-500 font-medium hidden sm:inline">
-            {hl.layer2Sub}
+          <span className="text-xs text-zinc-400 font-mono hidden sm:inline">
+            {genres.length} genres registered
           </span>
         </div>
 
         {genres.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {genres.map((g) => {
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+          >
+            {genres.map((g, idx) => {
               const gTitle = g[`name_${lang}`] || g.name_hi || g.name_en;
               const gDesc = g[`description_${lang}`] || g.description_hi || g.description_en;
               const subCount = g.subgenres_count || (g.subgenres && g.subgenres.length) || 0;
+              // Asymmetric bento span: first card spans 2 columns on 3-col layout if total > 2
+              const isHeroBento = idx === 0 && genres.length > 2;
 
               return (
-                <div
+                <motion.div
                   key={g.id}
+                  variants={itemVariants}
                   onClick={() => navigate(`/category/${categorySlug}/${g.id}`)}
-                  className="group relative p-6 rounded-3xl bg-white border border-stone-200/90 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                  className={`group relative p-6 rounded-3xl bg-white border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] hover:border-black/15 transition-all duration-300 cursor-pointer flex flex-col justify-between ${
+                    isHeroBento ? 'sm:col-span-2' : 'col-span-1'
+                  }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3.5">
-                      <div className="w-10 h-10 rounded-2xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center border border-blue-100 shadow-2xs group-hover:bg-[#1d4ed8] group-hover:text-white transition-colors">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="w-10 h-10 rounded-2xl bg-zinc-100 text-[#111111] flex items-center justify-center transition-transform group-hover:scale-105">
                         <FolderTree className="w-5 h-5" />
                       </div>
 
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
-                          {subCount} {lang === 'hi' ? 'उप-विधाएँ' : (lang === 'ur' ? 'ذیلی اصناف' : 'Sub-Genres')}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-zinc-50 text-zinc-600 border border-zinc-200/60">
+                          {subCount} {lang === 'hi' ? 'उप-विधाएँ' : lang === 'ur' ? 'ذیلی اصناف' : 'Sub-Genres'}
                         </span>
-                        
+
                         {/* Admin Only Actions: Edit & Delete */}
                         <AdminOnly>
                           <div className="flex items-center gap-1">
                             <button
                               type="button"
                               onClick={(e) => openEditModal(g, e)}
-                              title={t.admin.editBtn}
-                              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
+                              title={t.admin?.editBtn || 'Edit'}
+                              className="p-1 rounded-md text-zinc-400 hover:text-black hover:bg-zinc-100 transition cursor-pointer"
                             >
-                              <Edit2 className="w-3.5 h-3.5" />
+                              <Edit2 className="w-3 h-3" />
                             </button>
                             <button
                               type="button"
                               onClick={(e) => openDeleteModal(g, e)}
-                              title={t.admin.deleteBtn}
-                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                              title={t.admin?.deleteBtn || 'Delete'}
+                              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-3 h-3" />
                             </button>
                           </div>
                         </AdminOnly>
                       </div>
                     </div>
 
-                    <h3 className="text-base font-bold text-stone-900 font-hindi-serif group-hover:text-[#1d4ed8] transition-colors leading-snug">
+                    <h3 className="text-base font-bold text-[#111111] tracking-tight font-sans leading-snug">
                       {gTitle}
                     </h3>
 
-                    <p className="text-xs text-stone-600 mt-2.5 leading-relaxed line-clamp-2">
-                      {gDesc}
-                    </p>
+                    {gDesc && (
+                      <p className="text-xs text-zinc-500 mt-2 leading-relaxed line-clamp-2 font-sans">
+                        {gDesc}
+                      </p>
+                    )}
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between">
-                    <span className="text-xs font-semibold text-stone-500">
-                      {g.count || 0} {hl.layer2Works}
+                  <div className="mt-5 pt-4 border-t border-zinc-100 flex items-center justify-between">
+                    <span className="text-xs font-mono text-zinc-400">
+                      {g.count || 0} {hl.layer2Works || 'works'}
                     </span>
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-[#1d4ed8] group-hover:translate-x-1 transition-transform">
-                      <span>{hl.layer2Explore}</span>
-                      <ArrowRight className="w-4 h-4" />
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] group-hover:translate-x-1 transition-transform">
+                      <span>{hl.layer2Explore || 'Explore'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         ) : (
-          <div className="py-16 text-center bg-white rounded-3xl border border-stone-200 p-8 max-w-lg mx-auto">
-            <FolderTree className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-            <p className="text-sm font-bold text-stone-700">{hl.noWorksFound}</p>
-            <p className="text-xs text-stone-500 mt-1 mb-4">{hl.noWorksDesc}</p>
+          <div className="py-16 text-center bg-white rounded-3xl border border-black/[0.06] p-8 max-w-lg mx-auto shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+            <FolderTree className="w-8 h-8 text-zinc-300 mx-auto mb-3" />
+            <p className="text-sm font-bold text-[#111111] font-sans">{hl.noWorksFound || 'No genres registered yet'}</p>
+            <p className="text-xs text-zinc-500 mt-1 mb-4 font-sans">{hl.noWorksDesc || 'Add a genre to begin categorizing treatises.'}</p>
             <AdminOnly>
               <button
                 onClick={() => setShowCreateGenre(true)}
-                className="px-4 py-2 bg-[#1d4ed8] text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-full shadow-xs cursor-pointer"
               >
-                {hl.addGenreBtn}
+                {hl.addGenreBtn || '+ Add Genre'}
               </button>
             </AdminOnly>
           </div>
@@ -309,21 +336,21 @@ export default function CategoryGenresPage({
 
       {/* Featured Books in this Category */}
       {categoryBooks.length > 0 && (
-        <div className="mt-14 pt-10 border-t border-stone-200">
+        <div className="mt-14 pt-8 border-t border-black/[0.06]">
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2.5">
-              <div className="w-5 h-1 bg-[#1d4ed8] rounded-full"></div>
-              <h2 className="text-lg sm:text-xl font-bold text-stone-900 font-rekhta-serif">
-                {hl.featuredTreatises} {categoryTitle}
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block"></span>
+              <h2 className="text-sm font-mono uppercase tracking-wider text-[#111111]">
+                {hl.layer2WorksHeading || 'Indexed Works in'} {categoryTitle}
               </h2>
             </div>
-            <span className="text-xs text-stone-500 font-medium">
-              {categoryBooks.length} {t.sections.worksUnit}
+            <span className="text-xs font-mono text-zinc-400">
+              {categoryBooks.length} works
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-5">
-            {categoryBooks.slice(0, 6).map((book) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {categoryBooks.map((book) => (
               <BookCard
                 key={book.id}
                 book={book}
@@ -339,75 +366,75 @@ export default function CategoryGenresPage({
         </div>
       )}
 
-      {/* Edit Genre Modal (Admin Only) */}
+      {/* Edit Genre Modal */}
       {editingGenre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-stone-200 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-              <h3 className="text-base font-bold text-stone-900 font-rekhta-serif">
-                {t.admin.editBtn}
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] animate-scaleUp">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
+              <h3 className="text-base font-bold text-[#111111] font-sans">
+                {t.admin?.editGenreTitle || 'Edit Genre'}
               </h3>
               <button
                 onClick={() => setEditingGenre(null)}
-                className="p-1 text-stone-400 hover:text-stone-700 rounded-lg cursor-pointer"
+                className="p-1 rounded-full text-zinc-400 hover:text-black cursor-pointer"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEditGenre} className="mt-4 space-y-3.5 text-xs">
+            <form onSubmit={handleSaveEditGenre} className="space-y-3.5 text-xs">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {lang === 'hi' ? 'विधा का नाम (हिंदी)' : (lang === 'ur' ? 'صنف کا نام (ہندی)' : 'Genre Name (Hindi)')}
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (Hindi/Devanagari)
                 </label>
                 <input
                   type="text"
                   value={editNameHi}
                   onChange={(e) => setEditNameHi(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {lang === 'hi' ? 'विधा का नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'صنف کا نام (انگریزی)' : 'Genre Name (English)')}
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (English/Roman)
                 </label>
                 <input
                   type="text"
                   value={editNameEn}
                   onChange={(e) => setEditNameEn(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-stone-700 block mb-1">
-                  {t.details.description}
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Description
                 </label>
                 <textarea
                   value={editDescHi}
                   onChange={(e) => setEditDescHi(e.target.value)}
-                  rows="3"
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
+                  rows={3}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-stone-100">
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
                 <button
                   type="button"
                   onClick={() => setEditingGenre(null)}
-                  className="px-4 py-2 text-stone-600 hover:bg-stone-100 rounded-xl font-medium cursor-pointer"
+                  className="px-4 py-2 border border-zinc-200 rounded-full font-medium text-zinc-600 hover:text-black cursor-pointer"
                 >
-                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isEditing}
-                  className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white font-bold rounded-xl shadow-xs transition cursor-pointer"
+                  className="px-5 py-2 bg-[#111111] hover:bg-black text-white font-medium rounded-full cursor-pointer disabled:opacity-50"
                 >
-                  {isEditing ? '...' : (lang === 'hi' ? 'सुरक्षित करें' : (lang === 'ur' ? 'محفوظ کریں' : 'Save Changes'))}
+                  {isEditing ? '...' : 'Save'}
                 </button>
               </div>
             </form>
@@ -415,40 +442,35 @@ export default function CategoryGenresPage({
         </div>
       )}
 
-      {/* Delete Confirmation Modal (Admin Only) */}
+      {/* Delete Genre Modal */}
       {deletingGenre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-stone-200 text-center animate-in fade-in zoom-in-95">
-            <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-3">
-              <Trash2 className="w-6 h-6" />
-            </div>
-            <h3 className="text-base font-bold text-stone-900 font-rekhta-serif mb-1">
-              {t.admin.deleteBtn}
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-black/[0.08] text-center animate-scaleUp">
+            <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+            <h3 className="text-base font-bold text-[#111111] font-sans">
+              Delete Genre
             </h3>
-            <p className="text-xs text-stone-600 mb-5 leading-relaxed">
-              {t.admin.deleteConfirm}
+            <p className="text-xs text-zinc-500 mt-2 font-sans">
+              Are you sure you want to delete <span className="font-bold text-[#111111]">"{deletingGenre.name_hi || deletingGenre.name_en}"</span>?
             </p>
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex justify-center gap-2 mt-5">
               <button
-                type="button"
                 onClick={() => setDeletingGenre(null)}
-                className="px-4 py-2 text-xs font-bold text-stone-600 bg-stone-100 hover:bg-stone-200 rounded-xl transition cursor-pointer"
+                className="px-4 py-2 border border-zinc-200 rounded-full text-xs font-medium text-zinc-600 hover:text-black cursor-pointer"
               >
-                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                Cancel
               </button>
               <button
-                type="button"
                 onClick={handleDeleteGenre}
                 disabled={isDeleting}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-full cursor-pointer disabled:opacity-50"
               >
-                {isDeleting ? '...' : t.admin.deleteBtn}
+                {isDeleting ? '...' : 'Delete'}
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

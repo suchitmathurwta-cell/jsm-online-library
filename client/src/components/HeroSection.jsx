@@ -11,6 +11,7 @@ import {
   Loader2,
   FileText
 } from 'lucide-react';
+import { getBooks } from '../services/supabaseApi';
 
 export default function HeroSection({
   t,
@@ -32,7 +33,7 @@ export default function HeroSection({
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const searchBoxRef = useRef(null);
-  const liveSearchTimeoutRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
 
   useEffect(() => {
     setLocalQuery(searchQuery || '');
@@ -53,8 +54,8 @@ export default function HeroSection({
     const val = e.target.value;
     setLocalQuery(val);
 
-    if (liveSearchTimeoutRef.current) {
-      clearTimeout(liveSearchTimeoutRef.current);
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
 
     if (!val || !val.trim()) {
@@ -68,24 +69,25 @@ export default function HeroSection({
     setDropdownOpen(true);
     setIsSearchingLive(true);
 
-    liveSearchTimeoutRef.current = setTimeout(async () => {
+    debounceTimeoutRef.current = setTimeout(async () => {
+      // 1. Immediately sync global catalog query
+      setSearchQuery?.(val.trim());
+
+      // 2. Query Supabase directly for fast live dropdown previews
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(val.trim())}`);
-        const data = await res.json();
-        if (data.success) {
-          setLiveResults(data.results || []);
-        }
+        const results = await getBooks({ search: val.trim(), limit: 6 });
+        setLiveResults(results || []);
       } catch (err) {
-        console.warn('Live search notice:', err);
+        console.warn('Live search fallback error:', err);
       } finally {
         setIsSearchingLive(false);
       }
-    }, 180);
+    }, 200);
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (liveSearchTimeoutRef.current) clearTimeout(liveSearchTimeoutRef.current);
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     setDropdownOpen(false);
     setSearchQuery?.(localQuery);
     if (onSearchSubmit) onSearchSubmit(localQuery);
@@ -101,12 +103,18 @@ export default function HeroSection({
 
   const handleVoiceSearch = () => {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert(lang === 'hi' ? 'आपके ब्राउज़र में वॉइस सर्च समर्थित नहीं है।' : (lang === 'ur' ? 'آپ کے براؤزر میں وائس سرچ کی سہولت موجود نہیں۔' : 'Voice search is not supported in this browser.'));
+      alert(
+        lang === 'hi'
+          ? 'आपके ब्राउज़र में वॉइस सर्च समर्थित नहीं है।'
+          : lang === 'ur'
+          ? 'آپ کے براؤزر میں وائس سرچ کی سہولت موجود نہیں۔'
+          : 'Voice search is not supported in this browser.'
+      );
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = lang === 'hi' ? 'hi-IN' : (lang === 'ur' ? 'ur-PK' : 'en-US');
+    recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'ur' ? 'ur-PK' : 'en-US';
     recognition.interimResults = false;
 
     setIsListening(true);
@@ -126,7 +134,7 @@ export default function HeroSection({
   const thinkerChips = [
     { hi: 'मुंशी प्रेमचंद', en: 'Premchand', ur: 'پریم چند' },
     { hi: 'रवींद्रनाथ टैगोर', en: 'Rabindranath Tagore', ur: 'ٹیگور' },
-    { hi: 'मीर अनीस (मर्सिया)', en: 'Mir Anees (Marsiya)', ur: 'میر انیس (مرثیہ)' },
+    { hi: 'मीर अनीस', en: 'Mir Anees', ur: 'میر انیس' },
     { hi: 'संत कबीर', en: 'Kabir', ur: 'کبیر' },
     { hi: 'महात्मा गांधी', en: 'Mahatma Gandhi', ur: 'مہاتما گاندھی' },
     { hi: 'डॉ. बी.आर. आंबेडकर', en: 'Dr. B.R. Ambedkar', ur: 'ڈاکٹر امبیڈکر' },
@@ -138,44 +146,44 @@ export default function HeroSection({
   ];
 
   return (
-    <section className="bg-gradient-to-b from-[#faf8f5] via-white to-[#fbf9f6] pt-12 pb-16 border-b border-stone-100">
+    <section className="bg-[#FAFAFA] pt-14 pb-16 border-b border-black/[0.05]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         
-        {/* Title & Badge with Generous Breathing Room */}
+        {/* Title & Badge with High-Key Minimalist Studio Typography */}
         <div className="mb-4">
-          <h1 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-[#0f172a] font-rekhta-serif tracking-tight leading-tight flex flex-wrap items-center gap-3">
+          <h1 className="text-3xl sm:text-4xl lg:text-[40px] font-bold text-[#111111] font-sans tracking-tight leading-tight flex flex-wrap items-center gap-3">
             <span>{t.hero.title}</span>
-            <span className="text-xs font-sans font-semibold text-[#1d4ed8] bg-blue-50/90 px-3.5 py-1 rounded-full border border-blue-200/70 shadow-2xs">
-              {t.hero.openAccessBadge}
+            <span className="text-xs font-mono font-medium text-zinc-600 bg-zinc-100 px-3 py-1 rounded-full border border-zinc-200/80">
+              {t.hero.openAccessBadge || 'Open Access Digital Archive'}
             </span>
           </h1>
         </div>
 
-        {/* Mission Statement Accordion with Refined Typography */}
-        <div className="text-stone-600 text-sm sm:text-[15px] leading-relaxed mb-9 relative max-w-4xl">
+        {/* Mission Statement Accordion */}
+        <div className="text-zinc-500 text-sm sm:text-[15px] font-sans leading-relaxed mb-8 relative max-w-3xl">
           <p className={`${expanded ? '' : 'line-clamp-2'} transition-all`}>
             {t.hero.descriptionMain}
           </p>
           <button
             onClick={() => setExpanded(!expanded)}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-[#1d4ed8] hover:text-[#1e40af] mt-2 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-[#111111] hover:underline mt-2 cursor-pointer transition-colors"
           >
-            <span>{expanded ? t.hero.readLess : t.hero.readMore}</span>
+            <span>{expanded ? t.hero.readLess || 'Less' : t.hero.readMore || 'Read More'}</span>
             {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
 
-        {/* Floating Modern Search Container */}
-        <div ref={searchBoxRef} className="relative max-w-4xl mx-auto z-30">
+        {/* Minimalist Floating Search Container */}
+        <div ref={searchBoxRef} className="relative max-w-3xl z-30">
           <form
             onSubmit={handleFormSubmit}
-            className="relative flex items-center p-1.5 sm:p-2 bg-white rounded-2xl border border-stone-200/90 shadow-[0_4px_24px_-2px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.1)] focus-within:shadow-[0_12px_40px_-4px_rgba(29,78,216,0.12)] focus-within:border-[#1d4ed8]/70 transition-all duration-300"
+            className="relative flex items-center p-1.5 sm:p-2 bg-white rounded-2xl border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.05)] focus-within:shadow-[0_12px_36px_rgba(0,0,0,0.07)] focus-within:border-black/20 transition-all duration-300"
           >
-            <div className="pl-3.5 pr-2 text-stone-400 pointer-events-none flex items-center justify-center">
+            <div className="pl-3.5 pr-2 text-zinc-400 pointer-events-none flex items-center justify-center">
               {isSearchingLive ? (
-                <Loader2 className="w-5 h-5 text-[#1d4ed8] animate-spin" />
+                <Loader2 className="w-5 h-5 text-zinc-700 animate-spin" />
               ) : (
-                <Search className="w-5 h-5 text-stone-400" />
+                <Search className="w-5 h-5 text-zinc-400" />
               )}
             </div>
 
@@ -188,14 +196,14 @@ export default function HeroSection({
               }}
               placeholder={t.hero.searchPlaceholder}
               autoComplete="off"
-              className="w-full py-2.5 sm:py-3 text-sm sm:text-base text-stone-900 placeholder-stone-400 bg-transparent outline-hidden font-medium cursor-text"
+              className="w-full py-2.5 sm:py-3 text-sm sm:text-base text-[#111111] placeholder-zinc-400 bg-transparent outline-hidden font-sans cursor-text font-normal"
             />
 
             {localQuery && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-1.5 mr-1 text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-100 transition cursor-pointer"
+                className="p-1.5 mr-1 text-zinc-400 hover:text-black rounded-full hover:bg-zinc-100 transition cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -206,48 +214,52 @@ export default function HeroSection({
               type="button"
               onClick={handleVoiceSearch}
               title="Voice Search"
-              className={`p-2.5 mr-1.5 text-stone-500 hover:text-[#1d4ed8] rounded-xl hover:bg-stone-100 transition cursor-pointer ${
-                isListening ? 'animate-pulse text-red-600 bg-red-50' : ''
+              className={`p-2.5 mr-1.5 text-zinc-400 hover:text-black rounded-xl hover:bg-zinc-100 transition cursor-pointer ${
+                isListening ? 'animate-pulse text-red-500 bg-red-50' : ''
               }`}
             >
               <Mic className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
-            {/* Integrated Modern Pill Search Button */}
+            {/* High-Key Minimalist Pill Search Button */}
             <button
               type="submit"
-              className="hidden sm:flex items-center gap-1.5 px-6 py-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs hover:shadow transition cursor-pointer shrink-0"
+              className="hidden sm:flex items-center gap-1.5 px-6 py-2.5 bg-[#111111] hover:bg-black text-white text-xs sm:text-sm font-medium rounded-xl shadow-xs transition cursor-pointer shrink-0"
             >
               <span>{t.hero.searchBtn}</span>
             </button>
           </form>
 
-          {/* Live Search Autocomplete Dropdown Overlay with Elevated Aesthetics */}
+          {/* Live Search Autocomplete Dropdown */}
           {dropdownOpen && localQuery.trim() && (
-            <div className="absolute top-full left-0 right-0 mt-2.5 bg-white/98 backdrop-blur-md rounded-2xl shadow-2xl border border-stone-200/90 overflow-hidden z-50 animate-fadeIn">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-black/[0.08] overflow-hidden z-50 animate-fadeIn">
               
-              <div className="p-3.5 bg-stone-50/90 border-b border-stone-100 flex items-center justify-between text-xs font-bold text-stone-600">
+              <div className="p-3 bg-zinc-50 border-b border-zinc-100 flex items-center justify-between text-xs font-medium text-zinc-600">
                 <span className="flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5 text-[#1d4ed8]" />
+                  <Search className="w-3.5 h-3.5 text-zinc-500" />
                   <span>
-                    {lang === 'hi' ? `"${localQuery}" के खोज परिणाम` : (lang === 'ur' ? `"${localQuery}" کے نتائج` : `Search results for "${localQuery}"`)}
+                    {lang === 'hi'
+                      ? `"${localQuery}" के खोज परिणाम`
+                      : lang === 'ur'
+                      ? `"${localQuery}" کے نتائج`
+                      : `Results for "${localQuery}"`}
                   </span>
                 </span>
-                <span className="text-[11px] font-semibold text-stone-400 bg-white px-2 py-0.5 rounded-full border border-stone-200/60 shadow-2xs">
-                  {liveResults.length} {t.sections.worksUnit}
+                <span className="text-[11px] font-mono text-zinc-500 bg-white px-2 py-0.5 rounded-full border border-zinc-200">
+                  {liveResults.length} {t.sections.worksUnit || 'treatises'}
                 </span>
               </div>
 
-              <div className="max-h-80 overflow-y-auto divide-y divide-stone-100/80">
+              <div className="max-h-80 overflow-y-auto divide-y divide-zinc-100">
                 {liveResults.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-stone-500">
+                  <div className="p-6 text-center text-xs text-zinc-500">
                     {isSearchingLive ? (
                       <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="w-4 h-4 text-[#1d4ed8] animate-spin" />
-                        <span>{lang === 'hi' ? 'अभिलेखों और पांडुलिपियों में खोज हो रही है...' : (lang === 'ur' ? 'کتب خانے میں تلاش جاری ہے...' : 'Searching treatises and archives...')}</span>
+                        <Loader2 className="w-4 h-4 text-zinc-600 animate-spin" />
+                        <span>Searching treatises...</span>
                       </div>
                     ) : (
-                      <span>{t.sections.noResults}</span>
+                      <span>{t.sections.noResults || 'No direct title matches found'}</span>
                     )}
                   </div>
                 ) : (
@@ -258,26 +270,26 @@ export default function HeroSection({
                     return (
                       <div
                         key={book.id}
-                        className="p-3.5 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer group"
+                        className="p-3 hover:bg-zinc-50 transition flex items-center justify-between gap-3 cursor-pointer group"
                         onClick={() => {
                           setDropdownOpen(false);
                           if (onSelectBook) onSelectBook(book);
                         }}
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="w-10 h-13 bg-stone-100 rounded-lg overflow-hidden shadow-2xs shrink-0 flex items-center justify-center border border-stone-200">
+                          <div className="w-9 h-12 bg-zinc-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center border border-zinc-200">
                             {book.cover_url ? (
                               <img src={book.cover_url} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <FileText className="w-4 h-4 text-stone-400" />
+                              <FileText className="w-4 h-4 text-zinc-400" />
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h4 className="text-xs sm:text-sm font-bold text-stone-900 group-hover:text-[#1d4ed8] truncate font-hindi-serif">
+                            <h4 className="text-xs sm:text-sm font-bold text-[#111111] group-hover:text-black truncate font-sans">
                               {title}
                             </h4>
-                            <p className="text-[11px] text-stone-500 truncate mt-0.5 font-medium">
-                              {author} • <span className="font-semibold text-stone-700">{book.year || ''}</span>
+                            <p className="text-[11px] text-zinc-500 truncate mt-0.5 font-medium">
+                              {author} • <span className="text-zinc-700">{book.year || ''}</span>
                             </p>
                           </div>
                         </div>
@@ -291,7 +303,7 @@ export default function HeroSection({
                                 setDropdownOpen(false);
                                 onOpenReader(book);
                               }}
-                              className="px-3.5 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-[11px] font-bold rounded-xl shadow-2xs flex items-center gap-1 transition cursor-pointer hover:-translate-y-0.5"
+                              className="px-3 py-1 bg-[#111111] hover:bg-black text-white text-[11px] font-medium rounded-full shadow-2xs flex items-center gap-1 transition cursor-pointer"
                             >
                               <BookOpen className="w-3 h-3" />
                               <span>{t.card.readOnline}</span>
@@ -304,24 +316,23 @@ export default function HeroSection({
                 )}
               </div>
 
-              {/* Footer to View Full Results in Catalog */}
+              {/* View all in catalog footer */}
               <button
                 type="button"
                 onClick={handleFormSubmit}
-                className="w-full py-3 px-4 bg-stone-50 hover:bg-stone-100/90 border-t border-stone-200/70 text-xs font-bold text-[#1d4ed8] flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="w-full py-2.5 px-4 bg-zinc-50 hover:bg-zinc-100 border-t border-zinc-100 text-xs font-medium text-[#111111] flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
-                <span>{lang === 'hi' ? `संपूर्ण अभिलेखागार में "${localQuery}" के परिणाम देखें` : (lang === 'ur' ? `"${localQuery}" کے تمام نتائج دیکھیں` : `Press Enter or click to filter catalog results for "${localQuery}"`)}</span>
+                <span>Filter full catalog results for "{localQuery}"</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-
             </div>
           )}
 
-          {/* Refined Author & Thinker Chips with Soft Neutral Pills */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 mt-5 text-xs text-stone-500">
-            <span className="font-semibold text-stone-800 flex items-center gap-1.5 mr-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              {t.hero.keyThinkers}
+          {/* Minimalist Author & Thinker Chips */}
+          <div className="flex flex-wrap items-center gap-2 mt-5 text-xs text-zinc-500">
+            <span className="font-medium text-[#111111] flex items-center gap-1.5 mr-1 font-sans">
+              <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+              {t.hero.keyThinkers || 'Key Thinkers'}:
             </span>
             {thinkerChips.map((s, idx) => {
               const label = s[lang] || s.hi;
@@ -335,7 +346,7 @@ export default function HeroSection({
                     setSearchQuery?.(q);
                     if (onSearchSubmit) onSearchSubmit(q);
                   }}
-                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-blue-50/80 text-stone-700 hover:text-[#1d4ed8] border border-stone-200/80 hover:border-blue-300 shadow-2xs transition-all duration-200 hover:-translate-y-0.5 cursor-pointer"
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-white hover:bg-zinc-100 text-zinc-700 hover:text-black border border-zinc-200 shadow-[0_2px_6px_rgba(0,0,0,0.02)] transition-all cursor-pointer"
                 >
                   {label}
                 </button>

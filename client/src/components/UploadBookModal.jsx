@@ -533,11 +533,11 @@ export default function UploadBookModal({
         {/* 1. Header */}
         <div className="px-6 py-4 border-b border-stone-200 flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center border border-blue-200/80 shadow-2xs">
+            <div className="w-10 h-10 rounded-2xl bg-zinc-100 text-[#111111] flex items-center justify-center border border-zinc-200 shadow-2xs">
               <Layers className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-stone-900 text-lg font-rekhta-serif tracking-tight">
+              <h3 className="font-bold text-[#111111] text-lg font-sans tracking-tight">
                 {u.modalTitle}
               </h3>
               <p className="text-xs text-stone-500 font-medium">
@@ -1108,7 +1108,7 @@ export default function UploadBookModal({
               type="button"
               onClick={handleSubmitAll}
               disabled={isSubmitting || fileQueue.length === 0}
-              className="px-5 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2 bg-[#111111] hover:bg-black text-white text-xs font-medium rounded-full shadow-xs transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>

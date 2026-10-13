@@ -17,14 +17,14 @@ export default function BookCard({
   const isUserUploaded = book.id && book.id.startsWith('chetna-17');
 
   return (
-    <div className="group bg-white rounded-2xl border border-stone-200/80 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden hover:-translate-y-1.5">
+    <div className="group bg-white rounded-2xl border border-black/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.03)] hover:shadow-[0_12px_32px_rgba(0,0,0,0.06)] hover:border-black/15 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:-translate-y-1">
       
       {/* Top Cover Image Area */}
       <div
-        onClick={() => onSelectBook(book)}
-        className="relative bg-gradient-to-b from-stone-50 via-stone-100/50 to-stone-100 p-3.5 flex items-center justify-center cursor-pointer overflow-hidden border-b border-stone-100"
+        onClick={() => onSelectBook && onSelectBook(book)}
+        className="relative bg-zinc-50 p-3.5 flex items-center justify-center cursor-pointer overflow-hidden border-b border-black/[0.04]"
       >
-        <div className="relative w-full aspect-[3/4] max-h-56 rounded-xl overflow-hidden shadow-sm group-hover:shadow-md transition-shadow bg-stone-900 flex items-center justify-center">
+        <div className="relative w-full aspect-[3/4] max-h-56 rounded-xl overflow-hidden shadow-2xs group-hover:shadow-md transition-shadow bg-zinc-100 flex items-center justify-center">
           <img
             src={book.cover_url}
             alt={title}
@@ -32,43 +32,44 @@ export default function BookCard({
             loading="lazy"
           />
 
-          <div className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/35 via-transparent to-transparent pointer-events-none"></div>
+          {/* Minimalist Micro Spine Shade */}
+          <div className="absolute inset-y-0 left-0 w-2.5 bg-gradient-to-r from-black/20 via-transparent to-transparent pointer-events-none"></div>
 
           {/* Hover Overlay Buttons to Read & Download */}
-          <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2 p-3">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onOpenReader(book);
+                onOpenReader && onOpenReader(book);
               }}
-              className="px-4 py-2 bg-white text-stone-900 font-bold text-xs rounded-xl shadow-md hover:bg-stone-50 flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
+              className="px-3.5 py-1.5 bg-white hover:bg-zinc-100 text-[#111111] font-sans font-medium text-xs rounded-full shadow-sm flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
             >
-              <BookOpen className="w-3.5 h-3.5 text-[#1d4ed8]" />
-              <span>{t.card.readOnline}</span>
+              <BookOpen className="w-3.5 h-3.5 text-[#111111]" />
+              <span>{t.card?.readOnline || 'Read Online'}</span>
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onDownloadBook(book);
+                onDownloadBook && onDownloadBook(book);
               }}
-              className="px-3.5 py-1.5 bg-[#1d4ed8] text-white font-semibold text-[11px] rounded-xl shadow-md hover:bg-[#1e40af] flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
+              className="px-3 py-1.5 bg-[#111111] hover:bg-black text-white font-sans font-medium text-[11px] rounded-full shadow-sm flex items-center gap-1.5 transition transform hover:scale-105 cursor-pointer"
             >
-              <Download className="w-3 h-3" />
-              <span>{t.card.downloadPdf}</span>
+              <Download className="w-3 h-3 text-white" />
+              <span>{t.card?.downloadPdf || 'Download PDF'}</span>
             </button>
           </div>
         </div>
 
         {/* User Uploaded vs Featured Badge */}
         {isUserUploaded ? (
-          <div className="absolute top-2.5 left-2.5 bg-emerald-600 text-white font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
+          <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-xs text-emerald-800 font-mono text-[9px] px-2 py-0.5 rounded-full shadow-2xs border border-emerald-200/80 flex items-center gap-1">
             <FileCheck className="w-2.5 h-2.5" />
-            <span>{t.card.uploadedEdition}</span>
+            <span>{t.card?.uploadedEdition || 'Archival Edition'}</span>
           </div>
         ) : book.is_featured ? (
-          <div className="absolute top-2.5 left-2.5 bg-amber-500 text-stone-950 font-bold text-[9.5px] px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1">
-            <Sparkles className="w-2.5 h-2.5" />
-            <span>{t.card.featured}</span>
+          <div className="absolute top-2.5 left-2.5 bg-[#111111] text-white font-mono text-[9px] px-2 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+            <Sparkles className="w-2.5 h-2.5 text-zinc-300" />
+            <span>{t.card?.featured || 'Featured'}</span>
           </div>
         ) : null}
 
@@ -80,8 +81,8 @@ export default function BookCard({
                 e.stopPropagation();
                 onEditBook(book);
               }}
-              title={t.admin.editBtn}
-              className="absolute top-2.5 right-2.5 p-1.5 bg-stone-900/90 hover:bg-stone-900 text-amber-400 rounded-lg shadow-md border border-stone-700 transition cursor-pointer"
+              title={t.admin?.editBtn || 'Edit'}
+              className="absolute top-2.5 right-2.5 p-1.5 bg-white/95 hover:bg-white text-zinc-700 hover:text-black rounded-lg shadow-sm border border-zinc-200 transition cursor-pointer"
             >
               <Edit3 className="w-3 h-3" />
             </button>
@@ -90,65 +91,51 @@ export default function BookCard({
 
         {/* Year Badge */}
         {book.year && (
-          <div className="absolute bottom-2.5 right-2.5 bg-black/75 backdrop-blur-xs text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded-md border border-amber-400/30">
+          <div className="absolute bottom-2.5 right-2.5 bg-white/95 backdrop-blur-xs text-zinc-700 font-mono text-[9.5px] px-2 py-0.5 rounded-md border border-black/[0.06] shadow-2xs">
             {book.year}
           </div>
         )}
       </div>
 
       {/* Book Metadata Section */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-3.5 flex-1 flex flex-col justify-between">
         <div>
           <h3
-            onClick={() => onSelectBook(book)}
-            className="font-hindi-serif font-bold text-stone-900 text-[14.5px] leading-snug group-hover:text-[#1d4ed8] transition-colors cursor-pointer line-clamp-2"
+            onClick={() => onSelectBook && onSelectBook(book)}
+            className="text-sm font-bold font-sans text-[#111111] line-clamp-1 group-hover:text-black cursor-pointer leading-tight tracking-tight"
             title={title}
           >
             {title}
           </h3>
 
-          {secondaryTitle && secondaryTitle !== title && (
-            <p className="text-[11px] text-stone-400 italic mt-0.5 line-clamp-1">
+          {secondaryTitle && (
+            <p className="text-[11px] font-sans text-zinc-400 line-clamp-1 mt-0.5">
               {secondaryTitle}
             </p>
           )}
 
-          <p className="text-xs font-semibold text-[#1d4ed8] mt-1.5 line-clamp-1">
+          <p className="text-xs font-sans text-zinc-600 mt-1.5 line-clamp-1 font-medium">
             {author}
           </p>
         </div>
 
-        {/* Stats & Actions */}
-        <div className="mt-3.5 pt-3 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-500">
-          <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-0.5" title={`${book.views_count || 0} ${t.card.views}`}>
-              <Eye className="w-3 h-3 text-stone-400" />
-              <span>{(book.views_count || 0).toLocaleString()}</span>
+        {/* Bottom Details Row */}
+        <div className="mt-3 pt-2.5 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-400 font-mono">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1">
+              <Eye className="w-3 h-3" />
+              <span>{book.views_count || 0}</span>
             </span>
-            <span className="flex items-center gap-0.5 text-emerald-700 font-medium" title={`${book.downloads_count || 0} ${t.card.downloads}`}>
+            <span className="flex items-center gap-1">
               <Download className="w-3 h-3" />
-              <span>{(book.downloads_count || 0).toLocaleString()}</span>
+              <span>{book.downloads_count || 0}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onOpenReader(book)}
-              title={t.card.readOnline}
-              className="p-1.5 text-stone-500 hover:text-white hover:bg-[#1d4ed8] rounded-lg transition cursor-pointer"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={() => onDownloadBook(book)}
-              title={t.card.downloadPdf}
-              className="p-1.5 text-stone-500 hover:text-white hover:bg-emerald-700 rounded-lg transition cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          {book.pages && (
+            <span>{book.pages} {t.card?.pages || 'pp.'}</span>
+          )}
         </div>
-
       </div>
 
     </div>

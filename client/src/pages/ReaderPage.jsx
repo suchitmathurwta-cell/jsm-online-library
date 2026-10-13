@@ -78,20 +78,20 @@ export default function ReaderPage({ lang, t }) {
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-[#18181b] text-white flex flex-col items-center justify-center gap-3">
-        <BookOpen className="w-12 h-12 text-[#1d4ed8] animate-pulse" />
-        <p className="text-sm font-semibold">{tr.reader?.openingReader || 'Opening reader...'}</p>
-        <Loader2 className="w-5 h-5 animate-spin text-stone-400" />
+        <BookOpen className="w-10 h-10 text-white animate-pulse" />
+        <p className="text-xs font-mono text-zinc-400">{tr.reader?.openingReader || 'Opening reader...'}</p>
+        <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
       </div>
     );
   }
 
   if (error || !book) {
     return (
-      <div className="fixed inset-0 bg-[#18181b] text-white flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-lg font-bold mb-2 font-rekhta-serif">
+      <div className="fixed inset-0 bg-[#18181b] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
+        <h2 className="text-lg font-bold mb-2">
           {currentLang === 'hi' ? 'रचना उपलब्ध नहीं है' : (currentLang === 'ur' ? 'کتاب دستیاب نہیں ہے' : 'Treatise Not Found')}
         </h2>
-        <p className="text-xs text-stone-400 mb-6 max-w-sm">
+        <p className="text-xs text-zinc-400 mb-6 max-w-sm">
           {currentLang === 'hi'
             ? 'यह पुस्तक हटा दी गई है या इसका लिंक अमान्य है।'
             : (currentLang === 'ur'
@@ -100,7 +100,7 @@ export default function ReaderPage({ lang, t }) {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="px-5 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl flex items-center gap-2 transition cursor-pointer"
+          className="px-5 py-2.5 bg-white text-[#111111] hover:bg-zinc-200 text-xs font-medium rounded-full flex items-center gap-2 transition cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>{tr.reader?.backToCatalog || 'Return to Library'}</span>
