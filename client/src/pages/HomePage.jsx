@@ -128,21 +128,7 @@ export default function HomePage({
                 data-section-id={cat.id}
                 className="scroll-mt-8 pb-16 border-b border-white/[0.08] relative group"
               >
-                {/* Dynamic Local Section Aurora Curtain */}
-                <div className="absolute -top-16 -left-8 -right-8 h-[480px] pointer-events-none overflow-hidden -z-10 select-none">
-                  <div
-                    className="absolute -top-[10%] left-[10%] w-[600px] h-[350px] rounded-full blur-[105px] opacity-35 mix-blend-screen animate-aurora-1"
-                    style={{
-                      background: `radial-gradient(circle at center, ${color.hex}80 0%, ${color.subtleHex}35 50%, transparent 75%)`,
-                    }}
-                  />
-                  <div
-                    className="absolute top-[5%] right-[10%] w-[500px] h-[320px] rounded-full blur-[120px] opacity-25 mix-blend-screen animate-aurora-2"
-                    style={{
-                      background: `radial-gradient(circle at center, ${color.lightHex}60 0%, ${color.hex}25 50%, transparent 75%)`,
-                    }}
-                  />
-                </div>
+
 
                 {/* Section Header Banner */}
                 <div
