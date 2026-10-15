@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ArrowRight,
   Plus,
-  Layers,
   Trash2,
   Edit2,
   AlertTriangle,
@@ -206,7 +205,6 @@ export default function CategoryGenresPage({
         const catSub = cat[`subtitle_${lang}`] || cat.subtitle_hi || cat.subtitle_en;
         const genres = cat.genres || [];
         const catBooks = books.filter((b) => b.category === catId);
-        const formattedIdx = idx < 9 ? `0${idx + 1}` : `${idx + 1}`;
 
         return (
           <section
@@ -249,30 +247,6 @@ export default function CategoryGenresPage({
 
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-3 max-w-2xl">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="font-mono text-sm font-black px-2.5 py-0.5 rounded-full border backdrop-blur-md shadow-xs"
-                      style={{
-                        backgroundColor: `${color.hex}25`,
-                        borderColor: `${color.hex}50`,
-                        color: color.hex,
-                      }}
-                    >
-                      {formattedIdx}
-                    </span>
-                    <div
-                      className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider border backdrop-blur-md font-semibold"
-                      style={{
-                        backgroundColor: `${color.hex}20`,
-                        borderColor: `${color.hex}45`,
-                        color: color.hex,
-                      }}
-                    >
-                      <Layers className="w-3.5 h-3.5" />
-                      <span>{hl.layer2Badge || 'LAYER 2: GENRES'}</span>
-                    </div>
-                  </div>
-
                   <h1 className="text-3xl sm:text-5xl font-black font-sans tracking-[-0.03em] text-white flex items-center gap-3">
                     <span>{catTitle}</span>
                   </h1>
@@ -283,36 +257,6 @@ export default function CategoryGenresPage({
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
-                  <div
-                    className="border px-4 py-2.5 rounded-2xl text-center backdrop-blur-md min-w-[76px]"
-                    style={{
-                      backgroundColor: `${color.hex}18`,
-                      borderColor: `${color.hex}40`,
-                    }}
-                  >
-                    <span className="text-xl font-black font-mono" style={{ color: color.hex }}>
-                      {genres.length}
-                    </span>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block font-semibold">
-                      {t.admin?.genresCount || 'GENRES'}
-                    </span>
-                  </div>
-
-                  <div
-                    className="border px-4 py-2.5 rounded-2xl text-center backdrop-blur-md min-w-[76px]"
-                    style={{
-                      backgroundColor: `${color.hex}18`,
-                      borderColor: `${color.hex}40`,
-                    }}
-                  >
-                    <span className="text-xl font-black font-mono text-white">
-                      {catBooks.length}
-                    </span>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 block font-semibold">
-                      {t.admin?.worksCount || 'WORKS'}
-                    </span>
-                  </div>
-
                   {/* Admin Only: Create Genre Button */}
                   <AdminOnly>
                     <button

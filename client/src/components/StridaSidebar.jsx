@@ -200,9 +200,6 @@ export default function StridaSidebar({
             const isActive = activeSection ? activeSection === cat.id : (location.pathname.startsWith(`/category/${cat.id}`) || idx === 0);
             const color = getCategoryColor(cat.id);
             const catName = cat['name_' + lang] || cat.name_en || cat.name_hi || cat.id;
-            const workCount = cat.count || 0;
-            const formattedIdx = idx < 9 ? `0${idx + 1}` : `${idx + 1}`;
-
             // Smooth scroll directly to category section if present on page
             const handleCategoryClick = (e) => {
               setIsMobileNavOpen(false);
@@ -247,28 +244,12 @@ export default function StridaSidebar({
                         boxShadow: isActive ? `0 0 10px ${color.hex}` : 'none',
                       }}
                     />
-                    <span
-                      className="font-mono text-xs font-bold shrink-0 transition-colors"
-                      style={{ color: isActive ? color.hex : color.subtleHex }}
-                    >
-                      {formattedIdx}
-                    </span>
                     <span className="truncate font-sans text-xs sm:text-sm">
                       {catName}
                     </span>
                   </span>
 
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span
-                      className="text-[11px] font-mono px-2 py-0.5 rounded-full border transition-colors"
-                      style={{
-                        color: isActive ? color.hex : '#A1A1AA',
-                        backgroundColor: isActive ? `${color.hex}20` : 'rgba(255,255,255,0.04)',
-                        borderColor: isActive ? `${color.hex}45` : 'rgba(255,255,255,0.08)',
-                      }}
-                    >
-                      [{workCount}]
-                    </span>
                     {/* Deep dive arrow */}
                     <Link
                       to={`/category/${cat.id}`}

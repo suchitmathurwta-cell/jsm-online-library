@@ -147,14 +147,6 @@ export default function HomePage({
                 >
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="flex items-start gap-4">
-                      {/* Prominent Colored Index Watermark */}
-                      <span
-                        className="font-mono text-4xl sm:text-6xl font-black tracking-tight select-none shrink-0"
-                        style={{ color: color.hex }}
-                      >
-                        {formattedIdx}
-                      </span>
-
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
                           <span
@@ -166,9 +158,6 @@ export default function HomePage({
                             }}
                           >
                             {cat.name_en}
-                          </span>
-                          <span className="font-mono text-[11px] text-zinc-300 font-semibold">
-                            [{genres.length} GENRES • {catBooks.length} WORKS ARCHIVED]
                           </span>
                         </div>
 
