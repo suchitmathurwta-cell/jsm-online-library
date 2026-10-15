@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import { Download, CheckCircle2, Loader2, X } from 'lucide-react';
 import Header from './components/Header';
 import StridaSidebar from './components/StridaSidebar';
+import AuroraStreamBackdrop from './components/AuroraStreamBackdrop';
 import HomePage from './pages/HomePage';
 import CategoryGenresPage from './pages/CategoryGenresPage';
 import SubGenresPage from './pages/SubGenresPage';
@@ -56,6 +57,14 @@ function MainApp() {
   const [sortBy, setSortBy] = useState('popular');
   const [isLoading, setIsLoading] = useState(true);
   const [activeSection, setActiveSection] = useState('novel');
+
+  // Sync activeSection on direct category route transitions
+  useEffect(() => {
+    if (location.pathname.startsWith('/category/')) {
+      const slug = location.pathname.split('/')[2];
+      if (slug) setActiveSection(slug);
+    }
+  }, [location.pathname]);
 
   // Modals
   const [selectedBook, setSelectedBook] = useState(null);
@@ -282,8 +291,9 @@ function MainApp() {
       />
 
       {/* RIGHT COLUMN: Scrollable Content Stream (flex-1 min-h-screen p-6 sm:p-12 lg:p-16 max-w-6xl) */}
-      <div className="flex-1 min-h-screen flex flex-col justify-between overflow-x-hidden w-full">
-        <main className="flex-1 p-6 sm:p-10 lg:p-12 xl:p-16 space-y-12 max-w-6xl w-full">
+      <div className="flex-1 min-h-screen flex flex-col justify-between overflow-x-hidden w-full relative">
+        <AuroraStreamBackdrop activeSection={activeSection} />
+        <main className="flex-1 p-6 sm:p-10 lg:p-12 xl:p-16 space-y-12 max-w-6xl w-full relative z-10">
           <Routes>
             <Route
               path="/"

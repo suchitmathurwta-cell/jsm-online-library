@@ -213,13 +213,27 @@ export default function CategoryGenresPage({
             data-section-id={catId}
             className="scroll-mt-6 relative group pt-2 pb-16 border-b border-white/[0.08]"
           >
-            {/* Atmospheric Ambient Color Glow behind section */}
-            <div
-              className="absolute -top-16 -left-12 -right-12 h-[450px] rounded-full pointer-events-none blur-3xl opacity-25 -z-10 transition-opacity duration-1000"
-              style={{
-                background: `radial-gradient(ellipse at top left, ${color.hex}60, transparent 70%)`,
-              }}
-            />
+            {/* Dynamic Local Section Aurora Curtain */}
+            <div className="absolute -top-20 -left-12 -right-12 h-[550px] pointer-events-none overflow-hidden -z-10 select-none">
+              <div
+                className="absolute -top-[10%] left-[10%] w-[650px] h-[380px] rounded-full blur-[110px] opacity-35 mix-blend-screen animate-aurora-1"
+                style={{
+                  background: `radial-gradient(circle at center, ${color.hex}80 0%, ${color.subtleHex}35 50%, transparent 75%)`,
+                }}
+              />
+              <div
+                className="absolute top-[5%] right-[10%] w-[550px] h-[340px] rounded-full blur-[125px] opacity-25 mix-blend-screen animate-aurora-2"
+                style={{
+                  background: `radial-gradient(circle at center, ${color.lightHex}60 0%, ${color.hex}25 50%, transparent 75%)`,
+                }}
+              />
+              <div
+                className="absolute top-[0%] left-0 right-0 h-[120px] blur-2xl opacity-25 animate-aurora-shimmer"
+                style={{
+                  background: `linear-gradient(90deg, transparent 0%, ${color.lightHex}35 50%, transparent 100%)`,
+                }}
+              />
+            </div>
 
             {/* 1. Rich Glowing Category Banner (Layer 2) */}
             <div
