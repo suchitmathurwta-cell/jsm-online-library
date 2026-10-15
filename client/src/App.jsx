@@ -321,6 +321,7 @@ function MainApp() {
                   onDownloadBook={handleDownloadBook}
                   onEditBook={(book) => setEditingBook(book)}
                   onRefreshCategories={fetchCategories}
+                  onActiveSectionChange={setActiveSection}
                 />
               }
             />

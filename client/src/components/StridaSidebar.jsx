@@ -43,12 +43,6 @@ export default function StridaSidebar({
     return 'English (ENG)';
   };
 
-  const getLangCode = () => {
-    if (lang === 'hi') return 'HIN';
-    if (lang === 'ur') return 'URD';
-    return 'ENG';
-  };
-
   return (
     <aside className="w-full lg:w-[380px] xl:w-[420px] lg:h-screen lg:sticky lg:top-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/[0.08] bg-[#0E0E0E] z-40 lg:overflow-y-auto">
       {/* Top: Identity & Status */}
@@ -58,14 +52,14 @@ export default function StridaSidebar({
             className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5 group"
             to="/"
           >
-            <span className="w-8 h-8 rounded-xl bg-white text-black font-black flex items-center justify-center text-sm shadow-xs group-hover:scale-105 transition-transform">
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black flex items-center justify-center text-sm shadow-[0_0_20px_rgba(245,158,11,0.4)] group-hover:scale-105 transition-transform">
               चे
             </span>
-            <span className="font-sans font-bold tracking-[-0.03em] text-lg">Chetna</span>
+            <span className="font-sans font-black tracking-[-0.03em] text-lg text-white">Chetna</span>
           </Link>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-wider bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)] font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               PUBLIC ARCHIVE
             </span>
@@ -90,12 +84,12 @@ export default function StridaSidebar({
           <button
             type="button"
             onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-            className="w-full flex items-center justify-between px-3.5 py-2 text-xs font-mono font-medium text-zinc-200 bg-white/[0.04] hover:bg-white/[0.08] rounded-xl border border-white/[0.08] hover:border-white/20 transition cursor-pointer select-none"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-200 bg-white/[0.05] hover:bg-white/[0.09] rounded-xl border border-white/[0.12] hover:border-white/25 transition cursor-pointer select-none"
             title="Select Language / भाषा चुनें"
           >
             <div className="flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="text-zinc-500 text-[10px] uppercase tracking-wider font-mono">LANG:</span>
+              <Globe className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-zinc-400 text-[10px] uppercase tracking-wider font-mono font-bold">LANG:</span>
               <span className="font-bold text-white tracking-wide">
                 {getLangLabel()}
               </span>
@@ -110,7 +104,7 @@ export default function StridaSidebar({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -6, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 right-0 mt-2 bg-[#141414]/98 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.85)] border border-white/[0.12] p-1.5 text-xs z-50 text-white space-y-1"
+                className="absolute left-0 right-0 mt-2 bg-[#141416]/98 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] border border-white/[0.15] p-1.5 text-xs z-50 text-white space-y-1"
               >
                 <button
                   type="button"
@@ -119,14 +113,14 @@ export default function StridaSidebar({
                     setLangDropdownOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
-                    lang === 'hi' ? 'font-bold text-white bg-white/[0.12]' : 'text-zinc-300'
+                    lang === 'hi' ? 'font-bold text-white bg-amber-500/20 border border-amber-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400" />
-                    <span>हिंदी (HIN)</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                    <span className="font-sans font-medium">हिंदी (HIN)</span>
                   </span>
-                  {lang === 'hi' && <Check className="w-3.5 h-3.5 text-white" />}
+                  {lang === 'hi' && <Check className="w-3.5 h-3.5 text-amber-400" />}
                 </button>
                 <button
                   type="button"
@@ -135,14 +129,14 @@ export default function StridaSidebar({
                     setLangDropdownOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
-                    lang === 'en' ? 'font-bold text-white bg-white/[0.12]' : 'text-zinc-300'
+                    lang === 'en' ? 'font-bold text-white bg-blue-500/20 border border-blue-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-400" />
-                    <span>English (ENG)</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                    <span className="font-sans font-medium">English (ENG)</span>
                   </span>
-                  {lang === 'en' && <Check className="w-3.5 h-3.5 text-white" />}
+                  {lang === 'en' && <Check className="w-3.5 h-3.5 text-blue-400" />}
                 </button>
                 <button
                   type="button"
@@ -151,14 +145,14 @@ export default function StridaSidebar({
                     setLangDropdownOpen(false);
                   }}
                   className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-xl ${
-                    lang === 'ur' ? 'font-bold text-white bg-white/[0.12]' : 'text-zinc-300'
+                    lang === 'ur' ? 'font-bold text-white bg-emerald-500/20 border border-emerald-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>اردو (URD)</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                    <span className="font-urdu font-medium text-sm">اردو (URD)</span>
                   </span>
-                  {lang === 'ur' && <Check className="w-3.5 h-3.5 text-white" />}
+                  {lang === 'ur' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
                 </button>
               </motion.div>
             )}
@@ -174,7 +168,7 @@ export default function StridaSidebar({
               placeholder={t?.nav?.searchPlaceholder || 'Search library catalog...'}
               value={searchQuery || ''}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-7 py-2 text-xs bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] border border-white/[0.08] focus:border-white/20 rounded-xl outline-hidden text-white placeholder-zinc-500 font-mono transition-all"
+              className="w-full pl-8 pr-7 py-2.5 text-xs bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] border border-white/[0.08] focus:border-amber-500/50 rounded-xl outline-hidden text-white placeholder-zinc-500 font-mono transition-all"
             />
             {searchQuery && (
               <button
@@ -192,7 +186,7 @@ export default function StridaSidebar({
       {/* Middle: Active Navigation / Taxonomy Navigator (Layer 1 -> 4) */}
       <div className={`my-6 py-5 border-y border-white/[0.06] space-y-2 ${isMobileNavOpen ? 'block' : 'hidden lg:block'}`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-zinc-400 block">
+          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-zinc-400 block font-bold">
             TAXONOMY NAVIGATOR
           </span>
           <span className="text-[10px] font-mono text-zinc-500">
@@ -200,26 +194,28 @@ export default function StridaSidebar({
           </span>
         </div>
 
-        <nav className="space-y-1 max-h-[46vh] overflow-y-auto pr-1 scrollbar-thin">
+        <nav className="space-y-1.5 max-h-[46vh] overflow-y-auto pr-1 scrollbar-thin">
           {categories.map((cat, idx) => {
             const isScrollActive = activeSection === cat.id;
             const isRouteActive =
               location.pathname === `/category/${cat.id}` ||
               location.pathname.startsWith(`/category/${cat.id}/`);
-            const isActive = isRouteActive || (location.pathname === '/' && isScrollActive);
+            const isActive = isRouteActive || isScrollActive;
             const color = getCategoryColor(cat.id);
             const catName = cat['name_' + lang] || cat.name_en || cat.name_hi || cat.id;
             const workCount = cat.count || 0;
             const formattedIdx = idx < 9 ? `0${idx + 1}` : `${idx + 1}`;
 
+            // Smooth scroll directly to category section if present on page
             const handleCategoryClick = (e) => {
               setIsMobileNavOpen(false);
-              if (location.pathname === '/') {
+              const targetElement = document.getElementById(`section-${cat.id}`);
+              if (targetElement) {
                 e.preventDefault();
-                const targetElement = document.getElementById(`section-${cat.id}`);
-                if (targetElement) {
-                  targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                window.history.replaceState(null, '', `/category/${cat.id}`);
+              } else {
+                navigate(`/category/${cat.id}`);
               }
             };
 
@@ -228,17 +224,32 @@ export default function StridaSidebar({
                 <Link
                   to={`/category/${cat.id}`}
                   onClick={handleCategoryClick}
-                  className={`flex items-center justify-between py-2 px-3 rounded-xl text-sm transition-all ${
+                  className={`flex items-center justify-between py-2.5 px-3 rounded-xl text-sm transition-all duration-300 border ${
                     isActive
-                      ? 'bg-white/[0.08] text-white font-medium border border-white/[0.12] shadow-xs'
-                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04]'
+                      ? 'text-white font-bold shadow-md'
+                      : 'text-zinc-400 hover:text-white hover:bg-white/[0.04] border-transparent'
                   }`}
-                  style={{
-                    borderLeftColor: isActive ? color.hex : undefined,
-                    borderLeftWidth: isActive ? '3px' : undefined,
-                  }}
+                  style={
+                    isActive
+                      ? {
+                          background: `linear-gradient(90deg, ${color.hex}22 0%, ${color.hex}08 100%)`,
+                          borderLeftWidth: '4px',
+                          borderLeftColor: color.hex,
+                          borderColor: `${color.hex}35`,
+                          boxShadow: `0 0 20px ${color.hex}25`,
+                        }
+                      : {}
+                  }
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
+                    {/* Glowing Accent Dot */}
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125"
+                      style={{
+                        backgroundColor: color.hex,
+                        boxShadow: isActive ? `0 0 10px ${color.hex}` : 'none',
+                      }}
+                    />
                     <span
                       className="font-mono text-xs font-bold shrink-0 transition-colors"
                       style={{ color: isActive ? color.hex : color.subtleHex }}
@@ -251,20 +262,27 @@ export default function StridaSidebar({
                   </span>
 
                   <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span className={`text-[11px] font-mono ${isActive ? 'text-zinc-200' : 'text-zinc-500'}`}>
+                    <span
+                      className="text-[11px] font-mono px-2 py-0.5 rounded-full border transition-colors"
+                      style={{
+                        color: isActive ? color.hex : '#A1A1AA',
+                        backgroundColor: isActive ? `${color.hex}20` : 'rgba(255,255,255,0.04)',
+                        borderColor: isActive ? `${color.hex}45` : 'rgba(255,255,255,0.08)',
+                      }}
+                    >
                       [{workCount}]
                     </span>
-                    {/* Deep dive link into category page */}
+                    {/* Deep dive arrow */}
                     <Link
                       to={`/category/${cat.id}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsMobileNavOpen(false);
                       }}
-                      title={`Open ${cat.name_en} full section`}
+                      title={`Jump directly to ${cat.name_en}`}
                       className="opacity-0 group-hover:opacity-100 hover:text-white text-zinc-500 p-0.5 transition-opacity"
                     >
-                      <ArrowUpRight className="w-3 h-3" />
+                      <ArrowUpRight className="w-3.5 h-3.5" style={{ color: color.hex }} />
                     </Link>
                   </div>
                 </Link>
@@ -276,16 +294,19 @@ export default function StridaSidebar({
 
       {/* Bottom: Admin Action Valve & User State */}
       <div className={`pt-4 space-y-3 ${isMobileNavOpen ? 'block' : 'hidden lg:block'}`}>
-        {/* Upload Document Button (Admin/Superadmin Protected) */}
+        {/* Radiant High-Contrast Upload Button */}
         <AdminOnly>
           <button
             onClick={() => {
               setIsMobileNavOpen(false);
               if (onOpenUpload) onOpenUpload();
             }}
-            className="w-full py-3 px-4 rounded-xl bg-white text-black text-xs font-semibold hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 shadow-sm font-mono uppercase tracking-wider cursor-pointer active:scale-[0.98]"
+            className="w-full py-3.5 px-4 rounded-xl text-black text-xs font-black transition-all flex items-center justify-center gap-2 shadow-[0_4px_25px_rgba(245,158,11,0.4)] font-mono uppercase tracking-wider cursor-pointer active:scale-[0.98] hover:scale-[1.01]"
+            style={{
+              background: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%)',
+            }}
           >
-            <span>↑</span> {t?.nav?.uploadBook || 'Upload Document'}
+            <span>↑</span> {t?.nav?.uploadBook || 'Upload E-Book'}
           </button>
         </AdminOnly>
 
@@ -298,7 +319,7 @@ export default function StridaSidebar({
             }}
             className="w-full py-2.5 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Sparkles className="w-3.5 h-3.5 text-zinc-400" />
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>{t?.nav?.suggestBook || 'Suggest Document'}</span>
           </button>
         )}
@@ -307,7 +328,7 @@ export default function StridaSidebar({
         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs font-mono text-zinc-400">
           {user ? (
             <div className="flex items-center gap-2 truncate">
-              <div className="w-5 h-5 rounded-full bg-white text-black font-bold flex items-center justify-center text-[10px]">
+              <div className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">
                 {user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <span className="truncate text-[11px] text-zinc-300">{user.email}</span>
