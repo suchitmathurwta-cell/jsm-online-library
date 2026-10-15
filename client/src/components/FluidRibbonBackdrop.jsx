@@ -40,20 +40,28 @@ float hash(vec2 p) {
 
 void main() {
   vec2 uv = v_uv;
-  float t = u_time * 0.32;
+  float t = u_time * 0.42;
 
-  // Domain warping for organic liquid silk folds
-  float warp = sin(uv.x * 2.8 + t * 0.70) * cos(uv.y * 2.2 - t * 0.50) * 0.075
-             + cos(uv.x * 1.4 - t * 0.30) * 0.035;
+  // Multi-frequency fluid domain warping: simulates rich liquid silk folds
+  float warp = sin(uv.x * 2.6 + t * 0.75) * cos(uv.y * 2.0 - t * 0.55) * 0.12
+             + cos(uv.x * 1.6 - uv.y * 1.8 + t * 0.40) * 0.065;
+
+  // Dynamic wandering & breathing of the ribbon spine
+  float wanderX1 = sin(t * 0.45) * 0.095 + cos(t * 0.28) * 0.055;
+  float wanderY1 = cos(t * 0.36) * 0.065;
+  float curveFactor1 = 1.48 + sin(t * 0.32) * 0.32;
 
   // -------------------------------------------------------------------
   // Primary Ribbon (Astrid Mueller S-Curve Fluid Light Filament)
-  // Sweeps from top-left, arches gently, and drapes down toward right
+  // Sweeps from top-left, arches gracefully, and drapes down toward right
   // -------------------------------------------------------------------
-  float baseArc1 = 0.14 + 0.68 * pow(clamp(1.0 - uv.y, 0.0, 1.0), 1.55);
+  float baseArc1 = (0.14 + wanderX1) 
+                 + (0.68 + wanderY1) * pow(clamp(1.0 - uv.y, 0.0, 1.0), curveFactor1);
 
-  float undulation1 = sin(uv.y * 4.6 + uv.x * 1.8 - t * 0.85) * 0.055
-                    + cos(uv.y * 7.5 - t * 0.45) * 0.030
+  // Deep, rich fluid undulation harmonics (enhanced amplitude for lifelike fluidity)
+  float undulation1 = sin(uv.y * 3.8 + uv.x * 1.6 - t * 0.90) * 0.115
+                    + cos(uv.y * 6.5 - uv.x * 2.0 + t * 0.55) * 0.065
+                    + sin(uv.y * 9.2 - t * 1.15) * 0.035
                     + warp;
 
   float curve1 = uv.x - (baseArc1 + undulation1);
@@ -72,12 +80,19 @@ void main() {
 
   // -------------------------------------------------------------------
   // Secondary Ribbon Harmonic (Delicate trailing silk fold for 3D depth)
+  // Dances and intertwines with the primary ribbon
   // -------------------------------------------------------------------
-  float baseArc2 = 0.20 + 0.62 * pow(clamp(1.0 - uv.y, 0.0, 1.0), 1.35);
+  float wanderX2 = cos(t * 0.40) * 0.085 - sin(t * 0.24) * 0.045;
+  float wanderY2 = sin(t * 0.38) * 0.055;
+  float curveFactor2 = 1.35 + cos(t * 0.30) * 0.28;
 
-  float undulation2 = cos(uv.y * 3.8 - uv.x * 1.5 - t * 0.70) * 0.065
-                    + sin(uv.y * 6.5 + t * 0.35) * 0.025
-                    - warp * 0.6;
+  float baseArc2 = (0.20 + wanderX2) 
+                 + (0.62 + wanderY2) * pow(clamp(1.0 - uv.y, 0.0, 1.0), curveFactor2);
+
+  float undulation2 = cos(uv.y * 3.4 - uv.x * 1.3 - t * 0.80) * 0.120
+                    + sin(uv.y * 5.8 + uv.x * 1.9 + t * 0.50) * 0.055
+                    + cos(uv.y * 8.6 + t * 0.95) * 0.030
+                    - warp * 0.75;
 
   float curve2 = uv.x - (baseArc2 + undulation2);
   float dist2 = abs(curve2);
@@ -324,12 +339,15 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
       const w = canvas.width;
       const h = canvas.height;
 
-      // Slender swooping fluid curve
+      // Slender swooping fluid curve with enhanced breathing and fluidity
       ctx.beginPath();
-      for (let y = 0; y <= h; y += 15) {
+      const wanderX = Math.sin(elapsed * 0.45) * 0.09 * w;
+      const curveFactor = 1.48 + Math.sin(elapsed * 0.32) * 0.32;
+
+      for (let y = 0; y <= h; y += 12) {
         const ny = y / h;
-        const baseArc = 0.14 * w + 0.68 * w * Math.pow(ny, 1.55);
-        const undulation = Math.sin(ny * 5.0 - elapsed * 0.85) * 25 + Math.cos(ny * 8.0 - elapsed * 0.45) * 12;
+        const baseArc = 0.14 * w + wanderX + 0.68 * w * Math.pow(ny, curveFactor);
+        const undulation = Math.sin(ny * 3.8 - elapsed * 0.90) * 45 + Math.cos(ny * 6.5 + elapsed * 0.55) * 25;
         const x = baseArc + undulation;
         if (y === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
@@ -337,7 +355,7 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
 
       // Delicate silk glow stroke
       ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
-      ctx.lineWidth = 40;
+      ctx.lineWidth = 42;
       ctx.stroke();
 
       // Sharp luminous crest line
