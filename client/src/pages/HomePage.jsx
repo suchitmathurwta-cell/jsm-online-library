@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Layers, FolderTree } from 'lucide-react';
+import { ArrowRight, BookOpen, Layers } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
 import CategoryTiles from '../components/CategoryTiles';
 import BookCard from '../components/BookCard';
@@ -247,48 +247,20 @@ export default function HomePage({
                             }}
                           >
                             <div>
-                              <div className="flex items-center justify-between mb-3.5">
-                                <div
-                                  className="w-10 h-10 rounded-xl flex items-center justify-center border transition-transform group-hover:scale-105"
-                                  style={{
-                                    backgroundColor: `${color.hex}22`,
-                                    borderColor: `${color.hex}50`,
-                                    color: color.hex,
-                                    boxShadow: `0 0 12px ${color.hex}25`,
-                                  }}
-                                >
-                                  <FolderTree className="w-4 h-4" />
-                                </div>
-
-                                <span
-                                  className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full border font-bold"
-                                  style={{
-                                    backgroundColor: `${color.hex}18`,
-                                    borderColor: `${color.hex}40`,
-                                    color: color.hex,
-                                  }}
-                                >
-                                  {subCount} SUB-GENRES
-                                </span>
-                              </div>
-
-                              <h4 className="text-base font-bold text-white tracking-tight font-sans">
+                              <h4 className="text-lg font-bold text-white tracking-tight font-sans mb-2">
                                 {gTitle}
                               </h4>
 
                               {gDesc && (
-                                <p className="text-xs text-zinc-300 mt-2 leading-relaxed line-clamp-2 font-sans">
+                                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed line-clamp-3 font-sans">
                                   {gDesc}
                                 </p>
                               )}
                             </div>
 
-                            <div className="mt-5 pt-3.5 border-t border-white/[0.08] flex items-center justify-between">
-                              <span className="text-xs font-mono font-semibold" style={{ color: color.hex }}>
-                                {g.count || 0} works
-                              </span>
+                            <div className="mt-5 pt-3.5 border-t border-white/[0.08] flex items-center justify-end">
                               <span
-                                className="inline-flex items-center gap-1 text-xs font-mono uppercase tracking-wider font-bold transition-transform group-hover:translate-x-1"
+                                className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-transform group-hover:translate-x-1"
                                 style={{ color: color.hex }}
                               >
                                 <span>EXPLORE SUB-GENRES</span>

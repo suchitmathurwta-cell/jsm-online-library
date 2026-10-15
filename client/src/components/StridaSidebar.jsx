@@ -196,11 +196,8 @@ export default function StridaSidebar({
 
         <nav className="space-y-1.5 max-h-[46vh] overflow-y-auto pr-1 scrollbar-thin">
           {categories.map((cat, idx) => {
-            const isScrollActive = activeSection === cat.id;
-            const isRouteActive =
-              location.pathname === `/category/${cat.id}` ||
-              location.pathname.startsWith(`/category/${cat.id}/`);
-            const isActive = isRouteActive || isScrollActive;
+            // Exactly ONE highlight strip strictly relative to the main content stream
+            const isActive = activeSection ? activeSection === cat.id : (location.pathname.startsWith(`/category/${cat.id}`) || idx === 0);
             const color = getCategoryColor(cat.id);
             const catName = cat['name_' + lang] || cat.name_en || cat.name_hi || cat.id;
             const workCount = cat.count || 0;

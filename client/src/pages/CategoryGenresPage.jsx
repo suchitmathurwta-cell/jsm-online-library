@@ -437,74 +437,42 @@ export default function CategoryGenresPage({
                       }}
                     >
                       <div>
-                        <div className="flex items-center justify-between mb-4">
-                          {/* Vibrant Glowing Jewel Icon */}
-                          <div
-                            className="w-11 h-11 rounded-2xl flex items-center justify-center border transition-transform duration-300 group-hover:scale-110"
-                            style={{
-                              backgroundColor: `${color.hex}22`,
-                              borderColor: `${color.hex}50`,
-                              color: color.hex,
-                              boxShadow: `0 0 15px ${color.hex}30`,
-                            }}
-                          >
-                            <FolderTree className="w-5 h-5" />
-                          </div>
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-white tracking-tight font-sans leading-snug group-hover:text-zinc-100 transition-colors">
+                            {gTitle}
+                          </h3>
 
-                          <div className="flex items-center gap-2">
-                            <span
-                              className="text-[10px] font-mono uppercase tracking-wider px-3 py-1 rounded-full border font-bold"
-                              style={{
-                                backgroundColor: `${color.hex}18`,
-                                borderColor: `${color.hex}40`,
-                                color: color.hex,
-                              }}
-                            >
-                              {subCount} {lang === 'hi' ? 'उप-विधाएँ' : lang === 'ur' ? 'ذیلی اصناف' : 'SUB-GENRES'}
-                            </span>
-
-                            {/* Admin Only Actions: Edit & Delete */}
-                            <AdminOnly>
-                              <div className="flex items-center gap-1 z-20">
-                                <button
-                                  type="button"
-                                  onClick={(e) => openEditModal(g, catId, e)}
-                                  title={t.admin?.editBtn || 'Edit'}
-                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.1] transition cursor-pointer"
-                                >
-                                  <Edit2 className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={(e) => openDeleteModal(g, catId, e)}
-                                  title={t.admin?.deleteBtn || 'Delete'}
-                                  className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-                            </AdminOnly>
-                          </div>
+                          {/* Admin Only Actions: Edit & Delete */}
+                          <AdminOnly>
+                            <div className="flex items-center gap-1 z-20 shrink-0">
+                              <button
+                                type="button"
+                                onClick={(e) => openEditModal(g, catId, e)}
+                                title={t.admin?.editBtn || 'Edit'}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.1] transition cursor-pointer"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => openDeleteModal(g, catId, e)}
+                                title={t.admin?.deleteBtn || 'Delete'}
+                                className="p-1.5 rounded-lg text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </AdminOnly>
                         </div>
 
-                        <h3 className="text-lg font-black text-white tracking-tight font-sans leading-snug group-hover:text-zinc-100 transition-colors">
-                          {gTitle}
-                        </h3>
-
                         {gDesc && (
-                          <p className="text-xs text-zinc-300 mt-2.5 leading-relaxed line-clamp-2 font-sans">
+                          <p className="text-xs sm:text-sm text-zinc-300 mt-2.5 leading-relaxed line-clamp-3 font-sans">
                             {gDesc}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-between">
-                        <span
-                          className="text-xs font-mono font-semibold"
-                          style={{ color: `${color.hex}ee` }}
-                        >
-                          {g.count || 0} {hl.layer2Works || 'works'}
-                        </span>
+                      <div className="mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-end">
                         <span
                           className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all group-hover:translate-x-1.5"
                           style={{ color: color.hex }}
