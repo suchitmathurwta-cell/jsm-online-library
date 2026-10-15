@@ -12,7 +12,8 @@ export default function SearchableCombobox({
   onChange,
   onCreate,
   onDelete,
-  disabled = false
+  disabled = false,
+  dark = true
 }) {
   const currentLang = lang || localStorage.getItem('chetna_lang') || 'hi';
   const [isOpen, setIsOpen] = useState(false);
@@ -155,7 +156,7 @@ export default function SearchableCombobox({
   return (
     <div ref={containerRef} className="relative w-full">
       {label && (
-        <label className="text-xs font-bold text-stone-800 block mb-1">
+        <label className={`text-xs block mb-1.5 ${dark ? 'text-zinc-400 font-mono text-[11px] uppercase tracking-wider' : 'font-bold text-stone-800'}`}>
           {label}
         </label>
       )}
@@ -165,50 +166,66 @@ export default function SearchableCombobox({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className={"w-full px-3.5 py-2.5 text-xs border rounded-xl flex items-center justify-between text-left transition shadow-2xs cursor-pointer " + (
-          isOpen
-            ? "border-[#1d4ed8] ring-2 ring-[#1d4ed8]/20 bg-white"
-            : "border-stone-300 hover:border-stone-400 bg-white"
-        ) + (disabled ? " opacity-50 cursor-not-allowed bg-stone-50" : "")}
+        className={`w-full px-3.5 py-2.5 text-xs border rounded-xl flex items-center justify-between text-left transition shadow-xs cursor-pointer ${
+          dark
+            ? isOpen
+              ? 'border-white/30 ring-1 ring-white/20 bg-[#1e1e1e] text-white'
+              : 'border-white/[0.08] hover:border-white/[0.2] bg-[#181818] text-white'
+            : isOpen
+              ? 'border-[#1d4ed8] ring-2 ring-[#1d4ed8]/20 bg-white text-stone-900'
+              : 'border-stone-300 hover:border-stone-400 bg-white text-stone-900'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <span className={"truncate font-medium " + (!selectedOption && !value ? "text-stone-400" : "text-stone-900 font-semibold")}>
+        <span className={`truncate font-medium ${!selectedOption && !value ? (dark ? 'text-zinc-500' : 'text-stone-400') : (dark ? 'text-white font-medium' : 'text-stone-900 font-semibold')}`}>
           {displayLabel}
         </span>
-        <ChevronDown className={"w-4 h-4 text-stone-400 shrink-0 ml-1.5 transition-transform duration-200 " + (isOpen ? "rotate-180 text-[#1d4ed8]" : "")} />
+        <ChevronDown className={`w-4 h-4 shrink-0 ml-1.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-white' : (dark ? 'text-zinc-400' : 'text-stone-400')}`} />
       </button>
 
       {/* Floating Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl shadow-2xl border border-stone-200 overflow-hidden z-[9999] animate-fadeIn">
+        <div className={`absolute top-full left-0 right-0 mt-1.5 rounded-2xl shadow-2xl border overflow-hidden z-[9999] animate-fadeIn backdrop-blur-xl ${
+          dark
+            ? 'bg-[#161616]/95 border-white/[0.1] text-white'
+            : 'bg-white border-stone-200 text-stone-900'
+        }`}>
           
           {/* Sticky Search Input Box */}
-          <div className="p-2.5 border-b border-stone-100 bg-stone-50/90">
+          <div className={`p-2.5 border-b ${dark ? 'border-white/[0.08] bg-[#1c1c1c]' : 'border-stone-100 bg-stone-50/90'}`}>
             <div className="relative flex items-center">
-              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 pointer-events-none" />
+              <Search className={`w-3.5 h-3.5 absolute left-2.5 pointer-events-none ${dark ? 'text-zinc-500' : 'text-stone-400'}`} />
               <input
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="w-full pl-8 pr-3 py-2 text-xs bg-white border border-stone-300 rounded-lg focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 outline-hidden text-stone-900 placeholder-stone-400 font-medium"
+                className={`w-full pl-8 pr-3 py-2 text-xs rounded-xl outline-hidden font-medium ${
+                  dark
+                    ? 'bg-[#242424] border border-white/[0.08] focus:border-white/30 text-white placeholder-zinc-500'
+                    : 'bg-white border border-stone-300 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 text-stone-900 placeholder-stone-400'
+                }`}
               />
             </div>
           </div>
 
           {/* Options List */}
-          <div className="max-h-60 overflow-y-auto p-1 divide-y divide-stone-50">
+          <div className={`max-h-60 overflow-y-auto p-1 divide-y ${dark ? 'divide-white/[0.04]' : 'divide-stone-50'}`}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt) => {
                 const isSelected = selectedOption && selectedOption.id === opt.id;
                 return (
                   <div
                     key={opt.id}
-                    className={"w-full px-3 py-2 text-xs rounded-lg flex items-center justify-between transition group cursor-pointer " + (
-                      isSelected
-                        ? "bg-blue-50 text-[#1d4ed8] font-bold"
-                        : "text-stone-700 hover:bg-stone-50 font-normal"
-                    )}
+                    className={`w-full px-3 py-2.5 text-xs rounded-xl flex items-center justify-between transition group cursor-pointer ${
+                      dark
+                        ? isSelected
+                          ? 'bg-white/[0.12] text-white font-semibold'
+                          : 'text-zinc-300 hover:bg-white/[0.06] hover:text-white'
+                        : isSelected
+                          ? 'bg-blue-50 text-[#1d4ed8] font-bold'
+                          : 'text-stone-700 hover:bg-stone-50 font-normal'
+                    }`}
                     onClick={() => {
                       onChange(opt.id, opt);
                       setIsOpen(false);
@@ -217,13 +234,13 @@ export default function SearchableCombobox({
                   >
                     <span className="truncate flex-1">{opt.label}</span>
                     <div className="flex items-center gap-1 shrink-0 ml-2">
-                      {isSelected && <Check className="w-4 h-4 text-[#1d4ed8]" />}
+                      {isSelected && <Check className="w-4 h-4 text-emerald-400" />}
                       {onDelete && (
                         <button
                           type="button"
                           onClick={(e) => handleDeleteItem(e, opt)}
                           title="Delete option"
-                          className="opacity-0 group-hover:opacity-100 p-1 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                          className="opacity-0 group-hover:opacity-100 p-1 text-zinc-400 hover:text-red-400 hover:bg-white/[0.08] rounded transition"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -235,11 +252,15 @@ export default function SearchableCombobox({
             ) : (
               /* If No Matches Found: Show Notice and Create Option */
               <div className="p-4 text-center space-y-2.5">
-                <div className="flex items-center justify-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 py-1.5 px-2.5 rounded-lg border border-amber-200">
+                <div className={`flex items-center justify-center gap-1.5 text-xs font-semibold py-1.5 px-2.5 rounded-xl border ${
+                  dark
+                    ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                    : 'bg-amber-50 text-amber-700 border-amber-200'
+                }`}>
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{notFoundTitle}</span>
                 </div>
-                <p className="text-xs text-stone-500">
+                <p className={`text-xs ${dark ? 'text-zinc-400' : 'text-stone-500'}`}>
                   {notFoundDesc}
                 </p>
                 {searchQuery.trim() && (
@@ -247,7 +268,11 @@ export default function SearchableCombobox({
                     type="button"
                     onClick={handleCreate}
                     disabled={isCreating}
-                    className="w-full py-2.5 px-3 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer disabled:opacity-50"
+                    className={`w-full py-2.5 px-3 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 shadow-sm transition font-mono uppercase tracking-wider cursor-pointer disabled:opacity-50 ${
+                      dark
+                        ? 'bg-white text-black hover:bg-zinc-200'
+                        : 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white'
+                    }`}
                   >
                     {isCreating ? (
                       <>
@@ -268,12 +293,16 @@ export default function SearchableCombobox({
 
           {/* Quick Create Footer if typing text that doesn't have an exact match */}
           {searchQuery.trim() && filteredOptions.length > 0 && (
-            <div className="p-2 border-t border-stone-100 bg-stone-50/70">
+            <div className={`p-2 border-t ${dark ? 'border-white/[0.08] bg-[#1a1a1a]' : 'border-stone-100 bg-stone-50/70'}`}>
               <button
                 type="button"
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="w-full py-2 px-3 bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] border border-blue-200/80 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs disabled:opacity-50"
+                className={`w-full py-2 px-3 text-xs font-mono uppercase tracking-wider font-semibold rounded-xl flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm disabled:opacity-50 ${
+                  dark
+                    ? 'bg-white/[0.08] hover:bg-white/[0.14] text-white border border-white/[0.1]'
+                    : 'bg-white hover:bg-blue-50 text-[#1d4ed8] hover:text-[#1e40af] border border-blue-200/80'
+                }`}
               >
                 {isCreating ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

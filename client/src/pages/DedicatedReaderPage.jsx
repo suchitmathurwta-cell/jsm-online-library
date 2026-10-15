@@ -117,129 +117,114 @@ export default function DedicatedReaderPage({ lang = 'hi', t, onDownloadBook }) 
   const authorName = book.author_hi || book.author_en || 'Unknown Author';
   const eraBadge = book.historical_era || book.category || 'Archive Item';
 
+  const langTag = book.language || (currentLang === 'hi' ? 'Devanagari' : currentLang === 'ur' ? 'Nastaliq' : 'Romanized');
+
   return (
-    <div className="min-h-screen bg-[#080808] text-white flex flex-col font-sans">
-      {/* 1. Header: Minimalist Mugen Utility Bar */}
-      <header className="sticky top-0 z-40 bg-[#080808]/90 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
-        {/* Left: ← Back to Archive Link (Preserves Previous Filters) */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleBack}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-xs font-mono uppercase tracking-wider text-zinc-300 border border-white/[0.08] transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span>Back to Archive</span>
-          </button>
+    <div className="w-full flex flex-col font-sans animate-fadeIn">
+      {/* 1. Top Utility Bar */}
+      <div className="pb-4 mb-4 border-b border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Left: ← Return to Archive */}
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-xs font-mono uppercase tracking-wider text-zinc-300 border border-white/[0.08] transition-colors cursor-pointer w-fit"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>← Return to Archive</span>
+        </button>
 
-          <span className="h-4 w-px bg-white/[0.1] hidden sm:inline-block" />
-
-          {/* Minimalist Brand Glyph */}
-          <Link to="/" className="hidden md:flex items-center gap-2 group">
-            <span className="w-6 h-6 rounded-lg bg-white text-black flex items-center justify-center text-[11px] font-bold">
-              चे
-            </span>
-            <span className="text-xs font-bold tracking-tight text-white">
-              CHETNA
-            </span>
-          </Link>
-        </div>
-
-        {/* Center: Title, Author, Era in Geist Sans */}
-        <div className="flex-1 text-center truncate max-w-xl px-2">
-          <div className="flex items-center justify-center gap-2">
-            <h1 className="text-sm sm:text-base font-bold text-white tracking-tight truncate">
+        {/* Center: Title, Author, Language tag */}
+        <div className="flex-1 text-left sm:text-center truncate px-1">
+          <div className="flex items-center sm:justify-center gap-2">
+            <h1 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">
               {primaryTitle}
             </h1>
             {secondaryTitle && (
-              <span className="text-xs text-zinc-500 hidden lg:inline truncate">
+              <span className="text-xs text-zinc-500 hidden md:inline truncate">
                 ({secondaryTitle})
               </span>
             )}
           </div>
-          <div className="flex items-center justify-center gap-2 mt-0.5 text-[11px] font-mono text-zinc-400">
+          <div className="flex items-center sm:justify-center gap-2 mt-0.5 text-xs font-mono text-zinc-400">
             <span>{authorName}</span>
             <span>·</span>
-            <span className="uppercase px-1.5 py-0.2 rounded bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
-              {eraBadge}
+            <span className="uppercase px-2 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08] text-[10px]">
+              {langTag}
             </span>
           </div>
         </div>
 
-        {/* Right: Actions Bar ("Download PDF" action pill + viewer controls) */}
+        {/* Right: Direct "Download PDF" button pill */}
         <div className="flex items-center gap-2">
           {book.file_url && (
             <button
               onClick={handleDownload}
-              className="px-4 py-2 rounded-full bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+              className="bg-white text-black font-semibold rounded-full px-4 py-1.5 text-xs font-mono uppercase tracking-wider hover:bg-zinc-200 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
             >
               <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Download PDF</span>
+              <span>Download PDF</span>
             </button>
           )}
 
-          {/* Fallback viewer toggle */}
           <button
             onClick={() => setUseIframeFallback((prev) => !prev)}
-            title="Toggle native frame render"
-            className="p-2 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-zinc-400 hover:text-white border border-white/[0.08] transition-colors"
+            title="Toggle viewer mode"
+            className="p-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-zinc-400 hover:text-white border border-white/[0.08] transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
-      </header>
+      </div>
 
-      {/* 2. Main Canvas: Full-Height Container (h-[85vh], rounded-[24px], hairline border) */}
-      <main className="flex-1 max-w-[1440px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
-        <div className="relative w-full h-[85vh] rounded-[24px] border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.6)] bg-[#141414] overflow-hidden flex flex-col">
-          {book.file_url ? (
-            useIframeFallback ? (
-              <iframe
-                src={book.file_url}
-                title={primaryTitle}
-                className="w-full h-full border-none rounded-[24px]"
-              />
-            ) : (
-              <div className="w-full h-full overflow-auto bg-[#141414]">
-                <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-                  <div className="h-full">
-                    <Viewer
-                      fileUrl={book.file_url}
-                      renderError={(error) => (
-                        <div className="p-8 text-center flex flex-col items-center justify-center h-full">
-                          <AlertCircle className="w-8 h-8 text-zinc-400 mb-2" />
-                          <p className="text-sm font-semibold text-white">
-                            Could not render PDF directly via worker
-                          </p>
-                          <p className="text-xs text-zinc-400 mt-1 max-w-md">
-                            {error.message || 'Worker network access restricted.'}
-                          </p>
-                          <button
-                            onClick={() => setUseIframeFallback(true)}
-                            className="mt-4 px-4 py-2 bg-white text-black font-mono text-xs uppercase font-semibold rounded-full cursor-pointer"
-                          >
-                            Switch to Embedded Frame
-                          </button>
-                        </div>
-                      )}
-                    />
-                  </div>
-                </Worker>
-              </div>
-            )
+      {/* 2. Embedded Viewer Container: h-[82vh] rounded-2xl border border-white/[0.08] bg-[#161616] overflow-hidden */}
+      <div className="relative w-full h-[82vh] rounded-2xl border border-white/[0.08] bg-[#161616] overflow-hidden shadow-2xl flex flex-col">
+        {book.file_url ? (
+          useIframeFallback ? (
+            <iframe
+              src={book.file_url}
+              title={primaryTitle}
+              className="w-full h-full border-none rounded-2xl"
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <BookOpen className="w-10 h-10 text-zinc-600 mb-3" />
-              <p className="text-sm font-semibold text-zinc-400">No PDF asset attached to this record.</p>
-              <button
-                onClick={handleBack}
-                className="mt-4 px-4 py-2 rounded-full bg-white/[0.06] text-xs font-mono uppercase text-white"
-              >
-                Go Back
-              </button>
+            <div className="w-full h-full overflow-auto bg-[#161616]">
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                <div className="h-full">
+                  <Viewer
+                    fileUrl={book.file_url}
+                    renderError={(error) => (
+                      <div className="p-8 text-center flex flex-col items-center justify-center h-full">
+                        <AlertCircle className="w-8 h-8 text-zinc-400 mb-2" />
+                        <p className="text-sm font-semibold text-white">
+                          Could not render PDF directly via worker
+                        </p>
+                        <p className="text-xs text-zinc-400 mt-1 max-w-md font-mono">
+                          {error.message || 'Worker network access restricted.'}
+                        </p>
+                        <button
+                          onClick={() => setUseIframeFallback(true)}
+                          className="mt-4 px-4 py-2 bg-white text-black font-mono text-xs uppercase font-semibold rounded-full cursor-pointer"
+                        >
+                          Switch to Embedded Frame
+                        </button>
+                      </div>
+                    )}
+                  />
+                </div>
+              </Worker>
             </div>
-          )}
-        </div>
-      </main>
+          )
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <BookOpen className="w-10 h-10 text-zinc-600 mb-3" />
+            <p className="text-sm font-semibold text-zinc-400">No PDF asset attached to this record.</p>
+            <button
+              onClick={handleBack}
+              className="mt-4 px-4 py-2 rounded-full bg-white/[0.06] text-xs font-mono uppercase text-white cursor-pointer"
+            >
+              ← Return to Archive
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
