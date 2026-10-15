@@ -30,9 +30,9 @@ precision highp float;
 varying vec2 v_uv;
 uniform vec2 u_resolution;
 uniform float u_time;
-uniform vec3 u_color1; // Primary category tone (e.g. sapphire, amber, emerald)
-uniform vec3 u_color2; // Secondary / deeper harmonic
-uniform vec3 u_color3; // Luminous electric highlight crest
+uniform vec3 u_color1; // Primary active category tone (Amber, Cobalt, Emerald, Ruby, Amethyst...)
+uniform vec3 u_color2; // Subtle companion harmonic
+uniform vec3 u_color3; // Luminous electric crest highlight
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -40,86 +40,77 @@ float hash(vec2 p) {
 
 void main() {
   vec2 uv = v_uv;
-  vec2 p = (uv * 2.0 - 1.0);
-  p.x *= (u_resolution.x / max(u_resolution.y, 1.0));
+  float t = u_time * 0.32;
 
-  // Fluid motion rate
-  float t = u_time * 0.38;
+  // Domain warping for organic liquid silk folds
+  float warp = sin(uv.x * 2.8 + t * 0.70) * cos(uv.y * 2.2 - t * 0.50) * 0.075
+             + cos(uv.x * 1.4 - t * 0.30) * 0.035;
 
-  // Fluid domain distortion: creates the organic liquid silk folding
-  float warp = sin(p.x * 1.8 + t * 0.7) * cos(p.y * 1.4 - t * 0.5) * 0.22;
+  // -------------------------------------------------------------------
+  // Primary Ribbon (Astrid Mueller S-Curve Fluid Light Filament)
+  // Sweeps from top-left, arches gently, and drapes down toward right
+  // -------------------------------------------------------------------
+  float baseArc1 = 0.14 + 0.68 * pow(clamp(1.0 - uv.y, 0.0, 1.0), 1.55);
 
-  // -------------------------------------------------------------
-  // Ribbon 1: Primary sweeping fluid silk wave
-  // Curves diagonally with shifting sine & cosine harmonics
-  // -------------------------------------------------------------
-  float curve1 = (p.y - 0.08) 
-               - (sin(p.x * 1.1 + t * 0.85) * 0.42 
-                  + cos(p.x * 2.3 - t * 0.45) * 0.20 
-                  + sin(p.x * 0.5 + t * 0.25) * 0.28 
-                  + warp);
+  float undulation1 = sin(uv.y * 4.6 + uv.x * 1.8 - t * 0.85) * 0.055
+                    + cos(uv.y * 7.5 - t * 0.45) * 0.030
+                    + warp;
 
+  float curve1 = uv.x - (baseArc1 + undulation1);
   float dist1 = abs(curve1);
 
-  // Intense electric neon razor crest along the edge of the ribbon
-  float core1 = 0.015 / (dist1 + 0.016);
-  core1 = clamp(core1, 0.0, 4.0);
+  // 1. Sleek, razor-sharp luminous crest filament line (Astrid Mueller neon edge)
+  float core1 = 0.0055 / (dist1 + 0.009);
+  core1 = clamp(core1, 0.0, 1.8);
 
-  // Volumetric silk sheet glow fanning out on the upper side
-  float body1 = exp(-max(0.0, curve1) * 2.4) * smoothstep(-0.85, 0.25, curve1);
-  // Soft atmospheric aura on the lower edge
-  float underGlow1 = exp(-max(0.0, -curve1) * 4.2);
+  // 2. Controlled volumetric silk veil on the inner curve (curve1 > 0)
+  // Steep exponential falloff guarantees >85% of canvas remains velvety #0E0E0E
+  float body1 = exp(-max(0.0, curve1) * 9.0) * 0.32;
 
-  // -------------------------------------------------------------
-  // Ribbon 2: Secondary harmonic ribbon with opposing flow
-  // -------------------------------------------------------------
-  float curve2 = (p.y + 0.18) 
-               - (cos(p.x * 1.4 - t * 0.65) * 0.36 
-                  + sin(p.x * 2.7 + t * 0.40) * 0.16 
-                  + cos(p.x * 0.7 - t * 0.20) * 0.22 
-                  - warp * 0.8);
+  // 3. Very tight falloff on the outer edge (curve1 < 0)
+  float rim1 = exp(-max(0.0, -curve1) * 22.0) * 0.08;
 
+  // -------------------------------------------------------------------
+  // Secondary Ribbon Harmonic (Delicate trailing silk fold for 3D depth)
+  // -------------------------------------------------------------------
+  float baseArc2 = 0.20 + 0.62 * pow(clamp(1.0 - uv.y, 0.0, 1.0), 1.35);
+
+  float undulation2 = cos(uv.y * 3.8 - uv.x * 1.5 - t * 0.70) * 0.065
+                    + sin(uv.y * 6.5 + t * 0.35) * 0.025
+                    - warp * 0.6;
+
+  float curve2 = uv.x - (baseArc2 + undulation2);
   float dist2 = abs(curve2);
-  float core2 = 0.011 / (dist2 + 0.020);
-  core2 = clamp(core2, 0.0, 3.0);
-  float body2 = exp(-max(0.0, curve2) * 2.9) * smoothstep(-0.65, 0.3, curve2);
 
-  // -------------------------------------------------------------
-  // Ribbon 3: Upper atmospheric wisp
-  // -------------------------------------------------------------
-  float curve3 = (p.y - 0.45) 
-               - (sin(p.x * 2.1 + t * 0.9) * 0.22 
-                  + cos(p.x * 1.2 - t * 0.3) * 0.15);
-  float dist3 = abs(curve3);
-  float core3 = 0.008 / (dist3 + 0.028);
+  float core2 = 0.0035 / (dist2 + 0.012);
+  core2 = clamp(core2, 0.0, 1.1);
 
-  // -------------------------------------------------------------
-  // Dynamic Color Compositing
-  // -------------------------------------------------------------
+  float body2 = exp(-max(0.0, curve2) * 11.0) * 0.16;
+  float rim2 = exp(-max(0.0, -curve2) * 25.0) * 0.04;
+
+  // -------------------------------------------------------------------
+  // Low-Luminescence Color Compositing (Preserving High Contrast)
+  // -------------------------------------------------------------------
   vec3 col = vec3(0.0);
 
-  // Deep volumetric colored silk
-  col += u_color1 * (body1 * 0.85 + underGlow1 * 0.32);
-  col += u_color2 * (body2 * 0.60);
+  // Ethereal atmospheric colored silk veil
+  col += u_color1 * (body1 + rim1);
+  col += u_color2 * (body2 + rim2);
 
-  // Blinding electric neon filaments along the ribbon crests
-  vec3 crest1 = mix(u_color1, u_color3, 0.72);
-  vec3 crest2 = mix(u_color2, u_color3, 0.60);
-  col += crest1 * (core1 * 0.90);
-  col += crest2 * (core2 * 0.65);
-  col += u_color3 * (core3 * 0.45);
+  // Electric highlight filaments along the crest lines
+  vec3 crest1 = mix(u_color1, u_color3, 0.82);
+  vec3 crest2 = mix(u_color2, u_color3, 0.68);
+  col += crest1 * (core1 * 0.80);
+  col += crest2 * (core2 * 0.40);
 
-  // Smooth vertical bottom vignette into deep canvas background (#0E0E0E)
-  float bottomFade = smoothstep(0.0, 0.32, uv.y);
-  float topFade = smoothstep(1.0, 0.82, uv.y);
-  col *= (bottomFade * topFade);
+  // Deep dark obsidian canvas (#0E0E0E = 14 / 255 = 0.0549)
+  vec3 bg = vec3(0.0549, 0.0549, 0.0549);
 
-  // Subtle natural film grain to eliminate 8-bit color banding
-  float grain = hash(gl_FragCoord.xy + fract(t)) * 0.024;
-  col += grain * col;
+  // Subtle organic micro-film grain to prevent 8-bit banding on dark displays
+  float grain = (hash(gl_FragCoord.xy + fract(t)) - 0.5) * 0.010;
 
-  float alpha = clamp(length(col) * 1.35, 0.0, 0.94);
-  gl_FragColor = vec4(col, alpha);
+  vec3 finalColor = bg + col + grain;
+  gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
 }
 `;
 
@@ -128,18 +119,24 @@ void main() {
  * Renders an authentic, continuous fluid ribbon / animated mesh gradient
  * of colored light flowing across the right-hand main content stream.
  * Smoothly morphs colors in real time as the user scrolls between taxonomy sections.
+ * 
+ * Strict aesthetic adherence:
+ * 1. Reduced luminescence: >85% pure obsidian black canvas (#0E0E0E), with a sleek glowing filament.
+ * 2. Unbroken background: spans the full viewport height permanently behind the scroll stream without breaking.
+ * 3. Color synchronization: smoothly lerps between category signature colors while undulating continuously.
  */
 export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
   const canvasRef = useRef(null);
   const color = getCategoryColor(activeSection);
 
-  // Interpolated RGB colors
+  // Current interpolated RGB colors
   const currentColors = useRef({
     c1: hexToRgb(color.hex),
     c2: hexToRgb(color.subtleHex || color.hex),
-    c3: [1.0, 1.0, 1.0], // Electric white/highlight core
+    c3: [1.0, 1.0, 1.0], // Electric white/highlight crest
   });
 
+  // Target RGB colors based on active section
   const targetColors = useRef({
     c1: hexToRgb(color.hex),
     c2: hexToRgb(color.subtleHex || color.hex),
@@ -152,9 +149,9 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
     // Dynamic light crest: bright luminous tint of the section color
     const light = hexToRgb(color.lightHex || '#FFFFFF');
     const c3 = [
-      Math.min(1.0, light[0] * 0.6 + 0.4),
-      Math.min(1.0, light[1] * 0.6 + 0.4),
-      Math.min(1.0, light[2] * 0.6 + 0.4),
+      Math.min(1.0, light[0] * 0.65 + 0.35),
+      Math.min(1.0, light[1] * 0.65 + 0.35),
+      Math.min(1.0, light[2] * 0.65 + 0.35),
     ];
 
     targetColors.current = { c1, c2, c3 };
@@ -167,7 +164,7 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
     let gl = null;
     try {
       gl = canvas.getContext('webgl', {
-        alpha: true,
+        alpha: false,
         antialias: false,
         powerPreference: 'high-performance',
       });
@@ -254,10 +251,10 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
 
         const elapsed = (now - startTime) * 0.001;
 
-        // Smooth color interpolation (lerp)
+        // Smooth, butter-like color interpolation (lerp)
         const cur = currentColors.current;
         const tgt = targetColors.current;
-        const lerpFactor = 0.045;
+        const lerpFactor = 0.040;
 
         for (let i = 0; i < 3; i++) {
           cur.c1[i] += (tgt.c1[i] - cur.c1[i]) * lerpFactor;
@@ -271,7 +268,7 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
         gl.uniform3f(uColor2, cur.c2[0], cur.c2[1], cur.c2[2]);
         gl.uniform3f(uColor3, cur.c3[0], cur.c3[1], cur.c3[2]);
 
-        gl.clearColor(0, 0, 0, 0);
+        gl.clearColor(0.0549, 0.0549, 0.0549, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -301,19 +298,20 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
 
     const resize2d = () => {
       canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-      canvas.height = 750;
+      canvas.height = window.innerHeight;
     };
     window.addEventListener('resize', resize2d);
     resize2d();
 
     const render2d = (now) => {
       const elapsed = (now - startTime) * 0.001;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0E0E0E';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       const cur = currentColors.current;
       const tgt = targetColors.current;
       for (let i = 0; i < 3; i++) {
-        cur.c1[i] += (tgt.c1[i] - cur.c1[i]) * 0.05;
+        cur.c1[i] += (tgt.c1[i] - cur.c1[i]) * 0.04;
       }
 
       const r = Math.round(cur.c1[0] * 255);
@@ -323,30 +321,29 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
       ctx.save();
       ctx.globalCompositeOperation = 'screen';
 
-      for (let w = 0; w < 3; w++) {
-        ctx.beginPath();
-        const baseHeight = 240 + w * 85;
-        ctx.moveTo(0, baseHeight);
+      const w = canvas.width;
+      const h = canvas.height;
 
-        for (let x = 0; x <= canvas.width; x += 15) {
-          const y =
-            baseHeight +
-            Math.sin(x * 0.004 + elapsed * 1.2 + w) * 60 +
-            Math.cos(x * 0.008 - elapsed * 0.7) * 35;
-          ctx.lineTo(x, y);
-        }
-        ctx.lineTo(canvas.width, 0);
-        ctx.lineTo(0, 0);
-        ctx.closePath();
-
-        const grad = ctx.createLinearGradient(0, 0, 0, baseHeight + 120);
-        grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.4)`);
-        grad.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, 0.15)`);
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-
-        ctx.fillStyle = grad;
-        ctx.fill();
+      // Slender swooping fluid curve
+      ctx.beginPath();
+      for (let y = 0; y <= h; y += 15) {
+        const ny = y / h;
+        const baseArc = 0.14 * w + 0.68 * w * Math.pow(ny, 1.55);
+        const undulation = Math.sin(ny * 5.0 - elapsed * 0.85) * 25 + Math.cos(ny * 8.0 - elapsed * 0.45) * 12;
+        const x = baseArc + undulation;
+        if (y === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
+
+      // Delicate silk glow stroke
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, 0.25)`;
+      ctx.lineWidth = 40;
+      ctx.stroke();
+
+      // Sharp luminous crest line
+      ctx.strokeStyle = `rgba(255, 255, 255, 0.70)`;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
 
       ctx.restore();
       animationFrameId = requestAnimationFrame(render2d);
@@ -363,18 +360,12 @@ export default function FluidRibbonBackdrop({ activeSection = 'novel' }) {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none sticky top-0 h-0 w-full overflow-visible z-0 select-none"
+      className="pointer-events-none fixed inset-0 lg:left-[380px] xl:left-[420px] rtl:lg:left-0 rtl:lg:right-[380px] rtl:xl:right-[420px] z-0 select-none overflow-hidden"
     >
-      <div className="absolute top-0 left-0 right-0 h-[750px] overflow-hidden">
-        {/* Real-time Fluid Silk Wave & Mesh Ribbon */}
-        <canvas
-          ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-[750px] mix-blend-screen pointer-events-none opacity-90 sm:opacity-95"
-        />
-
-        {/* Soft bottom falloff vignette melting into #0E0E0E */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0E0E0E]/10 via-60% to-[#0E0E0E] pointer-events-none" />
-      </div>
+      <canvas
+        ref={canvasRef}
+        className="w-full h-full block pointer-events-none"
+      />
     </div>
   );
 }

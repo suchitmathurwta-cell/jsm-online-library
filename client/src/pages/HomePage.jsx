@@ -130,9 +130,9 @@ export default function HomePage({
               >
                 {/* Atmospheric Ambient Color Glow */}
                 <div
-                  className="absolute -top-12 -left-8 -right-8 h-80 rounded-full pointer-events-none opacity-25 blur-3xl -z-10"
+                  className="absolute -top-12 -left-8 -right-8 h-80 rounded-full pointer-events-none opacity-10 blur-3xl -z-10"
                   style={{
-                    background: `radial-gradient(ellipse at top left, ${color.hex}60, transparent 70%)`,
+                    background: `radial-gradient(ellipse at top left, ${color.hex}30, transparent 70%)`,
                   }}
                 />
 
