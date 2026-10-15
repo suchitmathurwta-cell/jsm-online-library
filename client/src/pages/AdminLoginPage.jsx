@@ -48,7 +48,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
   };
 
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center items-center px-4 pt-28 pb-12 animate-fadeIn">
+    <div className="min-h-[70vh] flex flex-col justify-center items-center px-4 py-8 animate-fadeIn">
       <div className="max-w-md w-full">
         
         {/* Back Link */}

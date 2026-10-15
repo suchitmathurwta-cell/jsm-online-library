@@ -185,8 +185,8 @@ export default function HeroSection({
   ];
 
   return (
-    <section className="bg-[#080808] pt-24 sm:pt-28 pb-16 border-b border-white/[0.08] text-white">
-      <div className="max-w-[1440px] mx-auto px-6">
+    <section className="text-white pb-12 border-b border-white/[0.08]">
+      <div className="w-full">
         
         {/* Top Monospace Tag */}
         <div className="flex items-center gap-2.5 mb-4">

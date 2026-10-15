@@ -3,14 +3,18 @@
 @layer base {
   body {
     font-family: 'Geist', 'Inter', 'Noto Sans Devanagari', 'Hind', -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: #080808;
-    color: #FFFFFF;
+    background-color: #0E0E0E;
+    color: #FAFAFA;
   }
 }
 
-/* Mugen Studio Neo-Grotesque Typography */
+/* Strida & Geist Neo-Grotesque Typography */
 .font-sans {
   font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-mono {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 .font-rekhta-serif,

@@ -95,8 +95,8 @@ export default function CategoryTiles({
   };
 
   return (
-    <section className="bg-[#080808] text-white">
-      <div className="max-w-[1440px] mx-auto px-6 py-16">
+    <section className="text-white">
+      <div className="w-full py-6">
         
         {/* Mugen Massive Title Lockup */}
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-10 mb-12">

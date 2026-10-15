@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Download, CheckCircle2, Loader2, X } from 'lucide-react';
 import Header from './components/Header';
+import StridaSidebar from './components/StridaSidebar';
 import HomePage from './pages/HomePage';
 import CategoryGenresPage from './pages/CategoryGenresPage';
 import SubGenresPage from './pages/SubGenresPage';
@@ -284,125 +285,122 @@ function MainApp() {
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
-      className={'min-h-screen flex flex-col bg-[#080808] text-white font-sans ' + (isRtl ? 'font-urdu' : '')}
+      className={`min-h-screen bg-[#0E0E0E] text-[#FAFAFA] flex flex-col lg:flex-row font-sans selection:bg-white selection:text-black ${isRtl ? 'font-urdu' : ''}`}
     >
-      {/* Sticky Header */}
-      <Header
+      {/* LEFT COLUMN: Fixed Sticky Sidebar (w-full lg:w-[380px] xl:w-[420px] lg:h-screen lg:sticky lg:top-0) */}
+      <StridaSidebar
+        categories={categories}
         lang={lang}
         setLang={setLang}
         t={t}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenAdmin={() => setIsAdminOpen(true)}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
         onOpenSuggest={() => setIsSuggestOpen(true)}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        onSearchSubmit={() => {
-          const catElement = document.getElementById('catalog');
-          if (catElement) catElement.scrollIntoView({ behavior: 'smooth' });
-        }}
-        onSelectBook={(book) => setSelectedBook(book)}
-        onOpenReader={handleOpenReader}
       />
 
-      {/* Dynamic Route Pages */}
-      <main className="flex-1">
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <HomePage
-                lang={lang}
-                t={t}
-                categories={categories}
-                books={books}
-                isLoading={isLoading}
-                onSelectBook={(book) => setSelectedBook(book)}
-                onOpenReader={handleOpenReader}
-                onDownloadBook={handleDownloadBook}
-                onEditBook={(book) => setEditingBook(book)}
-                searchQuery={searchQuery}
-                setSearchQuery={setSearchQuery}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                onRefreshCategories={fetchCategories}
-              />
-            }
-          />
+      {/* RIGHT COLUMN: Scrollable Content Stream (flex-1 min-h-screen p-6 sm:p-12 lg:p-16 max-w-6xl) */}
+      <div className="flex-1 min-h-screen flex flex-col justify-between overflow-x-hidden w-full">
+        <main className="flex-1 p-6 sm:p-10 lg:p-12 xl:p-16 space-y-12 max-w-6xl w-full">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <HomePage
+                  lang={lang}
+                  t={t}
+                  categories={categories}
+                  books={books}
+                  isLoading={isLoading}
+                  onSelectBook={(book) => setSelectedBook(book)}
+                  onOpenReader={handleOpenReader}
+                  onDownloadBook={handleDownloadBook}
+                  onEditBook={(book) => setEditingBook(book)}
+                  searchQuery={searchQuery}
+                  setSearchQuery={setSearchQuery}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  onRefreshCategories={fetchCategories}
+                />
+              }
+            />
 
-          <Route
-            path="/category/:categorySlug"
-            element={
-              <CategoryGenresPage
-                lang={lang}
-                t={t}
-                categories={categories}
-                books={books}
-                onSelectBook={(book) => setSelectedBook(book)}
-                onOpenReader={handleOpenReader}
-                onDownloadBook={handleDownloadBook}
-                onEditBook={(book) => setEditingBook(book)}
-                onRefreshCategories={fetchCategories}
-              />
-            }
-          />
+            <Route
+              path="/category/:categorySlug"
+              element={
+                <CategoryGenresPage
+                  lang={lang}
+                  t={t}
+                  categories={categories}
+                  books={books}
+                  onSelectBook={(book) => setSelectedBook(book)}
+                  onOpenReader={handleOpenReader}
+                  onDownloadBook={handleDownloadBook}
+                  onEditBook={(book) => setEditingBook(book)}
+                  onRefreshCategories={fetchCategories}
+                />
+              }
+            />
 
-          <Route
-            path="/category/:categorySlug/:genreSlug"
-            element={
-              <SubGenresPage
-                lang={lang}
-                t={t}
-                categories={categories}
-                books={books}
-                onSelectBook={(book) => setSelectedBook(book)}
-                onOpenReader={handleOpenReader}
-                onDownloadBook={handleDownloadBook}
-                onEditBook={(book) => setEditingBook(book)}
-                onRefreshCategories={fetchCategories}
-              />
-            }
-          />
+            <Route
+              path="/category/:categorySlug/:genreSlug"
+              element={
+                <SubGenresPage
+                  lang={lang}
+                  t={t}
+                  categories={categories}
+                  books={books}
+                  onSelectBook={(book) => setSelectedBook(book)}
+                  onOpenReader={handleOpenReader}
+                  onDownloadBook={handleDownloadBook}
+                  onEditBook={(book) => setEditingBook(book)}
+                  onRefreshCategories={fetchCategories}
+                />
+              }
+            />
 
-          <Route
-            path="/category/:categorySlug/:genreSlug/:subgenreSlug"
-            element={
-              <BooksListingPage
-                lang={lang}
-                t={t}
-                categories={categories}
-                onSelectBook={(book) => setSelectedBook(book)}
-                onOpenReader={handleOpenReader}
-                onDownloadBook={handleDownloadBook}
-                onEditBook={(book) => setEditingBook(book)}
-                onRefreshCategories={fetchCategories}
-              />
-            }
-          />
+            <Route
+              path="/category/:categorySlug/:genreSlug/:subgenreSlug"
+              element={
+                <BooksListingPage
+                  lang={lang}
+                  t={t}
+                  categories={categories}
+                  onSelectBook={(book) => setSelectedBook(book)}
+                  onOpenReader={handleOpenReader}
+                  onDownloadBook={handleDownloadBook}
+                  onEditBook={(book) => setEditingBook(book)}
+                  onRefreshCategories={fetchCategories}
+                />
+              }
+            />
 
-          <Route
-            path="/admin/login"
-            element={
-              <AdminLoginPage lang={lang} t={t} />
-            }
-          />
+            <Route
+              path="/admin/login"
+              element={
+                <AdminLoginPage lang={lang} t={t} />
+              }
+            />
 
-          <Route
-            path="/reader/:bookId"
-            element={
-              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
-            }
-          />
-          <Route
-            path="/read/:bookId"
-            element={
-              <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
-            }
-          />
-        </Routes>
-      </main>
+            <Route
+              path="/reader/:bookId"
+              element={
+                <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+              }
+            />
+            <Route
+              path="/read/:bookId"
+              element={
+                <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+              }
+            />
+          </Routes>
+        </main>
 
-      <Footer lang={lang} t={t} onOpenUpload={() => setIsUploadOpen(true)} onOpenAdmin={() => setIsAdminOpen(true)} />
+        <Footer lang={lang} t={t} onOpenUpload={() => setIsUploadOpen(true)} onOpenAdmin={() => setIsAdminOpen(true)} />
+      </div>
 
       {/* Floating Admin Mode Toggle Badge & Shortcut Key Handler */}
       <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} lang={lang} t={t} />
