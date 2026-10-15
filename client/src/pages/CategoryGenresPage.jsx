@@ -259,16 +259,12 @@ export default function CategoryGenresPage({
               const gTitle = g[`name_${lang}`] || g.name_hi || g.name_en;
               const gDesc = g[`description_${lang}`] || g.description_hi || g.description_en;
               const subCount = g.subgenres_count || (g.subgenres && g.subgenres.length) || 0;
-              const isHeroBento = idx === 0 && genres.length > 2;
-
               return (
                 <motion.div
                   key={g.id}
                   variants={itemVariants}
                   onClick={() => navigate(`/category/${categorySlug}/${g.id}`)}
-                  className={`group relative p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 cursor-pointer flex flex-col justify-between ${
-                    isHeroBento ? 'sm:col-span-2' : 'col-span-1'
-                  }`}
+                  className="group relative p-6 rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 cursor-pointer flex flex-col justify-between col-span-1"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">

@@ -5,32 +5,19 @@ import { AdminOnly } from './AdminGuard';
 import { createSubgenre } from '../services/supabaseApi';
 import ArchiveCard from './bento/ArchiveCard';
 
-// Mugen Asymmetric Grid Specs for the 9 Categories
-const bentoLayouts = [
-  { colSpan: 'md:col-span-8', aspectRatio: 'aspect-[16/10]' }, // 01 Novel (Large Feature)
-  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 02 Story (Tall Secondary)
-  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 03 Poetry (Grid Regular)
-  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 04 Magazines (Grid Regular)
-  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 05 Discourse (Grid Regular)
-  { colSpan: 'md:col-span-6', aspectRatio: 'aspect-[16/11]' }, // 06 Conscience (Split Feature)
-  { colSpan: 'md:col-span-6', aspectRatio: 'aspect-[16/11]' }, // 07 Satire (Split Feature)
-  { colSpan: 'md:col-span-4', aspectRatio: 'aspect-[4/3]' },   // 08 Drama (Secondary)
-  { colSpan: 'md:col-span-8', aspectRatio: 'aspect-[16/10]' }, // 09 Essays (Large Feature)
-];
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.1,
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
     y: 0,
@@ -98,32 +85,31 @@ export default function CategoryTiles({
     <section className="text-white">
       <div className="w-full py-6">
         
-        {/* Mugen Massive Title Lockup */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-10 mb-12">
+        {/* Title Lockup */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-10 mb-10">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 block mb-3">
-              CHETNA DIGITAL ARCHIVE • VOL. 01
+              CHETNA DIGITAL ARCHIVE • TAXONOMY OVERVIEW
             </span>
-            <h1 className="text-5xl md:text-8xl font-bold tracking-[-0.04em] text-white font-sans">
+            <h1 className="text-4xl md:text-7xl font-bold tracking-[-0.04em] text-white font-sans">
               Open Repository.
             </h1>
           </div>
-          <div className="mt-6 md:mt-0 max-w-sm">
+          <div className="mt-4 md:mt-0 max-w-sm">
             <p className="font-mono text-xs text-zinc-400 leading-relaxed uppercase tracking-wider">
-              Preserving vernacular literature, progressive discourse & digitized manuscripts.
+              Preserving vernacular literature, progressive discourse & digitized manuscripts across 9 core branches.
             </p>
           </div>
         </div>
 
-        {/* Mugen Asymmetric Showcase Grid */}
+        {/* Uniform, Neat & Tidy Grid */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-12 gap-4"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {categories.map((cat, idx) => {
-            const layout = bentoLayouts[idx % bentoLayouts.length];
             const titleEn = cat.name_en || cat.name_hi;
             const vernacularTitle =
               lang === 'hi'
@@ -138,7 +124,7 @@ export default function CategoryTiles({
               <motion.div
                 key={cat.id}
                 variants={itemVariants}
-                className={layout.colSpan}
+                className="w-full"
               >
                 <ArchiveCard
                   title={titleEn}
@@ -147,8 +133,9 @@ export default function CategoryTiles({
                   workCount={cat.count || 0}
                   slug={cat.id}
                   colSpan="w-full"
-                  aspectRatio={layout.aspectRatio}
+                  aspectRatio="aspect-[16/11]"
                   coverImage={cat.cover_url}
+                  indexNumber={idx}
                   onClick={() => {
                     if (onSelectCategory) {
                       onSelectCategory(cat.id);

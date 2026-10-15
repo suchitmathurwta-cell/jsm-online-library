@@ -55,6 +55,7 @@ function MainApp() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('popular');
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState('novel');
 
   // Modals
   const [selectedBook, setSelectedBook] = useState(null);
@@ -277,6 +278,7 @@ function MainApp() {
         onOpenAuth={() => setIsAuthModalOpen(true)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        activeSection={activeSection}
       />
 
       {/* RIGHT COLUMN: Scrollable Content Stream (flex-1 min-h-screen p-6 sm:p-12 lg:p-16 max-w-6xl) */}
@@ -301,6 +303,7 @@ function MainApp() {
                   sortBy={sortBy}
                   setSortBy={setSortBy}
                   onRefreshCategories={fetchCategories}
+                  onActiveSectionChange={setActiveSection}
                 />
               }
             />
