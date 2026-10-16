@@ -92,7 +92,7 @@ export default function SuggestBookModal({
               {s.successTitle || 'Suggestion Received!'}
             </h3>
             <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
-              {s.successDesc || 'Our archival digitization team will review the recommended treatise.'}
+              {s.successDesc || 'Our team will review your book suggestion.'}
             </p>
             <button
               onClick={handleReset}
@@ -105,7 +105,7 @@ export default function SuggestBookModal({
           <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
             <div>
               <label className="font-bold text-stone-700 block mb-1.5">
-                {s.bookTitleLabel || 'Book / Treatise Title *'}
+                {s.bookTitleLabel || 'Book Title *'}
               </label>
               <input
                 type="text"

@@ -77,7 +77,7 @@ export const categoryGraphics = {
     image: '/images/categories/essays.jpg',
     remoteFallback: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?auto=format&fit=crop&w=1200&q=80',
     accentGradient: 'from-teal-950/25 via-zinc-950/40 to-black/60',
-    motif: 'SCHOLARSHIP, LEXICON & TREATISES',
+    motif: 'SCHOLARSHIP, CRITIQUE & PROSE',
     accentColor: '#0f766e',
     tag: 'CRITICISM'
   }

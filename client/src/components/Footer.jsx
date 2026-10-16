@@ -24,7 +24,7 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
             </div>
 
             <p className="text-xs text-zinc-400 font-sans leading-relaxed max-w-sm">
-              {t.footer?.about || 'Digital cultural conscience, philosophical discourse, and open-access literary preservation repository.'}
+              {t.footer?.about || (lang === 'hi' ? 'कालजयी साहित्य, विचार और कविता का खुला डिजिटल पुस्तकालय।' : lang === 'ur' ? 'کلاسیکی ادب اور فکری ورثے کا کھلا ڈیجیٹل کتب خانہ۔' : 'An open-access digital library dedicated to classic literature, poetry, and timeless cultural heritage.')}
             </p>
 
             <div className="flex items-center gap-2.5 pt-2">

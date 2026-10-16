@@ -89,7 +89,7 @@ export default function ReaderPage({ lang, t, onDownloadBook }) {
     return (
       <div className="fixed inset-0 bg-[#0E0E0E] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
         <h2 className="text-lg font-bold mb-2">
-          {currentLang === 'hi' ? 'रचना उपलब्ध नहीं है' : (currentLang === 'ur' ? 'کتاب دستیاب نہیں ہے' : 'Treatise Not Found')}
+          {currentLang === 'hi' ? 'पुस्तक उपलब्ध नहीं है' : (currentLang === 'ur' ? 'کتاب دستیاب نہیں ہے' : 'Book Not Found')}
         </h2>
         <p className="text-xs text-zinc-400 mb-6 max-w-sm">
           {currentLang === 'hi'

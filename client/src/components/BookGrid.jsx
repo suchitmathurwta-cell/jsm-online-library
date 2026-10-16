@@ -25,7 +25,7 @@ export default function BookGrid({
     ? (currentCat[`name_${lang}`] || currentCat.name_hi || currentCat.name_en)
     : (selectedCategory === 'marsiya'
       ? (lang === 'hi' ? 'मर्सिया व शोक काव्य' : lang === 'ur' ? 'مرثیہ نگاری' : 'Marsiya & Elegiac Poetry')
-      : t.sections?.allCategories || 'All Treatises');
+      : t.sections?.allCategories || (lang === 'hi' ? 'समस्त पुस्तकें' : lang === 'ur' ? 'تمام کتب' : 'All Books'));
 
   let activeSubGenreObj = null;
   if (currentCat && selectedSubGenre && selectedSubGenre !== 'all') {
@@ -68,13 +68,13 @@ export default function BookGrid({
 
             <div className="flex items-center gap-2 pl-3.5 mt-1.5 flex-wrap">
               <p className="text-xs font-mono uppercase tracking-wider text-zinc-400">
-                [{books.length} {lang === 'hi' ? 'रचनाएँ उपलब्ध' : lang === 'ur' ? 'کتابیں دستیاب' : 'TREATISES INDEXED'}]
+                [{books.length} {lang === 'hi' ? 'पुस्तकें उपलब्ध' : lang === 'ur' ? 'کتابیں دستیاب' : 'BOOKS AVAILABLE'}]
               </p>
 
               {/* Active Sub-genre pill badge */}
               {subGenreTitle && (
                 <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08] flex items-center gap-1.5">
-                  <span>SUB-GENRE: {subGenreTitle}</span>
+                  <span>{lang === 'hi' ? 'विषय: ' : lang === 'ur' ? 'موضوع: ' : 'THEME: '}{subGenreTitle}</span>
                   <button
                     onClick={() => onSelectSubGenre && onSelectSubGenre('all')}
                     className="hover:text-white transition cursor-pointer"
@@ -138,7 +138,7 @@ export default function BookGrid({
             <div className="py-20 text-center bg-[#141414] rounded-[24px] border border-white/[0.08] p-8 max-w-lg mx-auto">
               <BookOpen className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
               <h3 className="text-base font-bold text-white mb-1 font-sans">
-                {t.sections?.noResults || 'No treatises match your search'}
+                {t.sections?.noResults || (lang === 'hi' ? 'कोई पुस्तक नहीं मिली' : lang === 'ur' ? 'کوئی کتاب نہیں ملی' : 'No books match your search')}
               </h3>
               <p className="text-xs text-zinc-400 mb-6 leading-relaxed font-sans">
                 {t.sections?.tryDifferent || 'Try searching with alternate spellings, authors, or transliterations.'}

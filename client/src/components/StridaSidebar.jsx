@@ -61,7 +61,7 @@ export default function StridaSidebar({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)] font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              PUBLIC ARCHIVE
+              {lang === 'hi' ? 'खुला पुस्तकालय' : lang === 'ur' ? 'ڈیجیٹل کتب خانہ' : 'DIGITAL LIBRARY'}
             </span>
 
             {/* Mobile Hamburger toggle for small screens */}
@@ -76,7 +76,11 @@ export default function StridaSidebar({
         </div>
 
         <p className="text-xs text-zinc-400 font-mono uppercase tracking-wider leading-relaxed">
-          Open Repository for Cultural Conscience, Literature & Human Development.
+          {lang === 'hi'
+            ? 'कालजयी साहित्य, विचार और सांस्कृतिक चेतना का खुला डिजिटल पुस्तकालय।'
+            : lang === 'ur'
+            ? 'کلاسیکی ادب، فکر اور شعور کا کھلا ڈیجیٹل کتب خانہ۔'
+            : 'A digital library for timeless literature, ideas & poetry.'}
         </p>
 
         {/* 1. Compact Language Selector Dropdown (HIN, ENG, URD) */}
@@ -183,11 +187,11 @@ export default function StridaSidebar({
         )}
       </div>
 
-      {/* Middle: Active Navigation / Taxonomy Navigator (Layer 1 -> 4) */}
+      {/* Middle: Active Navigation / Browse Collections */}
       <div className={`my-6 py-5 border-y border-white/[0.06] space-y-2 ${isMobileNavOpen ? 'block' : 'hidden lg:block'}`}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-zinc-400 block font-bold">
-            TAXONOMY NAVIGATOR
+            {t?.nav?.browseCategories || (lang === 'hi' ? 'श्रेणियाँ देखें' : lang === 'ur' ? 'اصناف دیکھیں' : 'EXPLORE COLLECTIONS')}
           </span>
           <span className="text-[10px] font-mono text-zinc-500">
             [{categories.length}]
@@ -288,7 +292,7 @@ export default function StridaSidebar({
           </button>
         </AdminOnly>
 
-        {/* Suggest Document Button for Visitors */}
+        {/* Suggest Book Button for Visitors */}
         {!isAdmin && onOpenSuggest && (
           <button
             onClick={() => {
@@ -298,7 +302,7 @@ export default function StridaSidebar({
             className="w-full py-2.5 px-4 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] text-xs font-mono uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>{t?.nav?.suggestBook || 'Suggest Document'}</span>
+            <span>{t?.nav?.readerSuggestion || t?.nav?.suggestBook || (lang === 'hi' ? 'पुस्तक का सुझाव दें' : lang === 'ur' ? 'کتاب تجویز کریں' : 'Suggest a Book')}</span>
           </button>
         )}
 

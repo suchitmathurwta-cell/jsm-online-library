@@ -1255,7 +1255,7 @@ export const DEFAULT_CATEGORIES = [
     "name_en": "Essays & Discourse",
     "name_ur": "مضامین و تنقید",
     "subtitle_hi": "ललित निबंध, समीक्षात्मक आलेख, समाजशास्त्रीय अध्ययन व दार्शनिक निबंध",
-    "subtitle_en": "Lalit Nibandh, critical analyses, sociological studies & philosophical treatises",
+    "subtitle_en": "Lalit Nibandh, critical analyses, sociological studies & philosophical writings",
     "subtitle_ur": "انشائیہ، تنقیدی مضامین، سماجیاتی اور فلسفیانہ مقالے",
     "icon": "FileText",
     "color": "#0f766e",
@@ -1329,7 +1329,7 @@ export const DEFAULT_CATEGORIES = [
       {
         "id": "philosophical-treatises",
         "name_hi": "दार्शनिक व वैचारिक निबंध",
-        "name_en": "Philosophical Treatises",
+        "name_en": "Philosophical Writings & Essays",
         "name_ur": "فلسفیانہ مقالات",
         "description_hi": "मानव अस्तित्व, चेतना, नीतिशास्त्र, सौंदर्य और सत्य की खोज पर गंभीर दार्शनिक आलेख",
         "description_en": "In-depth explorations of human existence, epistemology, and ethical systems",

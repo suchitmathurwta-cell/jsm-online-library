@@ -190,7 +190,7 @@ export default function CategoryGenresPage({
                 categories.find((c) => c.id === categorySlug)?.[`name_${lang}`] ||
                 categories.find((c) => c.id === categorySlug)?.name_hi ||
                 categories.find((c) => c.id === categorySlug)?.name_en ||
-                'Taxonomy Catalog',
+                'Library Collections',
             },
           ]}
         />
@@ -329,7 +329,7 @@ export default function CategoryGenresPage({
                   className="text-xs sm:text-sm font-mono uppercase tracking-[0.25em] font-black"
                   style={{ color: color.hex }}
                 >
-                  {hl.layer2Heading || 'GENRES UNDER'} — {catTitle}
+                  {hl.layer2Heading || 'COLLECTIONS IN'} {catTitle}
                 </h2>
               </div>
               <span
@@ -340,7 +340,7 @@ export default function CategoryGenresPage({
                   color: color.hex,
                 }}
               >
-                [{genres.length} GENRES REGISTERED]
+                [{genres.length} {lang === 'hi' ? 'विधाएँ' : lang === 'ur' ? 'اصناف' : 'GENRES'}]
               </span>
             </div>
 
@@ -421,7 +421,7 @@ export default function CategoryGenresPage({
                           className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all group-hover:translate-x-1.5"
                           style={{ color: color.hex }}
                         >
-                          <span>{hl.layer2Explore || 'EXPLORE SUB-GENRES'}</span>
+                          <span>{hl.layer2Explore || (lang === 'hi' ? 'विषय देखें →' : lang === 'ur' ? 'ذیلی اصناف دیکھیں ←' : 'BROWSE THEMES →')}</span>
                           <ArrowRight className="w-4 h-4" />
                         </span>
                       </div>
@@ -439,10 +439,10 @@ export default function CategoryGenresPage({
               >
                 <FolderTree className="w-8 h-8 mx-auto mb-3" style={{ color: color.hex }} />
                 <p className="text-sm font-bold text-white font-sans">
-                  {hl.noWorksFound || 'No genres registered yet'}
+                  {hl.noWorksFound || 'No collections listed yet'}
                 </p>
                 <p className="text-xs text-zinc-400 mt-1 mb-4 font-sans">
-                  {hl.noWorksDesc || 'Add a genre to begin categorizing treatises.'}
+                  {hl.noWorksDesc || 'This section has no collections or books added yet.'}
                 </p>
                 <AdminOnly>
                   <button

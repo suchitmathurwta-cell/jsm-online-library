@@ -187,10 +187,10 @@ export default function BookDetailModal({
                 {/* Description */}
                 <div className="mb-4">
                   <h3 className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 mb-1">
-                    {t.details?.description || 'Synopsis & Annotation'}
+                    {t.details?.description || (lang === 'hi' ? 'पुस्तक परिचय' : lang === 'ur' ? 'کتاب کا تعارف' : 'About this Book')}
                   </h3>
                   <p className="text-xs text-zinc-300 leading-relaxed bg-white/[0.03] p-3.5 rounded-[16px] border border-white/[0.08] font-sans">
-                    {book[`description_${lang}`] || book.description || book.description_en || 'Archival copy digitized and preserved in the Chetna open digital cultural repository.'}
+                    {book[`description_${lang}`] || book.description || book.description_en || (lang === 'hi' ? 'चेतना डिजिटल पुस्तकालय में उपलब्ध प्रामाणिक संस्करण।' : lang === 'ur' ? 'چیتنا ڈیجیٹل کتب خانے میں محفوظ مستند ایڈیشن۔' : 'Preserved digital edition in the Chetna Digital Library.')}
                   </p>
                 </div>
 

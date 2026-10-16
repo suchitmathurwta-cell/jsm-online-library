@@ -415,10 +415,10 @@ export default function Header({
                   onChange={handleSpotlightInputChange}
                   placeholder={
                     lang === 'hi'
-                      ? 'ग्रंथ, लेखक, विधा या विषय खोजें...'
+                      ? 'पुस्तक, रचनाकार, विधा या विषय खोजें...'
                       : lang === 'ur'
                       ? 'کتاب، مصنف، صنف یا موضوع تلاش کریں...'
-                      : 'Search treatises, authors, domains...'
+                      : 'Search by book title, author, or genre...'
                   }
                   autoComplete="off"
                   className="w-full py-1 text-sm sm:text-base text-white placeholder-zinc-500 bg-transparent outline-hidden font-sans cursor-text font-medium"
@@ -461,7 +461,7 @@ export default function Header({
                   spotlightResults.length > 0 ? (
                     <div className="p-2">
                       <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500">
-                        {spotlightResults.length} {t.sections?.worksUnit || 'treatises found'}
+                        {spotlightResults.length} {t.sections?.worksUnit || (lang === 'hi' ? 'पुस्तकें मिलीं' : lang === 'ur' ? 'کتابیں ملیں' : 'books found')}
                       </div>
                       <div className="space-y-1">
                         {spotlightResults.map((b) => (
@@ -519,20 +519,20 @@ export default function Header({
                       {isSearchingLive ? (
                         <div className="flex items-center justify-center gap-2">
                           <Loader2 className="w-4 h-4 text-white animate-spin" />
-                          <span>Searching digital repository...</span>
+                          <span>{lang === 'hi' ? 'पुस्तकालय में खोज रहे हैं...' : lang === 'ur' ? 'کتب خانے میں تلاش جاری ہے...' : 'Searching library collection...'}</span>
                         </div>
                       ) : (
-                        <span>No treatises matched "{spotlightQuery}"</span>
+                        <span>{lang === 'hi' ? `"${spotlightQuery}" से संबंधित कोई पुस्तक नहीं मिली` : lang === 'ur' ? `"${spotlightQuery}" سے متعلق کوئی کتاب نہیں ملی` : `No books matched "${spotlightQuery}"`}</span>
                       )}
                     </div>
                   )
                 ) : (
                   /* 2.2 Quick Shortcuts when query is empty */
                   <div className="p-4 space-y-4">
-                    {/* Archival Domain Shortcuts */}
+                    {/* Category Shortcuts */}
                     <div>
                       <p className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500 mb-2.5">
-                        Browse by Literary Domain
+                        {lang === 'hi' ? 'श्रेणियों के अनुसार खोजें' : lang === 'ur' ? 'اصناف کے مطابق تلاش کریں' : 'Browse by Category'}
                       </p>
                       <div className="grid grid-cols-3 gap-2">
                         {navItems.map((item) => (

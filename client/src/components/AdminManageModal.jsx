@@ -154,7 +154,7 @@ export default function AdminManageModal({
       setEditingItem(null);
       fetchLibraryData();
     } catch (err) {
-      alert('Error updating taxonomy: ' + err.message);
+      alert('Error updating category: ' + err.message);
     } finally {
       setIsSubmittingEdit(false);
     }
@@ -189,7 +189,7 @@ export default function AdminManageModal({
       setNewItemName('');
       fetchLibraryData();
     } catch (err) {
-      alert('Error creating taxonomy item: ' + err.message);
+      alert('Error creating category item: ' + err.message);
     }
   };
 

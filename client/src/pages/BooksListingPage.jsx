@@ -139,7 +139,7 @@ export default function BooksListingPage({
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] text-zinc-400 text-[10px] font-mono tracking-[0.2em] uppercase border border-white/[0.08]">
-              <span>{hl.layer4Badge || 'Level 4: Catalog'}</span>
+              <span>{hl.layer4Badge || (lang === 'hi' ? 'पुस्तक संग्रह' : lang === 'ur' ? 'کتب کی فہرست' : 'BOOK COLLECTION')}</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-white flex items-center gap-3">
               <span>{subgenreTitle}</span>
@@ -155,16 +155,16 @@ export default function BooksListingPage({
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 font-sans leading-relaxed">
               {lang === 'hi'
-                ? `${subgenreTitle} (${categoryTitle} › ${genreTitle}) के अंतर्गत डिजिटल रूप से संरक्षित और वर्गीकृत कृतियाँ।`
+                ? `${subgenreTitle} (${categoryTitle} › ${genreTitle}) के अंतर्गत डिजिटल रूप से उपलब्ध पुस्तकें।`
                 : lang === 'ur'
-                ? `${subgenreTitle} (${categoryTitle} › ${genreTitle}) کے تحت محفوظ کی گئی مستند کتب۔`
-                : `Digital repository and treatises classified under ${subgenreTitle} (${categoryTitle} › ${genreTitle}).`}
+                ? `${subgenreTitle} (${categoryTitle} › ${genreTitle}) کے تحت دستیاب کتب۔`
+                : `Digitally preserved books and works in ${subgenreTitle} (${categoryTitle} › ${genreTitle}).`}
             </p>
           </div>
 
           <div className="bg-white/[0.03] border border-white/[0.08] px-5 py-3 rounded-[16px] text-center self-start md:self-auto shrink-0">
             <span className="text-xl font-bold font-mono text-white block">{books.length}</span>
-            <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{hl.layer4Treatises || 'Treatises'}</span>
+            <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'Books'}</span>
           </div>
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function BooksListingPage({
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder={hl.searchPlaceholder || 'Filter by keyword...'}
+              placeholder={hl.searchPlaceholder || (lang === 'hi' ? 'इस संग्रह में खोजें...' : lang === 'ur' ? 'اس مجموعے میں تلاش کریں...' : 'Search in this collection...')}
               className="pl-8 pr-3 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full outline-hidden focus:border-white/30 text-white placeholder:text-zinc-500 w-48 sm:w-56 font-sans text-xs"
             />
             <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2 pointer-events-none" />
@@ -275,10 +275,10 @@ export default function BooksListingPage({
           <div className="py-20 text-center bg-[#141414] rounded-[24px] border border-white/[0.08] mt-6 p-8 max-w-lg mx-auto">
             <BookOpen className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
             <h3 className="text-base font-bold text-white mb-1 font-sans">
-              {hl.noWorksFound || 'No treatises found'}
+              {hl.noWorksFound || (lang === 'hi' ? 'कोई पुस्तक नहीं मिली' : lang === 'ur' ? 'کوئی کتاب نہیں ملی' : 'No books found')}
             </h3>
             <p className="text-xs text-zinc-400 mb-5 leading-relaxed font-sans">
-              {hl.noWorksDesc || 'Try adjusting the active filters or search terms.'}
+              {hl.noWorksDesc || (lang === 'hi' ? 'फ़िल्टर या खोज शब्द बदलकर पुनः प्रयास करें।' : lang === 'ur' ? 'فلٹرز یا تلاش کے الفاظ تبدیل کر کے دوبارہ کوشش کریں۔' : 'Try adjusting the active filters or search terms.')}
             </p>
             <button
               onClick={() => {

@@ -89,15 +89,27 @@ export default function CategoryTiles({
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-10 mb-10">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 block mb-3">
-              CHETNA DIGITAL ARCHIVE • TAXONOMY OVERVIEW
+              {lang === 'hi'
+                ? 'चेतना डिजिटल पुस्तकालय • संग्रह अवलोकन'
+                : lang === 'ur'
+                ? 'چیتنا ڈیجیٹل کتب خانہ • مجموعات کا جائزہ'
+                : 'CHETNA DIGITAL LIBRARY • EXPLORE COLLECTIONS'}
             </span>
             <h1 className="text-4xl md:text-7xl font-bold tracking-[-0.04em] text-white font-sans">
-              Open Repository.
+              {lang === 'hi'
+                ? 'पुस्तकालय संग्रह।'
+                : lang === 'ur'
+                ? 'کتب خانہ مجموعہ۔'
+                : 'Explore Collections.'}
             </h1>
           </div>
           <div className="mt-4 md:mt-0 max-w-sm">
             <p className="font-mono text-xs text-zinc-400 leading-relaxed uppercase tracking-wider">
-              Preserving vernacular literature, progressive discourse & digitized manuscripts across 9 core branches.
+              {lang === 'hi'
+                ? 'भारतीय उपमहाद्वीप के कालजयी साहित्य, विचार और दुर्लभ पांडुलिपियों का संरक्षित डिजिटल संग्रह।'
+                : lang === 'ur'
+                ? 'کلاسیکی ادب، فکری مضامین اور نایاب مخطوطات کا محفوظ ڈیجیٹل کتب خانہ۔'
+                : 'Preserving timeless literature, poetry & progressive thought across 9 curated collections.'}
             </p>
           </div>
         </div>
@@ -126,7 +138,7 @@ export default function CategoryTiles({
               >
                 <ArchiveCard
                   title={localizedTitle}
-                  category={cat.name_en || 'Taxonomy'}
+                  category={cat.name_en || 'Collection'}
                   workCount={cat.count || 0}
                   slug={cat.id}
                   colSpan="w-full"
@@ -155,7 +167,7 @@ export default function CategoryTiles({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-mono uppercase tracking-[0.2em] text-zinc-400 flex items-center gap-1.5">
-                  <span>{t.hierarchyLayers?.subGenresAndSections || 'SUB-DIVISIONS'}</span>
+                  <span>{t.hierarchyLayers?.subGenresAndSections || (lang === 'hi' ? 'उप-विषय व श्रेणियाँ' : lang === 'ur' ? 'موضوعات و اصناف' : 'THEMES & TOPICS')}</span>
                   <ChevronRight className="w-3.5 h-3.5 text-zinc-500" />
                   <span className="text-white font-semibold">
                     {activeCategoryObj['name_' + lang] || activeCategoryObj.name_hi || activeCategoryObj.name_en}
@@ -171,7 +183,7 @@ export default function CategoryTiles({
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] hover:bg-white/[0.1] text-zinc-300 text-xs font-mono uppercase tracking-wider transition cursor-pointer border border-white/[0.08]"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{t.admin?.createSubGenre || '+ NEW SUB-GENRE'}</span>
+                  <span>{t.admin?.createSubGenre || '+ ADD THEME'}</span>
                 </button>
               </AdminOnly>
             </div>

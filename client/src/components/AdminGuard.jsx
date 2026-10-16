@@ -124,10 +124,10 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-stone-900 font-rekhta-serif">
-              {ag.gateTitle || 'Chetna RBAC Security Gate'}
+              {ag.gateTitle || 'Chetna Library Administration'}
             </h3>
             <p className="text-xs text-stone-500">
-              {ag.gateSubtitle || 'Role-Based Access Control'}
+              {ag.gateSubtitle || 'Sign in to manage books and collections'}
             </p>
           </div>
         </div>
@@ -139,7 +139,7 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
               <div>
                 <p className="font-bold">{ag.currentAdmin || 'You are currently in Admin Mode'}</p>
                 <p className="text-amber-800/80 mt-0.5">
-                  {ag.currentAdminDesc || 'You have full CRUD access over taxonomy, categories, genres, sub-genres, and book records.'}
+                  {ag.currentAdminDesc || 'You can manage and edit categories, collections, themes, and book records.'}
                 </p>
               </div>
             </div>
@@ -173,7 +173,7 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
                 {ag.enterPasscodeTitle || 'Enter Master Admin Passcode'}
               </p>
               <p className="text-[11.5px] text-stone-500 leading-relaxed">
-                {ag.enterPasscodeDesc || 'Authorized administrators can enter their admin passcode to reveal taxonomy management tools.'}
+                {ag.enterPasscodeDesc || 'Authorized administrators can enter their admin passcode to manage the library catalog.'}
               </p>
             </div>
 
@@ -226,7 +226,7 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
 
         <div className="mt-5 pt-3.5 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
           <span>{ag.shortcut ? `${ag.shortcut}` : 'Ctrl + Shift + A'}</span>
-          <span className="text-[10px]">Chetna RBAC Engine</span>
+          <span className="text-[10px]">Chetna Security</span>
         </div>
       </div>
     </div>

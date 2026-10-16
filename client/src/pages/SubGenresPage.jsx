@@ -241,11 +241,11 @@ export default function SubGenresPage({
           </AdminOnly>
         )}
 
-        {/* Horizontal Quick-Filter Pills for Sub-genres */}
+        {/* Horizontal Quick-Filter Pills for Themes */}
         {subgenres.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mr-1">
-              INDEX:
+              {lang === 'hi' ? 'विषय:' : lang === 'ur' ? 'موضوعات:' : 'JUMP TO:'}
             </span>
             {subgenres.map((sg) => {
               const sgTitle = sg[`name_${lang}`] || sg.name_hi || sg.name_en;
@@ -264,17 +264,17 @@ export default function SubGenresPage({
         )}
       </div>
 
-      {/* Layer 3 Sub-Genres: Asymmetrical Bento Grid */}
+      {/* Themes & Topics Bento Grid */}
       <div className="mt-10">
         <div className="flex items-center justify-between mb-6 pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 bg-white rounded-full inline-block" />
             <h2 className="text-xs font-mono uppercase tracking-[0.25em] text-white">
-              {hl.layer3Heading || 'SUB-GENRES SPECTRUM'} — {genreTitle}
+              {hl.layer3Heading || (lang === 'hi' ? 'प्रमुख विषय व श्रेणियाँ' : lang === 'ur' ? 'اہم موضوعات' : 'THEMES & TOPICS IN')} {genreTitle}
             </h2>
           </div>
           <span className="text-xs text-zinc-500 font-mono hidden sm:inline tracking-wider">
-            [{subgenres.length} SUB-DIVISIONS]
+            [{subgenres.length} {lang === 'hi' ? 'विषय' : lang === 'ur' ? 'موضوعات' : 'THEMES'}]
           </span>
         </div>
 
@@ -301,7 +301,7 @@ export default function SubGenresPage({
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
-                        {sg.count || 0} {t.sections?.worksUnit || 'TREATISES'}
+                        {sg.count || 0} {t.sections?.worksUnit || (lang === 'hi' ? 'रचनाएँ' : lang === 'ur' ? 'کتب' : 'BOOKS')}
                       </span>
 
                       {/* Admin Only: Edit & Delete */}
@@ -333,7 +333,7 @@ export default function SubGenresPage({
                   </div>
 
                   <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white">
-                    <span>{hl.layer3Browse || 'Browse Catalog'}</span>
+                    <span>{hl.layer3Browse || (lang === 'hi' ? 'पुस्तकें देखें →' : lang === 'ur' ? 'کتب دیکھیں ←' : 'Browse Books →')}</span>
                     <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.div>
@@ -343,14 +343,14 @@ export default function SubGenresPage({
         ) : (
           <div className="py-14 text-center bg-[#141414] rounded-[24px] border border-white/[0.08] p-8 max-w-md mx-auto shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
             <FolderOpen className="w-8 h-8 text-zinc-600 mx-auto mb-2" />
-            <p className="text-sm font-bold text-white font-sans">{hl.noWorksFound || 'No sub-genres cataloged yet'}</p>
-            <p className="text-xs text-zinc-400 mt-1 mb-4 font-sans">{hl.noWorksDesc || 'Add a sub-genre to catalog treatises in detail.'}</p>
+            <p className="text-sm font-bold text-white font-sans">{hl.noWorksFound || 'No themes added yet'}</p>
+            <p className="text-xs text-zinc-400 mt-1 mb-4 font-sans">{hl.noWorksDesc || 'This collection has no sub-sections yet.'}</p>
             <AdminOnly>
               <button
                 onClick={() => setShowCreateSub(true)}
                 className="px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs cursor-pointer hover:bg-zinc-200"
               >
-                {hl.addSubgenreBtn || '+ Add Sub-Genre'}
+                {hl.addSubgenreBtn || '+ Add Theme'}
               </button>
             </AdminOnly>
           </div>
@@ -364,11 +364,11 @@ export default function SubGenresPage({
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block"></span>
               <h2 className="text-sm font-mono uppercase tracking-wider text-[#111111]">
-                {hl.layer2WorksHeading || 'Treatises in'} {genreTitle}
+                {hl.layer2WorksHeading || 'Books in'} {genreTitle}
               </h2>
             </div>
             <span className="text-xs font-mono text-zinc-400">
-              {genreBooks.length} works
+              {genreBooks.length} {t.sections?.worksUnit || 'books'}
             </span>
           </div>
 

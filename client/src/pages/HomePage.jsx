@@ -86,8 +86,8 @@ export default function HomePage({
         onSelectBook={onSelectBook}
       />
 
-      {/* 2. Taxonomy Overview: 9 Uniform, Neat & Tidy Tiles */}
-      <div id="taxonomy-overview" data-section-id="taxonomy-overview">
+      {/* 2. Collections Overview: 9 Uniform, Neat & Tidy Tiles */}
+      <div id="collections-overview" data-section-id="collections-overview">
         <CategoryTiles
           t={t}
           lang={lang}
@@ -105,11 +105,11 @@ export default function HomePage({
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_10px_rgba(245,158,11,0.6)]" />
               <span className="font-mono text-xs uppercase tracking-[0.25em] text-zinc-200 font-bold">
-                CURATED ARCHIVAL STREAMS • CONTINUOUS FLOW
+                {lang === 'hi' ? 'विशेष संग्रह • समस्त श्रेणियाँ' : lang === 'ur' ? 'نمایاں مجموعات • تمام اصناف' : 'FEATURED COLLECTIONS • BROWSE ALL GENRES'}
               </span>
             </div>
             <span className="font-mono text-xs text-zinc-400">
-              [CONTINUE SCROLLING TO PROGRESS THROUGH TAXONOMY SECTIONS]
+              {lang === 'hi' ? '[सभी श्रेणियों को देखने हेतु नीचे स्क्रॉल करें]' : lang === 'ur' ? '[تمام اصناف دیکھنے کے لیے نیچے اسکرول کریں]' : '[SCROLL TO EXPLORE ALL COLLECTIONS]'}
             </span>
           </div>
 
@@ -299,10 +299,10 @@ export default function HomePage({
       <main id="catalog" className="flex-1 pt-8 border-t border-white/[0.08]">
         <div className="mb-6">
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-zinc-400 block mb-1">
-            COMPREHENSIVE REPOSITORY
+            {lang === 'hi' ? 'समग्र पुस्तकालय सूची' : lang === 'ur' ? 'مکمل فہرست کتب خانہ' : 'COMPLETE LIBRARY CATALOG'}
           </span>
           <h2 className="text-2xl sm:text-3xl font-bold text-white font-sans">
-            {searchQuery ? `Search Results for "${searchQuery}"` : 'All Archival Works'}
+            {searchQuery ? `${lang === 'hi' ? 'खोज परिणाम' : lang === 'ur' ? 'نتائج تلاش' : 'Search Results for'} "${searchQuery}"` : (lang === 'hi' ? 'समस्त पुस्तकें व कृतियाँ' : lang === 'ur' ? 'تمام کتب و شاہکار' : 'All Books & Works')}
           </h2>
         </div>
 

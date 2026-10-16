@@ -351,7 +351,7 @@ export default function HeroSection({
                   </span>
                 </span>
                 <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full border border-white/[0.08]">
-                  {liveResults.length} {t.sections.worksUnit || 'treatises'}
+                  {liveResults.length} {t.sections.worksUnit || (lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'books')}
                 </span>
               </div>
 
