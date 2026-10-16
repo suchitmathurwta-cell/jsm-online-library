@@ -79,32 +79,32 @@ export default function StridaSidebar({
           Open Repository for Cultural Conscience, Literature & Human Development.
         </p>
 
-        {/* 1. Restored Language Selector Dropdown (HIN, ENG, URD) */}
+        {/* 1. Compact Language Selector Dropdown (HIN, ENG, URD) */}
         <div ref={langDropdownRef} className="relative z-50">
           <button
             type="button"
             onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-mono font-medium text-zinc-200 bg-white/[0.05] hover:bg-white/[0.09] rounded-xl border border-white/[0.12] hover:border-white/25 transition cursor-pointer select-none"
+            className="inline-flex items-center gap-2 px-2.5 py-1 text-[11px] font-mono font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white rounded-lg border border-white/[0.1] hover:border-white/20 transition cursor-pointer select-none"
             title="Select Language / भाषा चुनें"
           >
-            <div className="flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-amber-400" />
+            <div className="flex items-center gap-1.5">
+              <Globe className="w-3 h-3 text-amber-400" />
               <span className="text-zinc-400 text-[10px] uppercase tracking-wider font-mono font-bold">LANG:</span>
-              <span className="font-bold text-white tracking-wide">
+              <span className="font-semibold text-white tracking-wide">
                 {getLangLabel()}
               </span>
             </div>
-            <span className="text-[8px] text-zinc-400">▼</span>
+            <span className="text-[7px] text-zinc-400 ml-0.5">▼</span>
           </button>
 
           <AnimatePresence>
             {langDropdownOpen && (
               <motion.div
-                initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                initial={{ opacity: 0, y: -4, scale: 0.98 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                exit={{ opacity: 0, y: -4, scale: 0.98 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 right-0 mt-2 bg-[#141416]/98 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] border border-white/[0.15] p-1.5 text-xs z-50 text-white space-y-1"
+                className="absolute left-0 mt-1.5 w-48 bg-[#141416]/98 backdrop-blur-2xl rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] border border-white/[0.15] p-1 text-[11px] z-50 text-white space-y-0.5"
               >
                 <button
                   type="button"
@@ -112,15 +112,15 @@ export default function StridaSidebar({
                     setLang('hi');
                     setLangDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
+                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
                     lang === 'hi' ? 'font-bold text-white bg-amber-500/20 border border-amber-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
                     <span className="font-sans font-medium">हिंदी (HIN)</span>
                   </span>
-                  {lang === 'hi' && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                  {lang === 'hi' && <Check className="w-3 h-3 text-amber-400" />}
                 </button>
                 <button
                   type="button"
@@ -128,15 +128,15 @@ export default function StridaSidebar({
                     setLang('en');
                     setLangDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-xl ${
+                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
                     lang === 'en' ? 'font-bold text-white bg-blue-500/20 border border-blue-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                    <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
                     <span className="font-sans font-medium">English (ENG)</span>
                   </span>
-                  {lang === 'en' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                  {lang === 'en' && <Check className="w-3 h-3 text-blue-400" />}
                 </button>
                 <button
                   type="button"
@@ -144,15 +144,15 @@ export default function StridaSidebar({
                     setLang('ur');
                     setLangDropdownOpen(false);
                   }}
-                  className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-xl ${
+                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-lg ${
                     lang === 'ur' ? 'font-bold text-white bg-emerald-500/20 border border-emerald-500/30' : 'text-zinc-300'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                    <span className="font-urdu font-medium text-sm">اردو (URD)</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                    <span className="font-urdu font-medium text-xs">اردو (URD)</span>
                   </span>
-                  {lang === 'ur' && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                  {lang === 'ur' && <Check className="w-3 h-3 text-emerald-400" />}
                 </button>
               </motion.div>
             )}

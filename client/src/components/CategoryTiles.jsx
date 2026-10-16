@@ -110,15 +110,13 @@ export default function CategoryTiles({
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {categories.map((cat, idx) => {
-            const titleEn = cat.name_en || cat.name_hi;
-            const vernacularTitle =
+            // Language uniformity: strictly one language at a time matching active selection
+            const localizedTitle =
               lang === 'hi'
-                ? cat.name_hi
+                ? (cat.name_hi || cat.name_en)
                 : lang === 'ur'
-                ? cat.name_ur
-                : cat.name_hi !== cat.name_en
-                ? cat.name_hi
-                : undefined;
+                ? (cat.name_ur || cat.name_en)
+                : (cat.name_en || cat.name_hi);
 
             return (
               <motion.div
@@ -127,8 +125,7 @@ export default function CategoryTiles({
                 className="w-full"
               >
                 <ArchiveCard
-                  title={titleEn}
-                  vernacularTitle={vernacularTitle}
+                  title={localizedTitle}
                   category={cat.name_en || 'Taxonomy'}
                   workCount={cat.count || 0}
                   slug={cat.id}
@@ -136,6 +133,7 @@ export default function CategoryTiles({
                   aspectRatio="aspect-[16/11]"
                   coverImage={cat.cover_url}
                   indexNumber={idx}
+                  lang={lang}
                   onClick={() => {
                     if (onSelectCategory) {
                       onSelectCategory(cat.id);

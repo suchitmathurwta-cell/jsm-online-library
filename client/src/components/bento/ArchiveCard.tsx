@@ -7,13 +7,14 @@ import { getCategoryColor } from '../../data/categoryColors';
 export interface ArchiveCardProps {
   title: string;
   vernacularTitle?: string;
-  category: string;
-  workCount: number;
-  slug: string;
+  category?: string;
+  workCount?: number;
+  slug?: string;
   colSpan?: string;
   aspectRatio?: string;
   coverImage?: string;
   indexNumber?: string | number;
+  lang?: string;
   onClick?: () => void;
   // Backward compatibility alias props
   titleEn?: string;
@@ -27,7 +28,6 @@ export interface ArchiveCardProps {
 
 export function ArchiveCard({
   title,
-  vernacularTitle,
   category,
   workCount = 0,
   slug,
@@ -35,6 +35,7 @@ export function ArchiveCard({
   aspectRatio = 'aspect-[16/11]',
   coverImage,
   indexNumber,
+  lang = 'en',
   onClick,
   titleEn,
   id,
@@ -49,21 +50,12 @@ export function ArchiveCard({
   const resolvedCover = coverImage || graphic?.image || graphic?.remoteFallback;
   const gradientClass = graphic?.accentGradient || color.gradient || 'from-zinc-800/20 via-zinc-900/60 to-black';
 
-  const formattedIndex =
-    indexNumber !== undefined
-      ? typeof indexNumber === 'number'
-        ? indexNumber < 9
-          ? `0${indexNumber + 1}`
-          : `${indexNumber + 1}`
-        : String(indexNumber)
-      : null;
-
   return (
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: 'spring', stiffness: 350, damping: 25 }}
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/25 transition-all duration-300 flex flex-col justify-between ${colSpan} ${aspectRatio}`}
+      className={`group relative overflow-hidden rounded-[24px] bg-[#141414] border border-white/[0.08] hover:border-white/25 transition-all duration-300 flex flex-col justify-end ${colSpan} ${aspectRatio}`}
       style={{
         boxShadow: `0 8px 30px rgba(0, 0, 0, 0.6)`,
       }}
@@ -89,47 +81,22 @@ export function ArchiveCard({
       {/* Archival subtle geometric/radial sheen */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.06),transparent_70%)] z-15 pointer-events-none" />
 
-      {/* Top Floating Badges */}
-      <div className="relative z-20 flex items-center justify-between p-6">
-        <div className="flex items-center gap-2">
-          {formattedIndex && (
-            <span
-              className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full border backdrop-blur-md"
-              style={{
-                color: color.hex,
-                borderColor: `${color.hex}40`,
-                backgroundColor: `${color.hex}18`,
-              }}
-            >
-              {formattedIndex}
-            </span>
-          )}
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] px-3 py-1 rounded-full bg-white/[0.08] backdrop-blur-md border border-white/[0.12] text-zinc-200">
-            {category}
-          </span>
-        </div>
-        <span className="font-mono text-[10px] tracking-widest text-zinc-300 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/[0.08]">
-          [{workCount} WORKS]
-        </span>
-      </div>
-
-      {/* Bottom Pinned Typography */}
-      <div className="relative z-2 p-6 pt-0">
-        {graphic?.motif && (
+      {/* Bottom Pinned Typography - Clean Single-Language Header */}
+      <div className="relative z-20 p-6 sm:p-7">
+        {lang === 'en' && graphic?.motif && (
           <p
-            className="font-mono text-[9px] uppercase tracking-[0.25em] mb-1 font-semibold"
+            className="font-mono text-[9px] uppercase tracking-[0.25em] mb-1.5 font-semibold"
             style={{ color: color.hex }}
           >
             {graphic.motif}
           </p>
         )}
-        {vernacularTitle && (
-          <p className="font-sans text-sm text-zinc-300 mb-1 tracking-normal font-medium">
-            {vernacularTitle}
-          </p>
-        )}
         <div className="flex items-end justify-between gap-4">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.03em] text-white group-hover:text-zinc-100 transition-colors font-sans truncate">
+          <h2
+            className={`text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.03em] text-white group-hover:text-zinc-100 transition-colors ${
+              lang === 'ur' ? 'font-urdu' : 'font-sans'
+            } truncate`}
+          >
             {displayTitle}
           </h2>
           <span
