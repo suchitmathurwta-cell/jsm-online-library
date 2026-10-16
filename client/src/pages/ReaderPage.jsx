@@ -5,7 +5,7 @@ import HikmahPdfReader from '../components/HikmahPdfReader';
 import { getBookById, incrementViews, incrementDownloads } from '../services/supabaseApi';
 import { translations } from '../locales/translations';
 
-export default function ReaderPage({ lang, t }) {
+export default function ReaderPage({ lang, t, onDownloadBook }) {
   const { bookId } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
@@ -77,7 +77,7 @@ export default function ReaderPage({ lang, t }) {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-[#18181b] text-white flex flex-col items-center justify-center gap-3">
+      <div className="fixed inset-0 bg-[#0E0E0E] text-white flex flex-col items-center justify-center gap-3">
         <BookOpen className="w-10 h-10 text-white animate-pulse" />
         <p className="text-xs font-mono text-zinc-400">{tr.reader?.openingReader || 'Opening reader...'}</p>
         <Loader2 className="w-4 h-4 animate-spin text-zinc-500" />
@@ -87,7 +87,7 @@ export default function ReaderPage({ lang, t }) {
 
   if (error || !book) {
     return (
-      <div className="fixed inset-0 bg-[#18181b] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
+      <div className="fixed inset-0 bg-[#0E0E0E] text-white flex flex-col items-center justify-center p-6 text-center font-sans">
         <h2 className="text-lg font-bold mb-2">
           {currentLang === 'hi' ? 'रचना उपलब्ध नहीं है' : (currentLang === 'ur' ? 'کتاب دستیاب نہیں ہے' : 'Treatise Not Found')}
         </h2>
@@ -113,7 +113,7 @@ export default function ReaderPage({ lang, t }) {
     <HikmahPdfReader
       book={book}
       onClose={handleClose}
-      onDownloadBook={handleDownload}
+      onDownloadBook={onDownloadBook || handleDownload}
       lang={currentLang}
       t={tr}
     />

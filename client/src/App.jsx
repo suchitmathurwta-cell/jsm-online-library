@@ -270,6 +270,29 @@ function MainApp() {
     }
   };
 
+  const isReaderRoute = location.pathname.startsWith('/reader/') || location.pathname.startsWith('/read/');
+
+  if (isReaderRoute) {
+    return (
+      <div dir={isRtl ? 'rtl' : 'ltr'} className={`min-h-screen bg-[#0E0E0E] text-[#FAFAFA] font-sans ${isRtl ? 'font-urdu' : ''}`}>
+        <Routes>
+          <Route
+            path="/reader/:bookId"
+            element={
+              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+            }
+          />
+          <Route
+            path="/read/:bookId"
+            element={
+              <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+            }
+          />
+        </Routes>
+      </div>
+    );
+  }
+
   return (
     <div
       dir={isRtl ? 'rtl' : 'ltr'}
@@ -379,13 +402,13 @@ function MainApp() {
             <Route
               path="/reader/:bookId"
               element={
-                <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+                <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
               }
             />
             <Route
               path="/read/:bookId"
               element={
-                <DedicatedReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
+                <ReaderPage lang={lang} t={t} onDownloadBook={handleDownloadBook} />
               }
             />
           </Routes>

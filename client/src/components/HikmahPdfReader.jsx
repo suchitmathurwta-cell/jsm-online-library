@@ -152,8 +152,9 @@ export default function HikmahPdfReader({
 
     const loadingTask = pdfjsLib.getDocument({
       url: book.file_url,
-      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.0.379/cmaps/',
-      cMapPacked: true
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/cmaps/',
+      cMapPacked: true,
+      standardFontDataUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.3.289/standard_fonts/',
     });
 
     loadingTask.promise.then(
@@ -397,6 +398,13 @@ export default function HikmahPdfReader({
             >
               {tr.reader.dualPage}
             </button>
+            <button
+              onClick={() => setViewMode('native')}
+              title="Browser Native Viewer"
+              className={`px-2.5 py-1 text-xs font-semibold rounded cursor-pointer ${viewMode === 'native' ? 'bg-white text-stone-900 shadow-2xs' : 'text-stone-300 hover:text-white'}`}
+            >
+              Native
+            </button>
           </div>
 
           {/* Themes */}
@@ -581,6 +589,36 @@ export default function HikmahPdfReader({
                 </div>
               )}
 
+            </div>
+          )}
+
+          {/* 3. BROWSER NATIVE EMBEDDED IFRAME VIEWER */}
+          {(!isLoading && viewMode === 'native' && book?.file_url) && (
+            <div className="w-full h-full flex-1 min-h-[84vh] max-w-6xl my-2 flex flex-col">
+              <iframe
+                src={book.file_url}
+                title={title}
+                className="w-full h-full min-h-[84vh] border border-white/10 rounded-xl shadow-2xl bg-black"
+              />
+            </div>
+          )}
+
+          {/* Fallback if Canvas rendering did not initialize */}
+          {!isLoading && !pdfDoc && viewMode !== 'native' && (
+            <div className="flex flex-col items-center justify-center gap-4 text-center my-auto p-8 max-w-md bg-black/40 rounded-2xl border border-white/10">
+              <BookOpen className="w-12 h-12 text-zinc-400" />
+              <p className="text-sm font-semibold text-white">Direct Canvas Loading Notice</p>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                If the document is large or takes time to process, you can switch to the native viewer.
+              </p>
+              {book?.file_url && (
+                <button
+                  onClick={() => setViewMode('native')}
+                  className="px-5 py-2.5 bg-white text-black font-mono text-xs uppercase font-semibold rounded-full hover:bg-zinc-200 transition cursor-pointer shadow-md"
+                >
+                  Switch to Native Viewer
+                </button>
+              )}
             </div>
           )}
 
