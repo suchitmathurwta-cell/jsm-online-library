@@ -258,17 +258,10 @@ export default function HomePage({
 
                             <div className="mt-5 pt-3.5 border-t border-white/[0.08] flex items-center justify-end">
                               <span
-                                className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-transform group-hover:translate-x-1"
+                                className="inline-flex items-center justify-center transition-transform group-hover:translate-x-1"
                                 style={{ color: color.hex }}
                               >
-                                <span>
-                                  {lang === 'hi'
-                                    ? 'उप-विधाएँ देखें'
-                                    : lang === 'ur'
-                                    ? 'ذیلی اصناف دیکھیں'
-                                    : 'EXPLORE SUB-GENRES'}
-                                </span>
-                                <ArrowRight className="w-3.5 h-3.5" />
+                                <ArrowRight className="w-4 h-4" />
                               </span>
                             </div>
                           </div>

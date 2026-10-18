@@ -453,10 +453,9 @@ export default function CategoryGenresPage({
 
                       <div className="mt-6 pt-4 border-t border-white/[0.08] flex items-center justify-end">
                         <span
-                          className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-all group-hover:translate-x-1.5"
+                          className="inline-flex items-center justify-center transition-all group-hover:translate-x-1.5"
                           style={{ color: color.hex }}
                         >
-                          <span>{hl.layer2Explore || (lang === 'hi' ? 'विषय देखें →' : lang === 'ur' ? 'ذیلی اصناف دیکھیں ←' : 'BROWSE THEMES →')}</span>
                           <ArrowRight className="w-4 h-4" />
                         </span>
                       </div>
