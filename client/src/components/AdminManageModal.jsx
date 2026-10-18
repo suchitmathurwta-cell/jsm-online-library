@@ -72,6 +72,7 @@ export default function AdminManageModal({
   const [addingUnder, setAddingUnder] = useState(null); // { type: 'category'|'genre'|'subgenre', catId, genreId }
   const [newItemName, setNewItemName] = useState('');
   const [previewHi, setPreviewHi] = useState('');
+  const [previewEn, setPreviewEn] = useState('');
   const [previewUr, setPreviewUr] = useState('');
   const [translatingPreview, setTranslatingPreview] = useState(false);
 
@@ -143,6 +144,7 @@ export default function AdminManageModal({
   useEffect(() => {
     if (!newItemName.trim()) {
       setPreviewHi('');
+      setPreviewEn('');
       setPreviewUr('');
       return;
     }
@@ -151,22 +153,25 @@ export default function AdminManageModal({
       try {
         const res = await transliterateAll(newItemName.trim());
         setPreviewHi(res.hi || '');
+        setPreviewEn(res.en || '');
         setPreviewUr(res.ur || '');
       } catch (e) {
         console.warn('Transliteration preview notice:', e);
       } finally {
         setTranslatingPreview(false);
       }
-    }, 250);
+    }, 200);
     return () => clearTimeout(timer);
   }, [newItemName]);
 
-  const handleAutoTranslateEdit = async () => {
-    if (!editNameEn.trim()) return;
+  const handleAutoTranslateEdit = async (sourceText) => {
+    const seed = (sourceText || editNameEn || editNameHi || editNameUr || '').trim();
+    if (!seed) return;
     setIsTranslatingEdit(true);
     try {
-      const res = await transliterateAll(editNameEn.trim());
+      const res = await transliterateAll(seed);
       if (res.hi) setEditNameHi(res.hi);
+      if (res.en) setEditNameEn(res.en);
       if (res.ur) setEditNameUr(res.ur);
     } catch (e) {
       console.warn('Auto translate edit error:', e);
@@ -180,30 +185,32 @@ export default function AdminManageModal({
     if (!editingItem) return;
     setIsSubmittingEdit(true);
     try {
-      let finalHi = editNameHi.trim();
-      let finalUr = editNameUr.trim();
-      if (!finalHi && editNameEn.trim()) {
-        const trans = await transliterateAll(editNameEn.trim());
-        finalHi = trans.hi || editNameEn.trim();
-        if (!finalUr) finalUr = trans.ur || '';
-      }
+      const trilingual = await getTrilingualNames({
+        name_hi: editNameHi.trim(),
+        name_en: editNameEn.trim(),
+        name_ur: editNameUr.trim()
+      });
+
+      const finalHi = trilingual.name_hi || editNameHi.trim();
+      const finalEn = trilingual.name_en || editNameEn.trim();
+      const finalUr = trilingual.name_ur || editNameUr.trim();
 
       if (editingItem.type === 'category') {
         await updateFormat(editingItem.data.id, {
           name_hi: finalHi,
-          name_en: editNameEn.trim(),
+          name_en: finalEn,
           name_ur: finalUr || undefined
         });
       } else if (editingItem.type === 'genre') {
         await updateGenre(editingItem.catId, editingItem.data.id, {
           name_hi: finalHi,
-          name_en: editNameEn.trim(),
+          name_en: finalEn,
           name_ur: finalUr || undefined
         });
       } else if (editingItem.type === 'subgenre') {
         await updateSubgenre(editingItem.catId, editingItem.genreId, editingItem.data.id, {
           name_hi: finalHi,
-          name_en: editNameEn.trim(),
+          name_en: finalEn,
           name_ur: finalUr || undefined
         });
       }
@@ -221,18 +228,17 @@ export default function AdminManageModal({
     e.preventDefault();
     if (!addingUnder || !newItemName.trim()) return;
     try {
+      // Get accurate trilingual names regardless of whether input is in Hindi, English, or Urdu
+      const trilingual = await getTrilingualNames(newItemName.trim());
+      const name_en = previewEn || trilingual.name_en || newItemName.trim();
+      const name_hi = previewHi || trilingual.name_hi || newItemName.trim();
+      const name_ur = previewUr || trilingual.name_ur || newItemName.trim();
+
       const generatedId =
-        newItemName
-          .trim()
+        name_en
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || `item-${Date.now()}`;
-
-      // Get accurate trilingual names
-      const trilingual = await getTrilingualNames(newItemName.trim());
-      const name_en = trilingual.name_en || newItemName.trim();
-      const name_hi = previewHi || trilingual.name_hi || newItemName.trim();
-      const name_ur = previewUr || trilingual.name_ur || newItemName.trim();
 
       if (addingUnder.type === 'category') {
         await createFormat({
@@ -267,6 +273,7 @@ export default function AdminManageModal({
       setAddingUnder(null);
       setNewItemName('');
       setPreviewHi('');
+      setPreviewEn('');
       setPreviewUr('');
       fetchLibraryData();
     } catch (err) {
@@ -401,7 +408,7 @@ export default function AdminManageModal({
                       type="text"
                       value={newItemName}
                       onChange={(e) => setNewItemName(e.target.value)}
-                      placeholder={lang === 'hi' ? 'अंग्रेज़ी में नाम लिखें (जैसे Philosophy, Science)...' : 'Type name in English (e.g. Philosophy)...'}
+                      placeholder={lang === 'hi' ? 'हिंदी, अंग्रेज़ी या उर्दू में नाम लिखें (जैसे Philosophy / दर्शन / فلسفہ)...' : 'Type name in English, Hindi, or Urdu (e.g. Philosophy / दर्शन / فلسفہ)...'}
                       className="flex-1 px-3.5 py-2 text-xs bg-white border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium"
                       autoFocus
                     />
@@ -416,10 +423,13 @@ export default function AdminManageModal({
                     <div className="p-2.5 bg-white/90 rounded-xl border border-blue-100 text-[11.5px] text-stone-700 flex flex-wrap items-center gap-x-4 gap-y-1">
                       <span className="font-semibold text-blue-700 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
-                        <span>{lang === 'hi' ? 'स्वतः देवनागरी व उर्दू अनुवाद:' : 'Auto translation:'}</span>
+                        <span>{lang === 'hi' ? 'स्वतः त्रिभाषी अनुवाद:' : 'Auto Trilingual:'}</span>
                       </span>
                       <span>
                         <strong>हिंदी:</strong> {translatingPreview ? 'अनुवाद जारी...' : (previewHi || '...')}
+                      </span>
+                      <span>
+                        <strong>English:</strong> {translatingPreview ? '...' : (previewEn || '...')}
                       </span>
                       <span>
                         <strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}
@@ -495,7 +505,7 @@ export default function AdminManageModal({
                                   type="text"
                                   value={newItemName}
                                   onChange={(e) => setNewItemName(e.target.value)}
-                                  placeholder={lang === 'hi' ? 'नई विधा का नाम (जैसे Fiction, Essays)...' : (lang === 'ur' ? 'نئی صنف کا نام...' : 'New genre title (e.g. Fiction)...')}
+                                  placeholder={lang === 'hi' ? 'नई विधा का नाम हिंदी, अंग्रेज़ी या उर्दू में लिखें...' : (lang === 'ur' ? 'نئی صنف کا نام...' : 'New genre title in English, Hindi, or Urdu...')}
                                   className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 outline-hidden focus:border-[#1d4ed8]"
                                   autoFocus
                                 />
@@ -510,9 +520,10 @@ export default function AdminManageModal({
                                 <div className="p-2 bg-white/80 rounded-lg border border-blue-100 text-[11px] text-stone-700 flex flex-wrap items-center gap-x-3 gap-y-1">
                                   <span className="font-semibold text-blue-700 flex items-center gap-1">
                                     <Sparkles className="w-2.5 h-2.5" />
-                                    <span>{lang === 'hi' ? 'स्वतः अनुवाद:' : 'Auto translation:'}</span>
+                                    <span>{lang === 'hi' ? 'स्वतः त्रिभाषी अनुवाद:' : 'Auto Trilingual:'}</span>
                                   </span>
                                   <span><strong>हिंदी:</strong> {translatingPreview ? '...' : (previewHi || '...')}</span>
+                                  <span><strong>English:</strong> {translatingPreview ? '...' : (previewEn || '...')}</span>
                                   <span><strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}</span>
                                 </div>
                               )}
@@ -575,7 +586,7 @@ export default function AdminManageModal({
                                               type="text"
                                               value={newItemName}
                                               onChange={(e) => setNewItemName(e.target.value)}
-                                              placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम (जैसे Ghazals, Nazm)...' : (lang === 'ur' ? 'نئی ذیلی صنف...' : 'New sub-genre name...')}
+                                              placeholder={lang === 'hi' ? 'नए विषय का नाम हिंदी, अंग्रेज़ी या उर्दू में लिखें...' : (lang === 'ur' ? 'نئی ذیلی صنف...' : 'New sub-genre in English, Hindi, or Urdu...')}
                                               className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 outline-hidden focus:border-[#1d4ed8]"
                                               autoFocus
                                             />
@@ -590,9 +601,10 @@ export default function AdminManageModal({
                                             <div className="p-2 bg-white/80 rounded-lg border border-amber-200 text-[11px] text-stone-700 flex flex-wrap items-center gap-x-3 gap-y-1">
                                               <span className="font-semibold text-amber-800 flex items-center gap-1">
                                                 <Sparkles className="w-2.5 h-2.5" />
-                                                <span>{lang === 'hi' ? 'स्वतः अनुवाद:' : 'Auto translation:'}</span>
+                                                <span>{lang === 'hi' ? 'स्वतः त्रिभाषी अनुवाद:' : 'Auto Trilingual:'}</span>
                                               </span>
                                               <span><strong>हिंदी:</strong> {translatingPreview ? '...' : (previewHi || '...')}</span>
+                                              <span><strong>English:</strong> {translatingPreview ? '...' : (previewEn || '...')}</span>
                                               <span><strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}</span>
                                             </div>
                                           )}

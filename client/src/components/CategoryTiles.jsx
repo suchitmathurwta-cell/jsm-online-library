@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ChevronRight } from 'lucide-react';
+import { Plus, ChevronRight, Sparkles } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { createSubgenre } from '../services/supabaseApi';
-import { getTrilingualNames } from '../services/transliterationService';
+import { getTrilingualNames, transliterateAll } from '../services/transliterationService';
 import ArchiveCard from './bento/ArchiveCard';
 
 const containerVariants = {
@@ -43,11 +43,26 @@ export default function CategoryTiles({
 }) {
   const [showSubGenrePrompt, setShowSubGenrePrompt] = useState(false);
   const [newSubName, setNewSubName] = useState('');
+  const [previewTrilingual, setPreviewTrilingual] = useState({ hi: '', en: '', ur: '' });
   const [isSubmittingSub, setIsSubmittingSub] = useState(false);
 
   // Active Category Object
   const activeCategoryObj = categories.find((c) => c.id === selectedCategory);
   const activeSubGenres = activeCategoryObj?.subgenres || [];
+
+  useEffect(() => {
+    if (!newSubName.trim()) {
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await transliterateAll(newSubName.trim());
+        setPreviewTrilingual(res);
+      } catch (e) {}
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [newSubName]);
 
   const handleCreateSubGenreInline = async (e) => {
     e.preventDefault();
@@ -57,25 +72,25 @@ export default function CategoryTiles({
       if (onCreateSubGenreClick) {
         await onCreateSubGenreClick(newSubName.trim(), selectedCategory);
       } else {
+        const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
         const subId =
-          newSubName
-            .trim()
+          (name_en || newSubName.trim())
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '') || 'sg-' + Date.now();
         const firstGenreId = activeCategoryObj?.genres?.[0]?.id || 'general';
-        const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
         await createSubgenre({
           id: subId,
           category_id: selectedCategory,
           genre_id: firstGenreId,
-          name_hi: name_hi || newSubName.trim(),
-          name_en: name_en || newSubName.trim(),
-          name_ur: name_ur || undefined
+          name_hi: previewTrilingual.hi || name_hi || newSubName.trim(),
+          name_en: previewTrilingual.en || name_en || newSubName.trim(),
+          name_ur: previewTrilingual.ur || name_ur || newSubName.trim()
         });
         if (onRefreshCategories) await onRefreshCategories();
       }
       setNewSubName('');
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
       setShowSubGenrePrompt(false);
     } catch (err) {
       console.error('Error creating subgenre:', err);
@@ -93,9 +108,9 @@ export default function CategoryTiles({
           <div>
             <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 block mb-3">
               {lang === 'hi'
-                ? 'जेएसएम ऑनलाइन लाइब्रेरी • संग्रह अवलोकन'
+                ? 'जसम ऑनलाइन लाइब्रेरी • संग्रह अवलोकन'
                 : lang === 'ur'
-                ? 'جے ایس ایم آن لائن لائبریری • مجموعات کا جائزہ'
+                ? 'جسم آن لائن لائبریری • مجموعات کا جائزہ'
                 : 'JSM ONLINE LIBRARY • EXPLORE COLLECTIONS'}
             </span>
             <h1 className="text-4xl md:text-7xl font-bold tracking-[-0.04em] text-white font-sans">
@@ -234,29 +249,42 @@ export default function CategoryTiles({
 
             {/* Inline Admin Form to Create New Sub-Genre */}
             {showSubGenrePrompt && (
-              <form onSubmit={handleCreateSubGenreInline} className="mt-6 p-4 rounded-2xl bg-black/50 border border-white/[0.08] flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newSubName}
-                  onChange={(e) => setNewSubName(e.target.value)}
-                  placeholder="Sub-Genre Title (e.g. Dalit Literature / Romanticism)..."
-                  className="flex-1 px-4 py-2.5 bg-[#141414] rounded-xl border border-white/[0.08] text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  disabled={isSubmittingSub || !newSubName.trim()}
-                  className="px-4 py-2.5 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl hover:bg-zinc-200 disabled:opacity-50 cursor-pointer"
-                >
-                  {isSubmittingSub ? 'ADDING...' : 'ADD'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowSubGenrePrompt(false)}
-                  className="px-3 py-2.5 bg-white/[0.06] text-zinc-400 hover:text-white text-xs font-mono uppercase rounded-xl cursor-pointer"
-                >
-                  CANCEL
-                </button>
+              <form onSubmit={handleCreateSubGenreInline} className="mt-6 p-4 rounded-2xl bg-black/50 border border-white/[0.08] space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={newSubName}
+                    onChange={(e) => setNewSubName(e.target.value)}
+                    placeholder="Type in Hindi, English, or Urdu (e.g. Dalit Literature / दलित साहित्य / دلت ادب)..."
+                    className="flex-1 px-4 py-2.5 bg-[#141414] rounded-xl border border-white/[0.08] text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-white"
+                    autoFocus
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmittingSub || !newSubName.trim()}
+                    className="px-4 py-2.5 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl hover:bg-zinc-200 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSubmittingSub ? 'ADDING...' : 'ADD'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowSubGenrePrompt(false)}
+                    className="px-3 py-2.5 bg-white/[0.06] text-zinc-400 hover:text-white text-xs font-mono uppercase rounded-xl cursor-pointer"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+                {newSubName.trim() && (
+                  <div className="px-3 py-2 rounded-xl bg-white/[0.04] border border-white/[0.08] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
+                    <span className="text-amber-400 font-mono flex items-center gap-1">
+                      <Sparkles className="w-3 h-3" />
+                      <span>AUTO TRILINGUAL:</span>
+                    </span>
+                    <span><strong>हिंदी:</strong> {previewTrilingual.hi || '...'}</span>
+                    <span><strong>English:</strong> {previewTrilingual.en || '...'}</span>
+                    <span><strong>اردو:</strong> {previewTrilingual.ur || '...'}</span>
+                  </div>
+                )}
               </form>
             )}
           </motion.div>
@@ -265,3 +293,4 @@ export default function CategoryTiles({
     </section>
   );
 }
+

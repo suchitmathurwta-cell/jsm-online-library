@@ -103,35 +103,60 @@ export const LITERARY_DICTIONARY = {
   'for': { hi: 'फॉर', en: 'For', ur: 'فار' },
   'by': { hi: 'द्वारा', en: 'By', ur: 'از' },
 
+  // Brand & Institution
+  'jsm': { hi: 'जसम', en: 'JSM', ur: 'جسم' },
+  'jan sanskriti manch': { hi: 'जन संस्कृति मंच', en: 'Jan Sanskriti Manch', ur: 'جن سنسکرتی منچ' },
+  'jsm online library': { hi: 'जसम ऑनलाइन लाइब्रेरी', en: 'JSM Online Library', ur: 'جسم آن لائن لائبریری' },
+
   // Literary Categories & Genres
   'philosophy': { hi: 'दर्शन', en: 'Philosophy', ur: 'فلسفہ' },
   'darshan': { hi: 'दर्शन', en: 'Philosophy', ur: 'فلسفہ' },
   'drama': { hi: 'नाटक', en: 'Drama', ur: 'ڈراما' },
+  'natak': { hi: 'नाटक', en: 'Drama', ur: 'ڈراما' },
   'play': { hi: 'नाटक', en: 'Play', ur: 'ڈراما' },
   'plays': { hi: 'नाटक', en: 'Plays', ur: 'ڈرامے' },
   'theatre': { hi: 'रंगमंच', en: 'Theatre', ur: 'تھیٹر' },
+  'rangmanch': { hi: 'रंगमंच', en: 'Theatre', ur: 'تھیٹر' },
+  'street theatre': { hi: 'नुक्कड़ नाटक', en: 'Street Theatre', ur: 'نکڑ ناٹک' },
+  'nukkad natak': { hi: 'नुक्कड़ नाटक', en: 'Street Theatre', ur: 'نکڑ ناٹک' },
   'fiction': { hi: 'कथा साहित्य', en: 'Fiction', ur: 'افسانوی ادب' },
-  'non-fiction': { hi: 'गैर-काल्पनिक', en: 'Non-Fiction', ur: 'غیر افسانوی' },
+  'non-fiction': { hi: 'कथेतर साहित्य', en: 'Non-Fiction', ur: 'غیر افسانوی ادب' },
+  'non fiction': { hi: 'कथेतर साहित्य', en: 'Non-Fiction', ur: 'غیر افسانوی ادب' },
   'biography': { hi: 'जीवनी', en: 'Biography', ur: 'سوانح حیات' },
+  'biographies': { hi: 'जीवनियाँ', en: 'Biographies', ur: 'سوانح حیات' },
   'jeewani': { hi: 'जीवनी', en: 'Biography', ur: 'سوانح حیات' },
   'memoir': { hi: 'संस्मरण', en: 'Memoir', ur: 'یادداشتیں' },
+  'sansmaran': { hi: 'संस्मरण', en: 'Memoirs', ur: 'یادداشتیں' },
+  'travelogue': { hi: 'यात्रा वृत्तांत', en: 'Travelogue', ur: 'سفرنامہ' },
+  'safarnama': { hi: 'सफ़रनामा', en: 'Travelogue', ur: 'سفرنامہ' },
   'short stories': { hi: 'लघु कथाएँ', en: 'Short Stories', ur: 'مختصر کہانیاں' },
   'short story': { hi: 'लघु कथा', en: 'Short Story', ur: 'مختصر کہانی' },
+  'novels': { hi: 'उपन्यास', en: 'Novels', ur: 'ناول' },
+  'upanyas': { hi: 'उपन्यास', en: 'Novel', ur: 'ناول' },
+  'kahani': { hi: 'कहानी', en: 'Story', ur: 'کہانی' },
+  'kahaniyan': { hi: 'कहानियाँ', en: 'Stories', ur: 'کہانیاں' },
+  'kavita': { hi: 'कविता', en: 'Poetry', ur: 'شاعری' },
   'folklore': { hi: 'लोक साहित्य', en: 'Folklore', ur: 'لوک ادب' },
+  'lok sahitya': { hi: 'लोक साहित्य', en: 'Folk Literature', ur: 'لوک ادب' },
   'folk tales': { hi: 'लोक कथाएँ', en: 'Folk Tales', ur: 'لوک کہانیاں' },
+  'folk songs': { hi: 'लोकगीत', en: 'Folk Songs', ur: 'لوک گیت' },
   'mythology': { hi: 'पौराणिक कथाएँ', en: 'Mythology', ur: 'دیومالا' },
   'epics': { hi: 'महाकाव्य', en: 'Epics', ur: 'رزم نامہ' },
   'children': { hi: 'बाल साहित्य', en: 'Children', ur: 'بچوں کا ادب' },
   'children literature': { hi: 'बाल साहित्य', en: 'Children Literature', ur: 'بچوں کا ادب' },
-  'baal sahitya': { hi: 'बाल साहित्य', en: 'Children Literature', ur: 'بچوں کا ادب' },
+  'baal sahitya': { hi: 'बाल साहित्य', en: 'Children Literature', ur: 'بچوں का ادب' },
   'culture': { hi: 'संस्कृति', en: 'Culture', ur: 'ثقافت' },
+  'cultural': { hi: 'सांस्कृतिक', en: 'Cultural', ur: 'ثقافتی' },
   'criticism': { hi: 'आलोचना', en: 'Criticism', ur: 'تنقید' },
+  'aalochana': { hi: 'आलोचना', en: 'Criticism', ur: 'تنقید' },
   'literary criticism': { hi: 'साहित्यिक आलोचना', en: 'Literary Criticism', ur: 'ادبی تنقید' },
   'satire': { hi: 'व्यंग्य', en: 'Satire', ur: 'طنز و مزاح' },
+  'vyangya': { hi: 'व्यंग्य', en: 'Satire', ur: 'طنز و مزاح' },
   'humor': { hi: 'हास्य', en: 'Humor', ur: 'مزاح' },
   'science': { hi: 'विज्ञान', en: 'Science', ur: 'سائنس' },
   'politics': { hi: 'राजनीति', en: 'Politics', ur: 'سیاست' },
   'political': { hi: 'राजनीतिक', en: 'Political', ur: 'سیاسی' },
+  'political thought': { hi: 'राजनीतिक चिंतन', en: 'Political Thought', ur: 'سیاسی فکر' },
   'sociology': { hi: 'समाजशास्त्र', en: 'Sociology', ur: 'عمرانیات' },
   'economics': { hi: 'अर्थशास्त्र', en: 'Economics', ur: 'معاشیات' },
   'religion': { hi: 'धर्म', en: 'Religion', ur: 'مذہب' },
@@ -146,13 +171,35 @@ export const LITERARY_DICTIONARY = {
   'rubaiyat': { hi: 'रुबाइयात', en: 'Rubaiyat', ur: 'رباعیات' },
   'doha': { hi: 'दोहा', en: 'Doha', ur: 'دوہا' },
   'translation': { hi: 'अनुवाद', en: 'Translation', ur: 'ترجمہ' },
+  'translated literature': { hi: 'अनूदित साहित्य', en: 'Translated Literature', ur: 'مترجم ادب' },
+  'world literature': { hi: 'विश्व साहित्य', en: 'World Literature', ur: 'عالمی ادب' },
+  'dalit literature': { hi: 'दलित साहित्य', en: 'Dalit Literature', ur: 'دلت ادب' },
+  'feminist literature': { hi: 'स्त्री विमर्श', en: 'Feminist Literature', ur: 'نسائی ادب' },
+  'women literature': { hi: 'स्त्री साहित्य', en: 'Women Literature', ur: 'خواتین کا ادب' },
+  'progressive literature': { hi: 'प्रगतिशील साहित्य', en: 'Progressive Literature', ur: 'ترقی پسند ادب' },
+  'marxism': { hi: 'मार्क्सवाद', en: 'Marxism', ur: 'مارکسزم' },
+  'socialism': { hi: 'समाजवाद', en: 'Socialism', ur: 'سوشلزم' },
+  'social realism': { hi: 'सामाजिक यथार्थवाद', en: 'Social Realism', ur: 'سماجی حقیقت پسندی' },
+  'historical fiction': { hi: 'ऐतिहासिक कथा साहित्य', en: 'Historical Fiction', ur: 'تاریخی افسانہ' },
+  'revolutionary poetry': { hi: 'क्रांतिकारी कविता', en: 'Revolutionary Poetry', ur: 'انقلابی شاعری' },
+  'modern poetry': { hi: 'आधुनिक कविता', en: 'Modern Poetry', ur: 'جدید شاعری' },
+  'contemporary': { hi: 'समकालीन', en: 'Contemporary', ur: 'عہد حاضر' },
+  'cinema': { hi: 'सिनेमा', en: 'Cinema', ur: 'سنیما' },
+  'art': { hi: 'कला', en: 'Art', ur: 'فن' },
+  'education': { hi: 'शिक्षा', en: 'Education', ur: 'تعلیم' },
+  'journalism': { hi: 'पत्रकारिता', en: 'Journalism', ur: 'صحافت' },
+  'interviews': { hi: 'साक्षात्कार', en: 'Interviews', ur: 'انٹرویوز' },
+  'diaries': { hi: 'डायरी', en: 'Diaries', ur: 'ڈائری' },
   'manuscript': { hi: 'पांडुलिपि', en: 'Manuscript', ur: 'مخطوطہ' },
+  'manuscripts': { hi: 'पांडुलिपियाँ', en: 'Manuscripts', ur: 'مخطوطات' },
   'rare books': { hi: 'दुर्लभ पुस्तकें', en: 'Rare Books', ur: 'نایاب کتب' },
   'archive': { hi: 'अभिलेखागार', en: 'Archive', ur: 'محفوظات' },
   'collection': { hi: 'संग्रह', en: 'Collection', ur: 'مجموعہ' },
   'anthology': { hi: 'संकलन', en: 'Anthology', ur: 'انتخاب' },
   'periodical': { hi: 'सामयिकी', en: 'Periodical', ur: 'رسالہ' },
+  'periodicals': { hi: 'पत्र-पत्रिकाएँ', en: 'Periodicals', ur: 'رسائل' },
   'magazine': { hi: 'पत्रिका', en: 'Magazine', ur: 'رسالہ' },
+  'magazines': { hi: 'पत्रिकाएँ', en: 'Magazines', ur: 'رسائل' },
   'journal': { hi: 'शोध पत्रिका', en: 'Journal', ur: 'جریدہ' }
 };
 
@@ -368,6 +415,64 @@ export async function fetchGtxTranslate(text, targetLang) {
   return '';
 }
 
+/**
+ * Guarantees that the output text is strictly in the target script:
+ * - 'hi': Devanagari script (converts any remaining Latin or Urdu characters)
+ * - 'ur': Urdu/Perso-Arabic script (converts any remaining Latin or Devanagari characters)
+ * - 'en': English/Latin script (converts any remaining Devanagari or Urdu characters)
+ */
+export function enforceScript(text, targetLang) {
+  if (!text || typeof text !== 'string') return '';
+  let out = text.trim();
+  if (!out) return '';
+
+  const dict = lookupDictionary(out);
+  if (dict && dict[targetLang]) {
+    return dict[targetLang];
+  }
+
+  if (targetLang === 'hi') {
+    if (/[\u0600-\u06FF]/.test(out)) {
+      out = urduToDevanagari(out);
+    }
+    if (/[a-zA-Z]/.test(out)) {
+      out = out
+        .split(/(\s+)/)
+        .map((token) => {
+          if (!/[a-zA-Z]/.test(token)) return token;
+          const wordClean = token.replace(/[^a-zA-Z]/g, '').toLowerCase();
+          const d = lookupDictionary(wordClean);
+          if (d && d.hi) return token.replace(/[a-zA-Z]+/g, d.hi);
+          return phoneticEnglishToHindi(token);
+        })
+        .join('');
+    }
+    return out;
+  }
+
+  if (targetLang === 'ur') {
+    if (/[a-zA-Z]/.test(out)) {
+      out = enforceScript(out, 'hi');
+    }
+    if (/[\u0900-\u097F]/.test(out)) {
+      out = devanagariToUrdu(out);
+    }
+    return out;
+  }
+
+  if (targetLang === 'en') {
+    if (/[\u0600-\u06FF]/.test(out)) {
+      out = urduToDevanagari(out);
+    }
+    if (/[\u0900-\u097F]/.test(out)) {
+      out = devanagariToEnglish(out);
+    }
+    return out;
+  }
+
+  return out;
+}
+
 export async function transliterateAll(text, sourceLangHint = 'auto') {
   if (!text || !text.trim()) {
     return { hi: '', en: '', ur: '' };
@@ -382,9 +487,9 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
   const dictMatch = lookupDictionary(trimmed);
   if (dictMatch) {
     const res = {
-      hi: dictMatch.hi || trimmed,
-      en: dictMatch.en || trimmed,
-      ur: dictMatch.ur || trimmed
+      hi: dictMatch.hi || enforceScript(trimmed, 'hi'),
+      en: dictMatch.en || enforceScript(trimmed, 'en'),
+      ur: dictMatch.ur || enforceScript(trimmed, 'ur')
     };
     translitCache.set(cacheKey, res);
     return res;
@@ -395,7 +500,7 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
     srcLang = detectLanguage(trimmed);
   }
 
-  // 1. Try Google Translate GTX in parallel
+  // 1. Try Google Translate GTX in parallel, then enforce target script on each result
   try {
     if (srcLang === 'en') {
       const [hiRes, urRes] = await Promise.all([
@@ -403,10 +508,13 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
         fetchGtxTranslate(trimmed, 'ur')
       ]);
 
-      const hi = hiRes || phoneticEnglishToHindi(trimmed);
-      const ur = urRes || devanagariToUrdu(hi);
+      const rawHi = hiRes || phoneticEnglishToHindi(trimmed);
+      const hi = enforceScript(rawHi, 'hi');
+      const rawUr = urRes || devanagariToUrdu(hi);
+      const ur = enforceScript(rawUr, 'ur');
+      const en = enforceScript(trimmed, 'en');
 
-      const result = { hi: hi || trimmed, en: trimmed, ur: ur || trimmed };
+      const result = { hi: hi || trimmed, en: en || trimmed, ur: ur || trimmed };
       translitCache.set(cacheKey, result);
       return result;
     } else if (srcLang === 'hi') {
@@ -415,10 +523,13 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
         fetchGtxTranslate(trimmed, 'ur')
       ]);
 
-      const en = enRes || devanagariToEnglish(trimmed);
-      const ur = urRes || devanagariToUrdu(trimmed);
+      const hi = enforceScript(trimmed, 'hi');
+      const rawEn = enRes || devanagariToEnglish(hi);
+      const en = enforceScript(rawEn, 'en');
+      const rawUr = urRes || devanagariToUrdu(hi);
+      const ur = enforceScript(rawUr, 'ur');
 
-      const result = { hi: trimmed, en: en || trimmed, ur: ur || trimmed };
+      const result = { hi: hi || trimmed, en: en || trimmed, ur: ur || trimmed };
       translitCache.set(cacheKey, result);
       return result;
     } else if (srcLang === 'ur') {
@@ -427,10 +538,13 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
         fetchGtxTranslate(trimmed, 'en')
       ]);
 
-      const hi = hiRes || urduToDevanagari(trimmed);
-      const en = enRes || devanagariToEnglish(hi);
+      const ur = enforceScript(trimmed, 'ur');
+      const rawHi = hiRes || urduToDevanagari(ur);
+      const hi = enforceScript(rawHi, 'hi');
+      const rawEn = enRes || devanagariToEnglish(hi);
+      const en = enforceScript(rawEn, 'en');
 
-      const result = { hi: hi || trimmed, en: en || trimmed, ur: trimmed };
+      const result = { hi: hi || trimmed, en: en || trimmed, ur: ur || trimmed };
       translitCache.set(cacheKey, result);
       return result;
     }
@@ -458,9 +572,9 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
         if (data.success && data.translations) {
           const trans = data.translations;
           const result = {
-            hi: trans.hi || trimmed,
-            en: trans.en || trimmed,
-            ur: trans.ur || trimmed
+            hi: enforceScript(trans.hi || trimmed, 'hi'),
+            en: enforceScript(trans.en || trimmed, 'en'),
+            ur: enforceScript(trans.ur || trimmed, 'ur')
           };
           translitCache.set(cacheKey, result);
           return result;
@@ -473,23 +587,98 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
 
   // 3. Client-side rule-based fallback
   const fallbackResult = clientSideTransliterateFallback(trimmed, srcLang);
-  translitCache.set(cacheKey, fallbackResult);
-  return fallbackResult;
+  const strictFallback = {
+    hi: enforceScript(fallbackResult.hi, 'hi'),
+    en: enforceScript(fallbackResult.en, 'en'),
+    ur: enforceScript(fallbackResult.ur, 'ur')
+  };
+  translitCache.set(cacheKey, strictFallback);
+  return strictFallback;
 }
 
 /**
- * Convenience helper to populate trilingual database fields
- * returns { name_en, name_hi, name_ur }
+ * Convenience helper to populate trilingual database fields from a single text string
+ * or from an object with partial/untranslated { name_hi, name_en, name_ur } fields.
+ * Returns { name_en, name_hi, name_ur } guaranteed to be in their respective scripts.
  */
-export async function getTrilingualNames(text, sourceLang = 'auto') {
-  if (!text || !text.trim()) {
+export async function getTrilingualNames(input, sourceLang = 'auto') {
+  if (!input) {
     return { name_en: '', name_hi: '', name_ur: '' };
   }
-  const trans = await transliterateAll(text, sourceLang);
+
+  if (typeof input === 'string') {
+    if (!input.trim()) return { name_en: '', name_hi: '', name_ur: '' };
+    const trans = await transliterateAll(input.trim(), sourceLang);
+    return {
+      name_en: enforceScript(trans.en || input.trim(), 'en'),
+      name_hi: enforceScript(trans.hi || input.trim(), 'hi'),
+      name_ur: enforceScript(trans.ur || input.trim(), 'ur')
+    };
+  }
+
+  // If input is an object (e.g. { name_hi, name_en, name_ur })
+  const rawHi = (input.name_hi || '').trim();
+  const rawEn = (input.name_en || '').trim();
+  const rawUr = (input.name_ur || '').trim();
+
+  // Determine the best primary text to translate from
+  const seedText = rawEn || rawHi || rawUr;
+  if (!seedText) {
+    return { name_en: '', name_hi: '', name_ur: '' };
+  }
+
+  const trans = await transliterateAll(seedText, 'auto');
+
+  // Use provided values only if they are already in the right script; otherwise use translated values
+  const validHi = rawHi && /[\u0900-\u097F]/.test(rawHi) && !/[a-zA-Z]/.test(rawHi) ? rawHi : trans.hi;
+  const validEn = rawEn && /[a-zA-Z]/.test(rawEn) && !/[\u0900-\u097F\u0600-\u06FF]/.test(rawEn) ? rawEn : trans.en;
+  const validUr = rawUr && /[\u0600-\u06FF]/.test(rawUr) && !/[a-zA-Z\u0900-\u097F]/.test(rawUr) ? rawUr : trans.ur;
+
   return {
-    name_en: trans.en || text.trim(),
-    name_hi: trans.hi || text.trim(),
-    name_ur: trans.ur || text.trim()
+    name_hi: enforceScript(validHi || seedText, 'hi'),
+    name_en: enforceScript(validEn || seedText, 'en'),
+    name_ur: enforceScript(validUr || seedText, 'ur')
   };
 }
+
+/**
+ * Synchronous helper to ensure an entity object has valid Devanagari, English, and Urdu names
+ * immediately at render/load time.
+ */
+export function ensureTrilingualEntitySync(item) {
+  if (!item) return item;
+  const seed = item.name_en || item.name_hi || item.name_ur || '';
+  if (!seed) return item;
+
+  const dict = lookupDictionary(seed) || lookupDictionary(item.name_hi) || lookupDictionary(item.name_en);
+  if (dict) {
+    return {
+      ...item,
+      name_hi: item.name_hi && /[\u0900-\u097F]/.test(item.name_hi) && !/[a-zA-Z]/.test(item.name_hi) ? item.name_hi : dict.hi,
+      name_en: item.name_en && /[a-zA-Z]/.test(item.name_en) && !/[\u0900-\u097F\u0600-\u06FF]/.test(item.name_en) ? item.name_en : dict.en,
+      name_ur: item.name_ur && /[\u0600-\u06FF]/.test(item.name_ur) && !/[a-zA-Z\u0900-\u097F]/.test(item.name_ur) ? item.name_ur : dict.ur
+    };
+  }
+
+  const name_hi =
+    item.name_hi && /[\u0900-\u097F]/.test(item.name_hi) && !/[a-zA-Z]/.test(item.name_hi)
+      ? item.name_hi
+      : enforceScript(item.name_hi || seed, 'hi');
+  const name_en =
+    item.name_en && /[a-zA-Z]/.test(item.name_en) && !/[\u0900-\u097F\u0600-\u06FF]/.test(item.name_en)
+      ? item.name_en
+      : enforceScript(item.name_en || seed, 'en');
+  const name_ur =
+    item.name_ur && /[\u0600-\u06FF]/.test(item.name_ur) && !/[a-zA-Z\u0900-\u097F]/.test(item.name_ur)
+      ? item.name_ur
+      : enforceScript(item.name_ur || name_hi || seed, 'ur');
+
+  return {
+    ...item,
+    name_hi,
+    name_en,
+    name_ur
+  };
+}
+
 

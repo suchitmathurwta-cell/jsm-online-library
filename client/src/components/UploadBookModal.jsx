@@ -142,7 +142,7 @@ export default function UploadBookModal({
       subgenre: defaultSub.id, // Subgenre
       era: 'contemporary',
       year: extractedYear,
-      publisher: lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : (lang === 'ur' ? 'جے ایس ایم آن لائن لائبریری' : 'JSM Online Library'),
+      publisher: lang === 'hi' ? 'जसम ऑनलाइन लाइब्रेरी' : (lang === 'ur' ? 'جسم آن لائن لائبریری' : 'JSM Online Library'),
       description: '',
       description_en: '',
       coverFile: null,

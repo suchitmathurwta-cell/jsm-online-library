@@ -36,11 +36,12 @@ export default function BookDetailModal({
     }
   };
 
+  const defaultPublisher = lang === 'hi' ? 'जसम ऑनलाइन लाइब्रेरी' : lang === 'ur' ? 'جسم آن لائن لائبریری' : 'JSM Online Library';
   const citations = {
-    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}, ${book.year || '2026'}.`,
-    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}.`,
-    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}, ${book.year || '2026'}.`,
-    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved by JSM Online Library.'}`
+    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || defaultPublisher}, ${book.year || '2026'}.`,
+    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || defaultPublisher}.`,
+    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || defaultPublisher}, ${book.year || '2026'}.`,
+    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'जसम ऑनलाइन लाइब्रेरी द्वारा डिजिटाइज़्ड एवं संरक्षित।' : lang === 'ur' ? 'جسم آن لائن لائبریری کی جانب سے محفوظ کردہ۔' : 'Digitized & Preserved by JSM Online Library.'}`
   };
 
   const handleCopyCitation = () => {
@@ -190,7 +191,7 @@ export default function BookDetailModal({
                     {t.details?.description || (lang === 'hi' ? 'पुस्तक परिचय' : lang === 'ur' ? 'کتاب کا تعارف' : 'About this Book')}
                   </h3>
                   <p className="text-xs text-zinc-300 leading-relaxed bg-white/[0.03] p-3.5 rounded-[16px] border border-white/[0.08] font-sans">
-                    {book[`description_${lang}`] || book.description || book.description_en || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी में उपलब्ध प्रामाणिक संस्करण।' : lang === 'ur' ? 'جے ایس ایم آن لائن لائبریری میں محفوظ مستند ایڈیشن۔' : 'Preserved digital edition in the JSM Online Library.')}
+                    {book[`description_${lang}`] || book.description || book.description_en || (lang === 'hi' ? 'जसम ऑनलाइन लाइब्रेरी में उपलब्ध प्रामाणिक संस्करण।' : lang === 'ur' ? 'جسم آن لائن لائبریری میں محفوظ مستند ایڈیشن۔' : 'Preserved digital edition in the JSM Online Library.')}
                   </p>
                 </div>
 

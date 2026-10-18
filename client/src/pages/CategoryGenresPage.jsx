@@ -40,6 +40,7 @@ export default function CategoryGenresPage({
   // Create Genre State
   const [showCreateGenreForCat, setShowCreateGenreForCat] = useState(null);
   const [newGenreName, setNewGenreName] = useState('');
+  const [previewTrilingual, setPreviewTrilingual] = useState({ hi: '', en: '', ur: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Genre State
@@ -47,12 +48,31 @@ export default function CategoryGenresPage({
   const [targetCategorySlug, setTargetCategorySlug] = useState(null);
   const [editNameHi, setEditNameHi] = useState('');
   const [editNameEn, setEditNameEn] = useState('');
+  const [editNameUr, setEditNameUr] = useState('');
   const [editDescHi, setEditDescHi] = useState('');
   const [isEditing, setIsEditing] = useState(false);
 
   // Delete Confirm State
   const [deletingGenre, setDeletingGenre] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!newGenreName.trim()) {
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getTrilingualNames(newGenreName.trim());
+        setPreviewTrilingual({
+          hi: res.name_hi,
+          en: res.name_en,
+          ur: res.name_ur
+        });
+      } catch (e) {}
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [newGenreName]);
 
   // 1. Auto-scroll to categorySlug when mounted or changed
   useEffect(() => {
@@ -99,23 +119,23 @@ export default function CategoryGenresPage({
     if (!newGenreName.trim() || !catId) return;
     setIsSubmitting(true);
     try {
+      const { name_en, name_hi, name_ur } = await getTrilingualNames(newGenreName.trim());
       const genreId =
-        newGenreName
-          .trim()
+        (name_en || newGenreName.trim())
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || 'genre-' + Date.now();
-      const { name_en, name_hi, name_ur } = await getTrilingualNames(newGenreName.trim());
       await createGenre({
         id: genreId,
         category_id: catId,
-        name_hi: name_hi || newGenreName.trim(),
-        name_en: name_en || newGenreName.trim(),
-        name_ur: name_ur || undefined,
-        description_hi: (name_hi || newGenreName.trim()) + ' से संबंधित विशिष्ट साहित्यिक विधा',
-        description_en: 'Curated works on ' + (name_en || newGenreName.trim())
+        name_hi: previewTrilingual.hi || name_hi || newGenreName.trim(),
+        name_en: previewTrilingual.en || name_en || newGenreName.trim(),
+        name_ur: previewTrilingual.ur || name_ur || newGenreName.trim(),
+        description_hi: (previewTrilingual.hi || name_hi || newGenreName.trim()) + ' से संबंधित विशिष्ट साहित्यिक विधा',
+        description_en: 'Curated works on ' + (previewTrilingual.en || name_en || newGenreName.trim())
       });
       setNewGenreName('');
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
       setShowCreateGenreForCat(null);
       if (onRefreshCategories) await onRefreshCategories();
     } catch (err) {
@@ -148,6 +168,7 @@ export default function CategoryGenresPage({
       await updateGenre(targetCategorySlug, editingGenre.id, {
         name_hi: editNameHi.trim(),
         name_en: editNameEn.trim(),
+        name_ur: editNameUr.trim() || undefined,
         description_hi: editDescHi.trim()
       });
       setEditingGenre(null);
@@ -166,6 +187,7 @@ export default function CategoryGenresPage({
     setTargetCategorySlug(catId);
     setEditNameHi(genre.name_hi || '');
     setEditNameEn(genre.name_en || '');
+    setEditNameUr(genre.name_ur || '');
     setEditDescHi(genre.description_hi || genre.description_en || '');
   };
 
@@ -282,37 +304,47 @@ export default function CategoryGenresPage({
                 <AdminOnly>
                   <form
                     onSubmit={(e) => handleCreateGenre(e, catId)}
-                    className="mt-6 pt-5 border-t border-white/[0.12] flex flex-col sm:flex-row gap-2.5 items-center animate-fadeIn relative z-20"
+                    className="mt-6 pt-5 border-t border-white/[0.12] space-y-2.5 animate-fadeIn relative z-20"
                   >
-                    <input
-                      type="text"
-                      value={newGenreName}
-                      onChange={(e) => setNewGenreName(e.target.value)}
-                      placeholder={
-                        lang === 'hi'
-                          ? `नई साहित्यिक विधा (${catTitle})...`
-                          : lang === 'ur'
-                          ? `نئی ادبی صنف (${catTitle})...`
-                          : `Enter new genre for ${catTitle}...`
-                      }
-                      className="w-full sm:flex-1 px-4 py-2 text-xs bg-black/80 border border-white/20 text-white rounded-xl outline-hidden focus:border-white"
-                      autoFocus
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSubmitting || !newGenreName.trim()}
-                      className="w-full sm:w-auto px-5 py-2 text-black text-xs font-mono uppercase tracking-wider font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {isSubmitting ? '...' : '+ Create'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowCreateGenreForCat(null)}
-                      className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-2.5 items-center">
+                      <input
+                        type="text"
+                        value={newGenreName}
+                        onChange={(e) => setNewGenreName(e.target.value)}
+                        placeholder={
+                          lang === 'hi'
+                            ? `नई साहित्यिक विधा हिंदी, अंग्रेज़ी या उर्दू में लिखें (${catTitle})...`
+                            : lang === 'ur'
+                            ? `نئی ادبی صنف اردو، ہندی یا انگریزی میں درج کریں (${catTitle})...`
+                            : `Enter new genre in English, Hindi, or Urdu for ${catTitle}...`
+                        }
+                        className="w-full sm:flex-1 px-4 py-2 text-xs bg-black/80 border border-white/20 text-white rounded-xl outline-hidden focus:border-white"
+                        autoFocus
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSubmitting || !newGenreName.trim()}
+                        className="w-full sm:w-auto px-5 py-2 text-black text-xs font-mono uppercase tracking-wider font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
+                        style={{ backgroundColor: color.hex }}
+                      >
+                        {isSubmitting ? '...' : '+ Create'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowCreateGenreForCat(null)}
+                        className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                    {newGenreName.trim() && (
+                      <div className="px-3.5 py-2 rounded-xl bg-black/60 border border-white/[0.12] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <span className="font-mono text-amber-400 font-semibold">AUTO TRILINGUAL:</span>
+                        <span><strong>हिंदी:</strong> {previewTrilingual.hi || '...'}</span>
+                        <span><strong>English:</strong> {previewTrilingual.en || '...'}</span>
+                        <span><strong>اردو:</strong> {previewTrilingual.ur || '...'}</span>
+                      </div>
+                    )}
                   </form>
                 </AdminOnly>
               )}
@@ -517,7 +549,7 @@ export default function CategoryGenresPage({
             <form onSubmit={handleSaveEditGenre} className="space-y-4">
               <div>
                 <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
-                  Genre Title (Devanagari)
+                  Genre Title (Devanagari / हिंदी)
                 </label>
                 <input
                   type="text"
@@ -535,6 +567,18 @@ export default function CategoryGenresPage({
                   value={editNameEn}
                   onChange={(e) => setEditNameEn(e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider block mb-1">
+                  Genre Title (Urdu / اردو)
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={editNameUr}
+                  onChange={(e) => setEditNameUr(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden font-urdu"
                 />
               </div>
               <div>

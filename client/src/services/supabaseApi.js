@@ -1,5 +1,109 @@
 import { supabase } from './supabaseClient';
 import { DEFAULT_CATEGORIES } from '../data/categoriesData';
+import {
+  getTrilingualNames,
+  ensureTrilingualEntitySync,
+  enforceScript
+} from './transliterationService';
+
+const TAXONOMY_CACHE_KEY = 'jsm_trilingual_taxonomy_cache_v1';
+
+function readTaxonomyCache() {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return {};
+    const raw = window.localStorage.getItem(TAXONOMY_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function writeTaxonomyCacheEntry(key, values) {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    const current = readTaxonomyCache();
+    current[key] = { ...(current[key] || {}), ...values };
+    window.localStorage.setItem(TAXONOMY_CACHE_KEY, JSON.stringify(current));
+  } catch (e) {}
+}
+
+function buildSlugId(text, prefix = 'item') {
+  const clean = (text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return clean || `${prefix}-${Date.now()}`;
+}
+
+function needsDbTranslationRepair(item) {
+  if (!item) return false;
+  const hi = (item.name_hi || '').trim();
+  const en = (item.name_en || '').trim();
+  // Needs repair if name_hi is missing or contains Latin letters, or name_en is missing or contains non-Latin script
+  if (!hi || /[a-zA-Z]/.test(hi) || /[\u0600-\u06FF]/.test(hi)) return true;
+  if (!en || /[\u0900-\u097F\u0600-\u06FF]/.test(en)) return true;
+  return false;
+}
+
+function ensureBookTrilingualSync(book) {
+  if (!book) return book;
+  const seedTitle = book.title_en || book.title_hi || book.title_ur || '';
+  const seedAuthor = book.author_en || book.author_hi || book.author_ur || '';
+
+  const title_hi =
+    book.title_hi && /[\u0900-\u097F]/.test(book.title_hi) && !/[a-zA-Z]/.test(book.title_hi)
+      ? book.title_hi
+      : enforceScript(book.title_hi || seedTitle, 'hi');
+  const title_en =
+    book.title_en && /[a-zA-Z]/.test(book.title_en) && !/[\u0900-\u097F\u0600-\u06FF]/.test(book.title_en)
+      ? book.title_en
+      : enforceScript(book.title_en || seedTitle, 'en');
+  const title_ur =
+    book.title_ur && /[\u0600-\u06FF]/.test(book.title_ur) && !/[a-zA-Z\u0900-\u097F]/.test(book.title_ur)
+      ? book.title_ur
+      : enforceScript(book.title_ur || title_hi || seedTitle, 'ur');
+
+  const author_hi =
+    book.author_hi && /[\u0900-\u097F]/.test(book.author_hi) && !/[a-zA-Z]/.test(book.author_hi)
+      ? book.author_hi
+      : enforceScript(book.author_hi || seedAuthor, 'hi');
+  const author_en =
+    book.author_en && /[a-zA-Z]/.test(book.author_en) && !/[\u0900-\u097F\u0600-\u06FF]/.test(book.author_en)
+      ? book.author_en
+      : enforceScript(book.author_en || seedAuthor, 'en');
+  const author_ur =
+    book.author_ur && /[\u0600-\u06FF]/.test(book.author_ur) && !/[a-zA-Z\u0900-\u097F]/.test(book.author_ur)
+      ? book.author_ur
+      : enforceScript(book.author_ur || author_hi || seedAuthor, 'ur');
+
+  return {
+    ...book,
+    title_hi: title_hi || book.title_hi,
+    title_en: title_en || book.title_en,
+    title_ur: title_ur || book.title_ur,
+    author_hi: author_hi || book.author_hi,
+    author_en: author_en || book.author_en,
+    author_ur: author_ur || book.author_ur
+  };
+}
+
+// Background self-healing for existing Supabase taxonomy rows that were saved in English-only or single-script
+async function healTaxonomyItemInBackground(table, matchQuery, item, cacheKey) {
+  try {
+    const trilingual = await getTrilingualNames(item);
+    writeTaxonomyCacheEntry(cacheKey, trilingual);
+    if (trilingual.name_hi !== item.name_hi || trilingual.name_en !== item.name_en) {
+      let q = supabase.from(table).update({
+        name_hi: trilingual.name_hi,
+        name_en: trilingual.name_en
+      });
+      for (const [k, v] of Object.entries(matchQuery)) {
+        q = q.eq(k, v);
+      }
+      await q;
+    }
+  } catch (e) {}
+}
 
 // 1. Fetch Categories with nested Genres, Subgenres & real-time book counts
 export async function getCategoriesWithHierarchy() {
@@ -11,13 +115,29 @@ export async function getCategoriesWithHierarchy() {
       supabase.from('books').select('id, category, genre, subgenre, title_hi, title_en')
     ]);
 
-    const categories = (catRes.data && catRes.data.length > 0) ? catRes.data : DEFAULT_CATEGORIES;
+    const rawCategories = (catRes.data && catRes.data.length > 0) ? catRes.data : DEFAULT_CATEGORIES;
     const genres = genreRes.data || [];
     const subgenres = subRes.data || [];
     const books = bookRes.data || [];
+    const localCache = readTaxonomyCache();
 
-    return categories.map(cat => {
-      const defaultCat = DEFAULT_CATEGORIES.find(c => c.id === cat.id);
+    return rawCategories.map(rawCat => {
+      const defaultCat = DEFAULT_CATEGORIES.find(c => c.id === rawCat.id);
+      const catCacheKey = `cat:${rawCat.id}`;
+      const cachedCat = localCache[catCacheKey] || {};
+      const mergedCat = {
+        ...defaultCat,
+        ...rawCat,
+        name_hi: cachedCat.name_hi || rawCat.name_hi || defaultCat?.name_hi,
+        name_en: cachedCat.name_en || rawCat.name_en || defaultCat?.name_en,
+        name_ur: rawCat.name_ur || cachedCat.name_ur || defaultCat?.name_ur
+      };
+
+      if (needsDbTranslationRepair(rawCat)) {
+        healTaxonomyItemInBackground('categories', { id: rawCat.id }, mergedCat, catCacheKey);
+      }
+
+      const cat = ensureTrilingualEntitySync(mergedCat);
       const catBooks = books.filter(b => b.category === cat.id);
 
       // Find genres from DB or fallback to bundled defaultCat.genres
@@ -26,14 +146,51 @@ export async function getCategoriesWithHierarchy() {
         matchedGenres = defaultCat.genres;
       }
 
-      const catGenres = matchedGenres.map(g => {
-        const defaultGenre = defaultCat?.genres?.find(dg => dg.id === g.id);
+      const catGenres = matchedGenres.map(rawG => {
+        const defaultGenre = defaultCat?.genres?.find(dg => dg.id === rawG.id);
+        const genreCacheKey = `genre:${cat.id}:${rawG.id}`;
+        const cachedGenre = localCache[genreCacheKey] || {};
+        const mergedGenre = {
+          ...defaultGenre,
+          ...rawG,
+          name_hi: cachedGenre.name_hi || rawG.name_hi || defaultGenre?.name_hi,
+          name_en: cachedGenre.name_en || rawG.name_en || defaultGenre?.name_en,
+          name_ur: rawG.name_ur || cachedGenre.name_ur || defaultGenre?.name_ur
+        };
+
+        if (needsDbTranslationRepair(rawG)) {
+          healTaxonomyItemInBackground('genres', { category_id: cat.id, id: rawG.id }, mergedGenre, genreCacheKey);
+        }
+
+        const g = ensureTrilingualEntitySync(mergedGenre);
+
         let gSubgenres = subgenres.filter(sg => sg.category_id === cat.id && sg.genre_id === g.id);
         if (gSubgenres.length === 0 && defaultGenre?.subgenres) {
           gSubgenres = defaultGenre.subgenres;
         }
 
-        const sgWithCounts = gSubgenres.map(sg => {
+        const sgWithCounts = gSubgenres.map(rawSg => {
+          const defaultSg = defaultGenre?.subgenres?.find(dsg => dsg.id === rawSg.id);
+          const sgCacheKey = `subgenre:${cat.id}:${g.id}:${rawSg.id}`;
+          const cachedSg = localCache[sgCacheKey] || {};
+          const mergedSg = {
+            ...defaultSg,
+            ...rawSg,
+            name_hi: cachedSg.name_hi || rawSg.name_hi || defaultSg?.name_hi,
+            name_en: cachedSg.name_en || rawSg.name_en || defaultSg?.name_en,
+            name_ur: rawSg.name_ur || cachedSg.name_ur || defaultSg?.name_ur
+          };
+
+          if (needsDbTranslationRepair(rawSg)) {
+            healTaxonomyItemInBackground(
+              'subgenres',
+              { category_id: cat.id, genre_id: g.id, id: rawSg.id },
+              mergedSg,
+              sgCacheKey
+            );
+          }
+
+          const sg = ensureTrilingualEntitySync(mergedSg);
           const sgKeywords = [sg.id, sg.name_en, sg.name_hi, sg.name_ur].filter(Boolean).map(k => k.toLowerCase());
           const sgBooks = catBooks.filter(b => {
             const bg = (b.genre || '').toLowerCase();
@@ -104,7 +261,7 @@ export async function getBooks(filters = {}) {
   const { data, error } = await query;
   if (error) throw error;
 
-  let books = data || [];
+  let books = (data || []).map(ensureBookTrilingualSync);
 
   if (filters.genre && filters.genre !== 'all') {
     const gq = filters.genre.toLowerCase();
@@ -176,23 +333,84 @@ export async function uploadBookFile(file, bucket = 'books') {
 }
 
 export async function createBookRecord(bookData) {
-  const id = `chetna-${Date.now()}-${Math.round(Math.random() * 1000)}`;
-  const { data, error } = await supabase.from('books').insert({
+  const id = `jsm-${Date.now()}-${Math.round(Math.random() * 1000)}`;
+  const titleTrilingual = await getTrilingualNames({
+    name_hi: bookData.title_hi,
+    name_en: bookData.title_en,
+    name_ur: bookData.title_ur
+  });
+  const authorTrilingual = await getTrilingualNames({
+    name_hi: bookData.author_hi,
+    name_en: bookData.author_en,
+    name_ur: bookData.author_ur
+  });
+
+  const payload = {
     ...bookData,
     id,
+    title_hi: titleTrilingual.name_hi || bookData.title_hi,
+    title_en: titleTrilingual.name_en || bookData.title_en,
+    title_ur: titleTrilingual.name_ur || bookData.title_ur,
+    author_hi: authorTrilingual.name_hi || bookData.author_hi,
+    author_en: authorTrilingual.name_en || bookData.author_en,
+    author_ur: authorTrilingual.name_ur || bookData.author_ur,
     views_count: 0,
     downloads_count: 0
-  }).select().single();
+  };
 
+  let { data, error } = await supabase.from('books').insert(payload).select().single();
+  if (error && error.message && error.message.includes('column')) {
+    const { title_ur, author_ur, ...fallbackPayload } = payload;
+    const retry = await supabase.from('books').insert(fallbackPayload).select().single();
+    if (retry.error) throw retry.error;
+    return ensureBookTrilingualSync({ ...retry.data, title_ur, author_ur });
+  }
   if (error) throw error;
-  return data;
+  return ensureBookTrilingualSync(data);
 }
 
-// 5. Hierarchy CRUD Operations
+// Helper to insert/update taxonomy table with automatic fallback if `name_ur` column is not in Supabase schema
+async function executeTaxonomyWrite(table, operation, payload, matchFilters = {}) {
+  const executeQuery = async (body) => {
+    let q = supabase.from(table);
+    if (operation === 'insert') {
+      q = q.insert(body);
+    } else {
+      q = q.update(body);
+      for (const [k, v] of Object.entries(matchFilters)) {
+        q = q.eq(k, v);
+      }
+    }
+    return await q.select().single();
+  };
+
+  let { data, error } = await executeQuery(payload);
+  if (error) {
+    // Retry without name_ur in case the Supabase table only has name_hi and name_en columns
+    const { name_ur, ...payloadWithoutUr } = payload;
+    const retry = await executeQuery(payloadWithoutUr);
+    if (retry.error) throw retry.error;
+    return { ...retry.data, name_ur };
+  }
+  return { ...data, name_ur: data?.name_ur || payload.name_ur };
+}
+
+// 5. Hierarchy CRUD Operations (Supports creating/updating in ANY of the 3 languages: hi, en, ur)
 export async function createFormat(formatData) {
-  const { data, error } = await supabase.from('categories').insert(formatData).select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(formatData);
+  const id =
+    formatData.id && !/^(fmt|cat)-\d+$/.test(formatData.id)
+      ? formatData.id
+      : buildSlugId(trilingual.name_en, 'fmt');
+  const payload = {
+    ...formatData,
+    id,
+    name_hi: trilingual.name_hi,
+    name_en: trilingual.name_en,
+    name_ur: trilingual.name_ur
+  };
+  writeTaxonomyCacheEntry(`cat:${id}`, trilingual);
+  return await executeTaxonomyWrite('categories', 'insert', payload);
 }
 
 export async function deleteFormat(formatId) {
@@ -202,15 +420,32 @@ export async function deleteFormat(formatId) {
 }
 
 export async function updateFormat(formatId, updateData) {
-  const { data, error } = await supabase.from('categories').update(updateData).eq('id', formatId).select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(updateData);
+  const payload = {
+    ...updateData,
+    name_hi: trilingual.name_hi || updateData.name_hi,
+    name_en: trilingual.name_en || updateData.name_en,
+    name_ur: trilingual.name_ur || updateData.name_ur
+  };
+  writeTaxonomyCacheEntry(`cat:${formatId}`, trilingual);
+  return await executeTaxonomyWrite('categories', 'update', payload, { id: formatId });
 }
 
 export async function createGenre(genreData) {
-  const { data, error } = await supabase.from('genres').insert(genreData).select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(genreData);
+  const id =
+    genreData.id && !/^gnr-\d+$/.test(genreData.id)
+      ? genreData.id
+      : buildSlugId(trilingual.name_en, 'gnr');
+  const payload = {
+    ...genreData,
+    id,
+    name_hi: trilingual.name_hi,
+    name_en: trilingual.name_en,
+    name_ur: trilingual.name_ur
+  };
+  writeTaxonomyCacheEntry(`genre:${genreData.category_id}:${id}`, trilingual);
+  return await executeTaxonomyWrite('genres', 'insert', payload);
 }
 
 export async function deleteGenre(categoryIdOrGenreId, genreId) {
@@ -226,15 +461,35 @@ export async function deleteGenre(categoryIdOrGenreId, genreId) {
 }
 
 export async function updateGenre(categoryId, genreId, updateData) {
-  const { data, error } = await supabase.from('genres').update(updateData).eq('category_id', categoryId).eq('id', genreId).select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(updateData);
+  const payload = {
+    ...updateData,
+    name_hi: trilingual.name_hi || updateData.name_hi,
+    name_en: trilingual.name_en || updateData.name_en,
+    name_ur: trilingual.name_ur || updateData.name_ur
+  };
+  writeTaxonomyCacheEntry(`genre:${categoryId}:${genreId}`, trilingual);
+  return await executeTaxonomyWrite('genres', 'update', payload, {
+    category_id: categoryId,
+    id: genreId
+  });
 }
 
 export async function createSubgenre(subgenreData) {
-  const { data, error } = await supabase.from('subgenres').insert(subgenreData).select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(subgenreData);
+  const id =
+    subgenreData.id && !/^(sub|sg)-\d+$/.test(subgenreData.id)
+      ? subgenreData.id
+      : buildSlugId(trilingual.name_en, 'sub');
+  const payload = {
+    ...subgenreData,
+    id,
+    name_hi: trilingual.name_hi,
+    name_en: trilingual.name_en,
+    name_ur: trilingual.name_ur
+  };
+  writeTaxonomyCacheEntry(`subgenre:${subgenreData.category_id}:${subgenreData.genre_id}:${id}`, trilingual);
+  return await executeTaxonomyWrite('subgenres', 'insert', payload);
 }
 
 export async function deleteSubgenre(categoryIdOrSubId, genreId, subgenreId) {
@@ -252,20 +507,53 @@ export async function deleteSubgenre(categoryIdOrSubId, genreId, subgenreId) {
 }
 
 export async function updateSubgenre(categoryId, genreId, subgenreId, updateData) {
-  const { data, error } = await supabase.from('subgenres').update(updateData)
-    .eq('category_id', categoryId)
-    .eq('genre_id', genreId)
-    .eq('id', subgenreId)
-    .select().single();
-  if (error) throw error;
-  return data;
+  const trilingual = await getTrilingualNames(updateData);
+  const payload = {
+    ...updateData,
+    name_hi: trilingual.name_hi || updateData.name_hi,
+    name_en: trilingual.name_en || updateData.name_en,
+    name_ur: trilingual.name_ur || updateData.name_ur
+  };
+  writeTaxonomyCacheEntry(`subgenre:${categoryId}:${genreId}:${subgenreId}`, trilingual);
+  return await executeTaxonomyWrite('subgenres', 'update', payload, {
+    category_id: categoryId,
+    genre_id: genreId,
+    id: subgenreId
+  });
 }
 
 // 6. Book CRUD Operations
 export async function updateBookRecord(bookId, updateData) {
-  const { data, error } = await supabase.from('books').update(updateData).eq('id', bookId).select().single();
+  const titleTrilingual = await getTrilingualNames({
+    name_hi: updateData.title_hi,
+    name_en: updateData.title_en,
+    name_ur: updateData.title_ur
+  });
+  const authorTrilingual = await getTrilingualNames({
+    name_hi: updateData.author_hi,
+    name_en: updateData.author_en,
+    name_ur: updateData.author_ur
+  });
+
+  const payload = {
+    ...updateData,
+    title_hi: titleTrilingual.name_hi || updateData.title_hi,
+    title_en: titleTrilingual.name_en || updateData.title_en,
+    title_ur: titleTrilingual.name_ur || updateData.title_ur,
+    author_hi: authorTrilingual.name_hi || updateData.author_hi,
+    author_en: authorTrilingual.name_en || updateData.author_en,
+    author_ur: authorTrilingual.name_ur || updateData.author_ur
+  };
+
+  let { data, error } = await supabase.from('books').update(payload).eq('id', bookId).select().single();
+  if (error && error.message && error.message.includes('column')) {
+    const { title_ur, author_ur, ...fallbackPayload } = payload;
+    const retry = await supabase.from('books').update(fallbackPayload).eq('id', bookId).select().single();
+    if (retry.error) throw retry.error;
+    return ensureBookTrilingualSync({ ...retry.data, title_ur, author_ur });
+  }
   if (error) throw error;
-  return data;
+  return ensureBookTrilingualSync(data);
 }
 
 export async function deleteBookRecord(bookId) {
@@ -280,8 +568,8 @@ export async function getBookById(id) {
   
   // 1. Direct query by ID in Supabase
   try {
-    const { data, error } = await supabase.from('books').select('*').eq('id', id).maybeSingle();
-    if (data) return data;
+    const { data } = await supabase.from('books').select('*').eq('id', id).maybeSingle();
+    if (data) return ensureBookTrilingualSync(data);
   } catch (e) {
     console.warn('Supabase getBookById notice:', e);
   }
@@ -290,15 +578,16 @@ export async function getBookById(id) {
   try {
     const all = await getBooks({ limit: 300 });
     const matched = all.find(b => String(b.id) === String(id) || b.slug === id || String(b._id) === String(id));
-    if (matched) return matched;
+    if (matched) return ensureBookTrilingualSync(matched);
   } catch (e) {}
 
   // 3. Query local backend API fallback
   try {
     const res = await fetch(`/api/books/${id}`);
     const json = await res.json();
-    if (json.success && json.book) return json.book;
+    if (json.success && json.book) return ensureBookTrilingualSync(json.book);
   } catch (e) {}
 
   return null;
 }
+

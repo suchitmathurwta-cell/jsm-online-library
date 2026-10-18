@@ -157,7 +157,7 @@ export default function HomePage({
                               backgroundColor: `${color.hex}18`,
                             }}
                           >
-                            {cat.name_en}
+                            {catName}
                           </span>
                         </div>
 
@@ -184,7 +184,13 @@ export default function HomePage({
                           color: color.hex,
                         }}
                       >
-                        <span>Explore All Genres</span>
+                        <span>
+                          {lang === 'hi'
+                            ? 'सभी विधाएँ देखें'
+                            : lang === 'ur'
+                            ? 'تمام اصناف دیکھیں'
+                            : 'Explore All Genres'}
+                        </span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-1 transition-transform" />
                       </Link>
                     </div>
@@ -203,7 +209,11 @@ export default function HomePage({
                         className="text-xs font-mono uppercase tracking-[0.2em] font-black"
                         style={{ color: color.hex }}
                       >
-                        GENRES UNDER — {catName}
+                        {lang === 'hi'
+                          ? `प्रमुख विधाएँ — ${catName}`
+                          : lang === 'ur'
+                          ? `اہم اصناف — ${catName}`
+                          : `GENRES UNDER — ${catName}`}
                       </h3>
                     </div>
 
@@ -211,7 +221,6 @@ export default function HomePage({
                       {genres.slice(0, 6).map((g) => {
                         const gTitle = g[`name_${lang}`] || g.name_hi || g.name_en;
                         const gDesc = g[`description_${lang}`] || g.description_hi || g.description_en;
-                        const subCount = g.subgenres_count || (g.subgenres && g.subgenres.length) || 0;
 
                         return (
                           <div
@@ -252,7 +261,13 @@ export default function HomePage({
                                 className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider font-bold transition-transform group-hover:translate-x-1"
                                 style={{ color: color.hex }}
                               >
-                                <span>EXPLORE SUB-GENRES</span>
+                                <span>
+                                  {lang === 'hi'
+                                    ? 'उप-विधाएँ देखें'
+                                    : lang === 'ur'
+                                    ? 'ذیلی اصناف دیکھیں'
+                                    : 'EXPLORE SUB-GENRES'}
+                                </span>
                                 <ArrowRight className="w-3.5 h-3.5" />
                               </span>
                             </div>
@@ -269,7 +284,11 @@ export default function HomePage({
                     <div className="flex items-center gap-2 mb-4">
                       <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color.hex }} />
                       <h4 className="text-xs font-mono uppercase tracking-wider text-zinc-400 font-semibold">
-                        KEY ARCHIVAL WORKS — {catName}
+                        {lang === 'hi'
+                          ? `प्रमुख पुस्तकें — ${catName}`
+                          : lang === 'ur'
+                          ? `منتخب کتب — ${catName}`
+                          : `KEY ARCHIVAL WORKS — ${catName}`}
                       </h4>
                     </div>
 

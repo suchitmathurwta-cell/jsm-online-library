@@ -49,6 +49,11 @@ function MainApp() {
     } else {
       document.body.classList.remove('font-urdu');
     }
+    document.title = lang === 'hi'
+      ? 'जसम ऑनलाइन लाइब्रेरी | जन संस्कृति मंच'
+      : lang === 'ur'
+        ? 'جسم آن لائن لائبریری | جن سنسکرتی منچ'
+        : 'JSM Online Library | Jan Sanskriti Manch';
   }, [lang, isRtl]);
 
   const [categories, setCategories] = useState([]);

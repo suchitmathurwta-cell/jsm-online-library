@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -36,17 +36,37 @@ export default function SubGenresPage({
   const navigate = useNavigate();
   const [showCreateSub, setShowCreateSub] = useState(false);
   const [newSubName, setNewSubName] = useState('');
+  const [previewTrilingual, setPreviewTrilingual] = useState({ hi: '', en: '', ur: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Edit Sub-genre State
   const [editingSub, setEditingSub] = useState(null);
   const [editSubHi, setEditSubHi] = useState('');
   const [editSubEn, setEditSubEn] = useState('');
+  const [editSubUr, setEditSubUr] = useState('');
   const [isEditingSub, setIsEditingSub] = useState(false);
 
   // Delete Sub-genre State
   const [deletingSub, setDeletingSub] = useState(null);
   const [isDeletingSub, setIsDeletingSub] = useState(false);
+
+  useEffect(() => {
+    if (!newSubName.trim()) {
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await getTrilingualNames(newSubName.trim());
+        setPreviewTrilingual({
+          hi: res.name_hi,
+          en: res.name_en,
+          ur: res.name_ur
+        });
+      } catch (e) {}
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [newSubName]);
 
   const category = categories.find((c) => c.id === categorySlug) || {
     id: categorySlug,
@@ -81,22 +101,22 @@ export default function SubGenresPage({
     if (!newSubName.trim()) return;
     setIsSubmitting(true);
     try {
+      const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
       const subId =
-        newSubName
-          .trim()
+        (name_en || newSubName.trim())
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || 'sg-' + Date.now();
-      const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
       await createSubgenre({
         id: subId,
         genre_id: genreSlug,
         category_id: categorySlug,
-        name_hi: name_hi || newSubName.trim(),
-        name_en: name_en || newSubName.trim(),
-        name_ur: name_ur || undefined
+        name_hi: previewTrilingual.hi || name_hi || newSubName.trim(),
+        name_en: previewTrilingual.en || name_en || newSubName.trim(),
+        name_ur: previewTrilingual.ur || name_ur || newSubName.trim()
       });
       setNewSubName('');
+      setPreviewTrilingual({ hi: '', en: '', ur: '' });
       setShowCreateSub(false);
       if (onRefreshCategories) await onRefreshCategories();
     } catch (err) {
@@ -127,7 +147,8 @@ export default function SubGenresPage({
     try {
       await updateSubgenre(categorySlug, genreSlug, editingSub.id, {
         name_hi: editSubHi.trim(),
-        name_en: editSubEn.trim()
+        name_en: editSubEn.trim(),
+        name_ur: editSubUr.trim() || undefined
       });
       setEditingSub(null);
       if (onRefreshCategories) await onRefreshCategories();
@@ -143,6 +164,7 @@ export default function SubGenresPage({
     setEditingSub(sg);
     setEditSubHi(sg.name_hi || '');
     setEditSubEn(sg.name_en || '');
+    setEditSubUr(sg.name_ur || '');
   };
 
   const openDeleteModal = (sg, e) => {
@@ -210,36 +232,46 @@ export default function SubGenresPage({
           <AdminOnly>
             <form
               onSubmit={handleCreateSubGenre}
-              className="mb-4 p-3 bg-black/50 rounded-2xl border border-white/[0.08] flex items-center gap-2 animate-fadeIn"
+              className="mb-4 p-3 bg-black/50 rounded-2xl border border-white/[0.08] space-y-2.5 animate-fadeIn"
             >
-              <input
-                type="text"
-                value={newSubName}
-                onChange={(e) => setNewSubName(e.target.value)}
-                placeholder={
-                  lang === 'hi'
-                    ? 'नए उप-वर्ग का नाम...'
-                    : lang === 'ur'
-                    ? 'نئی ذیلی صنف کا نام...'
-                    : 'Enter new sub-genre title...'
-                }
-                className="flex-1 px-3 py-2 text-xs border border-white/[0.1] rounded-xl outline-hidden focus:border-white bg-black/60 text-white placeholder-zinc-500"
-                autoFocus
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting || !newSubName.trim()}
-                className="px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
-              >
-                {isSubmitting ? '...' : '+ Create'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCreateSub(false)}
-                className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
-              >
-                Cancel
-              </button>
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newSubName}
+                  onChange={(e) => setNewSubName(e.target.value)}
+                  placeholder={
+                    lang === 'hi'
+                      ? 'नए विषय का नाम हिंदी, अंग्रेज़ी या उर्दू में लिखें...'
+                      : lang === 'ur'
+                      ? 'نئے موضوع کا نام اردو، ہندی یا انگریزی میں درج کریں...'
+                      : 'Enter new sub-genre in English, Hindi, or Urdu...'
+                  }
+                  className="flex-1 px-3 py-2 text-xs border border-white/[0.1] rounded-xl outline-hidden focus:border-white bg-black/60 text-white placeholder-zinc-500"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !newSubName.trim()}
+                  className="px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmitting ? '...' : '+ Create'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateSub(false)}
+                  className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+              </div>
+              {newSubName.trim() && (
+                <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-white/[0.08] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span className="font-mono text-amber-400 font-semibold">AUTO TRILINGUAL:</span>
+                  <span><strong>हिंदी:</strong> {previewTrilingual.hi || '...'}</span>
+                  <span><strong>English:</strong> {previewTrilingual.en || '...'}</span>
+                  <span><strong>اردو:</strong> {previewTrilingual.ur || '...'}</span>
+                </div>
+              )}
             </form>
           </AdminOnly>
         )}
@@ -430,8 +462,21 @@ export default function SubGenresPage({
                   type="text"
                   value={editSubEn}
                   onChange={(e) => setEditSubEn(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans"
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (Urdu / اردو)
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={editSubUr}
+                  onChange={(e) => setEditSubUr(e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black"
                 />
               </div>
 

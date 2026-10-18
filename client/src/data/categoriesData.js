@@ -497,12 +497,6 @@ export const DEFAULT_CATEGORIES = [
             "name_hi": "दार्शनिक व मानवीय मर्सिया",
             "name_en": "Humanist & Ethical Marsiya",
             "name_ur": "انسانی و اخلاقی مرثیہ"
-          },
-          {
-            "id": "xyuza",
-            "name_hi": "सयुजा",
-            "name_en": "XYUZA",
-            "name_ur": "ضا"
           }
         ]
       },

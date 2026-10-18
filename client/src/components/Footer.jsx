@@ -13,13 +13,13 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-sans font-bold text-xs shadow-xs tracking-tighter">
-                <span>{lang === 'ur' ? 'جےایس‌ایم' : (lang === 'en' ? 'JSM' : 'JSM')}</span>
+                <span>{lang === 'hi' ? 'जसम' : lang === 'ur' ? 'جسم' : 'JSM'}</span>
               </div>
               <span className="font-sans text-xl font-bold tracking-tight text-white">
-                {t.brand || 'JSM'}
+                {t.brand || (lang === 'hi' ? 'जसम' : lang === 'ur' ? 'جسم' : 'JSM')}
               </span>
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-white/[0.08]">
-                {t.brandSubtitle || 'ONLINE LIBRARY'}
+                {t.brandSubtitle || (lang === 'hi' ? 'ऑनलाइन लाइब्रेरी' : lang === 'ur' ? 'آن لائن لائبریری' : 'ONLINE LIBRARY')}
               </span>
             </div>
 
@@ -49,25 +49,29 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
               {t.footer?.majorGenres || 'PRIMARY DOMAINS'}
             </h4>
             <ul className="space-y-1.5 text-xs text-zinc-400 font-sans">
-              <li><Link to="/category/novel" className="hover:text-white transition">Novel & Fiction</Link></li>
-              <li><Link to="/category/story" className="hover:text-white transition">Story & Katha</Link></li>
-              <li><Link to="/category/poetry" className="hover:text-white transition">Poetry & Nazm</Link></li>
-              <li><Link to="/category/cultural-conscience" className="hover:text-white transition">Cultural Conscience</Link></li>
-              <li><Link to="/category/vimarsh" className="hover:text-white transition">Discourse & Vimarsh</Link></li>
-              <li><Link to="/category/satire" className="hover:text-white transition">Satire & Vyangya</Link></li>
+              <li><Link to="/category/novel" className="hover:text-white transition">{t.nav?.novel || 'Novel & Fiction'}</Link></li>
+              <li><Link to="/category/story" className="hover:text-white transition">{t.nav?.story || 'Story & Katha'}</Link></li>
+              <li><Link to="/category/poetry" className="hover:text-white transition">{t.nav?.poetry || 'Poetry & Nazm'}</Link></li>
+              <li><Link to="/category/cultural-conscience" className="hover:text-white transition">{t.nav?.conscience || 'Cultural Conscience'}</Link></li>
+              <li><Link to="/category/vimarsh" className="hover:text-white transition">{t.nav?.essays || 'Discourse & Vimarsh'}</Link></li>
+              <li><Link to="/category/satire" className="hover:text-white transition">{t.nav?.satire || 'Satire & Vyangya'}</Link></li>
             </ul>
           </div>
 
           {/* Col 3: Institutional Mandate */}
           <div className="md:col-span-4 space-y-2.5">
             <h4 className="text-xs font-mono uppercase tracking-[0.25em] text-white">
-              OPEN ACCESS MANDATE
+              {t.footer?.openAccess || 'OPEN ACCESS MANDATE'}
             </h4>
             <p className="text-xs text-zinc-400 font-sans leading-relaxed">
-              Preserving South Asian intellectual heritage with trilingual dignity across Devanagari, Nastaliq, and Romanized scripts. All materials hosted are public cultural common property.
+              {lang === 'hi'
+                ? 'देवनागरी, नस्तलीक़ और रोमन लिपि में भारतीय उपमहाद्वीप की बौद्धिक व साहित्यिक विरासत का संरक्षण। यहाँ उपलब्ध समस्त सामग्री सार्वजनिक सांस्कृतिक धरोहर है।'
+                : lang === 'ur'
+                ? 'دیوناگری، نستعلیق اور لاطینی رسم الخط میں برصغیر کے فکری و ادبی ورثے کا تحفظ۔ یہاں موجود تمام مواد عوامی ثقافتی ورثہ ہے۔'
+                : 'Preserving South Asian intellectual heritage with trilingual dignity across Devanagari, Nastaliq, and Romanized scripts. All materials hosted are public cultural common property.'}
             </p>
             <div className="pt-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">
-              SUPABASE CLOUD • VECTORIZED PDF STREAMING • SCRIPT PARITY
+              {t.footer?.culturalConscience || 'SUPABASE CLOUD • VECTORIZED PDF STREAMING • SCRIPT PARITY'}
             </div>
           </div>
 
@@ -75,7 +79,7 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
 
         {/* Bottom Credits Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-          <p>© {new Date().getFullYear()} JSM ONLINE LIBRARY • PUBLIC TRUST</p>
+          <p>{t.footer?.rights || `© ${new Date().getFullYear()} JSM ONLINE LIBRARY • PUBLIC TRUST`}</p>
           <div className="flex items-center gap-4 text-zinc-400">
             <span className="hover:text-white transition cursor-pointer">PRIVACY</span>
             <span>•</span>
