@@ -367,16 +367,18 @@ export default function CategoryGenresPage({
                   {hl.layer2Heading || 'COLLECTIONS IN'} {catTitle}
                 </h2>
               </div>
-              <span
-                className="text-xs font-mono tracking-wider px-2.5 py-0.5 rounded-full border"
-                style={{
-                  backgroundColor: `${color.hex}15`,
-                  borderColor: `${color.hex}35`,
-                  color: color.hex,
-                }}
-              >
-                [{genres.length} {lang === 'hi' ? 'विधाएँ' : lang === 'ur' ? 'اصناف' : 'GENRES'}]
-              </span>
+              <AdminOnly>
+                <span
+                  className="text-xs font-mono tracking-wider px-2.5 py-0.5 rounded-full border"
+                  style={{
+                    backgroundColor: `${color.hex}15`,
+                    borderColor: `${color.hex}35`,
+                    color: color.hex,
+                  }}
+                >
+                  [{genres.length} {lang === 'hi' ? 'विधाएँ' : lang === 'ur' ? 'اصناف' : 'GENRES'}]
+                </span>
+              </AdminOnly>
             </div>
 
             {/* 3. Rich, Uniform, Vibrant Genre Cards (Layer 2) */}
