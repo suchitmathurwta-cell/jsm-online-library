@@ -22,7 +22,7 @@ import SearchableCombobox from './SearchableCombobox';
 import { getCategoriesWithHierarchy, uploadBookFile, createBookRecord, createFormat, deleteFormat, createGenre, deleteGenre, createSubgenre, deleteSubgenre } from '../services/supabaseApi';
 import { DEFAULT_CATEGORIES } from '../data/categoriesData';
 import { translations, getLocalizedEra } from '../locales/translations';
-import { transliterateAll, detectLanguage } from '../services/transliterationService';
+import { transliterateAll, detectLanguage, getTrilingualNames } from '../services/transliterationService';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -142,7 +142,7 @@ export default function UploadBookModal({
       subgenre: defaultSub.id, // Subgenre
       era: 'contemporary',
       year: extractedYear,
-      publisher: lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : (lang === 'ur' ? 'چیتنا ڈیجیٹل آرکائیوز' : 'Chetna Digital Archives'),
+      publisher: lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : (lang === 'ur' ? 'جے ایس ایم آن لائن لائبریری' : 'JSM Online Library'),
       description: '',
       description_en: '',
       coverFile: null,
@@ -359,12 +359,13 @@ export default function UploadBookModal({
   // Hierarchy Handlers with Supabase sync and immediate UI responsiveness
   const handleCreateFormat = async (name) => {
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('fmt-' + Date.now());
+    const { name_en, name_hi, name_ur } = await getTrilingualNames(name);
     try {
-      await createFormat({ id, name_hi: name, name_en: name });
+      await createFormat({ id, name_hi: name_hi || name, name_en: name_en || name, name_ur });
     } catch (e) {
       console.warn('createFormat DB notice:', e);
     }
-    const newFormat = { id, name_hi: name, name_en: name, genres: [] };
+    const newFormat = { id, name_hi: name_hi || name, name_en: name_en || name, name_ur, genres: [] };
     setAllCategories(prev => [...prev, newFormat]);
     updateCurrentItem({ category: id, genre: '', subgenre: '' });
   };
@@ -382,12 +383,13 @@ export default function UploadBookModal({
     const catId = currentItem?.category || activeFormatObj?.id;
     if (!catId) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('gnr-' + Date.now());
+    const { name_en, name_hi, name_ur } = await getTrilingualNames(name);
     try {
-      await createGenre({ id, category_id: catId, name_hi: name, name_en: name });
+      await createGenre({ id, category_id: catId, name_hi: name_hi || name, name_en: name_en || name, name_ur });
     } catch (e) {
       console.warn('createGenre DB notice:', e);
     }
-    const newGenre = { id, category_id: catId, name_hi: name, name_en: name, subgenres: [] };
+    const newGenre = { id, category_id: catId, name_hi: name_hi || name, name_en: name_en || name, name_ur, subgenres: [] };
     setAllCategories(prev => prev.map(c => {
       if (c.id === catId) {
         return { ...c, genres: [...(c.genres || []), newGenre] };
@@ -417,18 +419,20 @@ export default function UploadBookModal({
     const gnrId = currentItem?.genre || activeGenreObj?.id || 'general';
     if (!catId) return;
     const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || ('sub-' + Date.now());
+    const { name_en, name_hi, name_ur } = await getTrilingualNames(name);
     try {
       await createSubgenre({
         id,
         category_id: catId,
         genre_id: gnrId,
-        name_hi: name,
-        name_en: name
+        name_hi: name_hi || name,
+        name_en: name_en || name,
+        name_ur
       });
     } catch (e) {
       console.warn('createSubgenre DB notice:', e);
     }
-    const newSub = { id, category_id: catId, genre_id: gnrId, name_hi: name, name_en: name };
+    const newSub = { id, category_id: catId, genre_id: gnrId, name_hi: name_hi || name, name_en: name_en || name, name_ur };
     setAllCategories(prev => prev.map(c => {
       if (c.id === catId) {
         return {
@@ -541,7 +545,7 @@ export default function UploadBookModal({
             formData.append('subgenre', item.subgenre || 'general');
             formData.append('era', getLocalizedEra(item.era, 'en'));
             formData.append('year', item.year || new Date().getFullYear().toString());
-            formData.append('publisher', item.publisher || 'Chetna Digital Library');
+            formData.append('publisher', item.publisher || 'JSM Online Library');
             formData.append('pages', parseInt(item.pages) || 50);
             formData.append('description', item.description || '');
             formData.append('is_featured', Boolean(item.is_featured));
@@ -572,7 +576,7 @@ export default function UploadBookModal({
           subgenre: item.subgenre || 'general',
           era: getLocalizedEra(item.era, 'en'),
           year: item.year || new Date().getFullYear().toString(),
-          publisher: item.publisher || 'Chetna Digital Library',
+          publisher: item.publisher || 'JSM Online Library',
           pages: parseInt(item.pages) || 50,
           description: item.description || '',
           description_en: item.description_en || item.description || '',

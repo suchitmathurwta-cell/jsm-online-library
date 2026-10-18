@@ -1,7 +1,7 @@
 export const translations = {
   hi: {
-    brand: "चेतना",
-    brandSubtitle: "डिजिटल अभिलेखागार",
+    brand: "जेएसएम",
+    brandSubtitle: "ऑनलाइन लाइब्रेरी",
     nav: {
       all: "समस्त पुस्तकें",
       novel: "उपन्यास",
@@ -24,7 +24,7 @@ export const translations = {
     },
     hero: {
       openAccessBadge: "खुला डिजिटल पुस्तकालय",
-      title: "चेतना डिजिटल पुस्तकालय",
+      title: "जेएसएम ऑनलाइन लाइब्रेरी",
       descriptionMain: "हिंदी, उर्दू और भारतीय उपमहाद्वीप के महान विचारकों, कथाकारों और दार्शनिकों के कालातीत साहित्य का खुला, संरक्षित और प्रामाणिक डिजिटल पुस्तकालय। प्रेमचंद, कबीर, रवींद्रनाथ टैगोर, मीर अनीस और भगत सिंह की संपूर्ण रचनाएँ उच्च-गुणवत्ता में पढ़ें और डाउनलोड करें।",
       readMore: "विस्तार से पढ़ें",
       readLess: "संक्षेप में पढ़ें",
@@ -54,7 +54,7 @@ export const translations = {
       resetFilters: "फ़िल्टर हटाएं",
       viewAllCatalog: "सम्पूर्ण पुस्तकालय सूची देखें",
       viewCatalogCount: "पुस्तकालय की सभी {count} पुस्तकें देखें",
-      drilldownHeaderTitle: "चेतना डिजिटल पुस्तकालय",
+      drilldownHeaderTitle: "जेएसएम ऑनलाइन लाइब्रेरी",
       drilldownHeaderSub: "विधा एवं कालखंड अनुसार पुस्तकें",
       allSubgenres: "समस्त विषय",
       booksFound: "पुस्तकें उपलब्ध",
@@ -107,7 +107,7 @@ export const translations = {
       citationCopied: "संदर्भ कॉपी हो गया!",
       close: "बंद करें",
       relatedBooks: "इसी विधा की अन्य रचनाएँ",
-      footerNote: "चेतना सांस्कृतिक एवं साहित्यिक विकास मंच • खुला अभिलेखागार"
+      footerNote: "जेएसएम सांस्कृतिक एवं साहित्यिक मंच • खुला पुस्तकालय"
     },
     reader: {
       page: "पृष्ठ",
@@ -159,7 +159,7 @@ export const translations = {
       submitBtn: "सभी फ़ाइलें अपलोड करें",
       uploading: "अपलोड व इंडेक्स हो रहा है...",
       fileProgress: "अपलोड प्रगति:",
-      successMsg: "सभी रचनाएँ सफलतापूर्वक चेतना पुस्तकालय में जुड़ गईं!",
+      successMsg: "सभी रचनाएँ सफलतापूर्वक जेएसएम लाइब्रेरी में जुड़ गईं!",
       tierHeader: "3-स्तरीय वर्गीकरण अनुक्रम",
       formatLabel: "1. प्रारूप *",
       genreLabel: "2. विधा *",
@@ -177,7 +177,7 @@ export const translations = {
       highlightLandmark: "कालजयी कृति के रूप में मुख्य पृष्ठ पर प्रदर्शित करें"
     },
     admin: {
-      title: "चेतना पुस्तकालय प्रबंधन",
+      title: "जेएसएम पुस्तकालय प्रबंधन",
       subtitle: "समस्त पुस्तकों, विधाओं और आंकड़ों का प्रबंधन",
       totalBooks: "कुल पुस्तकें",
       totalDownloads: "कुल डाउनलोड्स",
@@ -195,13 +195,13 @@ export const translations = {
       genresCount: "विधाएँ",
       worksCount: "पुस्तकें",
       close: "बंद करें",
-      footerNote: "चेतना डिजिटल पुस्तकालय प्रबंधन प्रणाली"
+      footerNote: "जेएसएम डिजिटल पुस्तकालय प्रबंधन प्रणाली"
     },
     auth: {
       modalBadge: "निःशुल्क डिजिटल अध्ययन",
       titleDownload: "मुफ़्त PDF डाउनलोड सदस्यता",
-      subtitleDownload: "चेतना डिजिटल पुस्तकालय से रचनाएँ डाउनलोड करने हेतु साइन इन करें",
-      titleDefault: "चेतना डिजिटल पुस्तकालय",
+      subtitleDownload: "जेएसएम ऑनलाइन लाइब्रेरी से पुस्तकें डाउनलोड करने हेतु साइन इन करें",
+      titleDefault: "जेएसएम ऑनलाइन लाइब्रेरी",
       subtitleDefault: "अपने व्यक्तिगत अध्ययन संग्रह और इतिहास को सुरक्षित रखने के लिए साइन इन करें",
       googleBtn: "गूगल खाते से जारी रखें",
       orEmail: "या ईमेल के माध्यम से",
@@ -249,7 +249,7 @@ export const translations = {
       submitting: "भेजा जा रहा है...",
       cancel: "रद्द करें",
       successTitle: "आपका सुझाव प्राप्त हुआ!",
-      successDesc: "चेतना पुस्तकालय की शोध एवं डिजिटाइजेशन टीम आपकी सुझाई गई कृति की उपलब्धता व कॉपीराइट स्थिति की समीक्षा करेगी।",
+      successDesc: "जेएसएम पुस्तकालय की शोध एवं डिजिटाइजेशन टीम आपकी सुझाई गई कृति की उपलब्धता व कॉपीराइट स्थिति की समीक्षा करेगी।",
       done: "समाप्त करें"
     },
     downloadReady: {
@@ -271,7 +271,7 @@ export const translations = {
       visitorView: "पाठक दृश्य",
       cms: "प्रबंधन ⚙️",
       shortcut: "Ctrl+⇧+A",
-      gateTitle: "चेतना पुस्तकालय प्रबंधन",
+      gateTitle: "जेएसएम पुस्तकालय प्रबंधन",
       gateSubtitle: "पुस्तकों व संग्रहों के प्रबंधन हेतु प्रवेश",
       statusActiveNote: "आप वर्तमान में व्यवस्थापक (Admin) के रूप में जुड़े हैं।",
       statusVisitorNote: "आप वर्तमान में सामान्य पाठक दृश्य में हैं।",
@@ -358,19 +358,19 @@ export const translations = {
       home: "मुख्य पृष्ठ"
     },
     footer: {
-      about: "चेतना डिजिटल पुस्तकालय भारतीय उपमहाद्वीप के महान विचारकों, लेखकों और दार्शनिकों के कालातीत साहित्य का खुला, संरक्षित और प्रामाणिक डिजिटल अभिलेखागार है।",
+      about: "जेएसएम ऑनलाइन लाइब्रेरी भारतीय उपमहाद्वीप के महान विचारकों, लेखकों और दार्शनिकों के कालातीत साहित्य का खुला, संरक्षित और प्रामाणिक डिजिटल पुस्तकालय है।",
       majorGenres: "प्रमुख साहित्यिक विधाएँ",
       initiatives: "संबद्ध साहित्यिक एवं सांस्कृतिक संस्थान",
-      rights: "© 2026 चेतना डिजिटल अभिलेखागार। सर्वाधिकार सुरक्षित।",
-      openAccess: "खुला अभिलेखागार",
+      rights: "© 2026 जेएसएम ऑनलाइन लाइब्रेरी। सर्वाधिकार सुरक्षित।",
+      openAccess: "खुला पुस्तकालय",
       culturalConscience: "सांस्कृतिक चेतना एवं विकास",
       freeDownloads: "निःशुल्क PDF डाउनलोड्स"
     }
   },
 
   en: {
-    brand: "Chetna",
-    brandSubtitle: "Digital Archives",
+    brand: "JSM",
+    brandSubtitle: "Online Library",
     nav: {
       all: "All Books",
       novel: "Novels",
@@ -393,7 +393,7 @@ export const translations = {
     },
     hero: {
       openAccessBadge: "Open Digital Library",
-      title: "Chetna Digital Library",
+      title: "JSM Online Library",
       descriptionMain: "An open and authentic digital library of timeless literature from great thinkers, storytellers, and poets of the Indian subcontinent. Read and download complete works of Premchand, Kabir, Rabindranath Tagore, Mir Anees, and Bhagat Singh in high fidelity.",
       readMore: "Read more",
       readLess: "Read less",
@@ -423,7 +423,7 @@ export const translations = {
       resetFilters: "Reset filters",
       viewAllCatalog: "Browse Full Library Catalog",
       viewCatalogCount: "View all {count} books in the library",
-      drilldownHeaderTitle: "Chetna Digital Library",
+      drilldownHeaderTitle: "JSM Online Library",
       drilldownHeaderSub: "Explore books by genre, period, and theme",
       allSubgenres: "All Themes",
       booksFound: "books available",
@@ -476,7 +476,7 @@ export const translations = {
       citationCopied: "Citation copied to clipboard!",
       close: "Close",
       relatedBooks: "Other Works in this Genre",
-      footerNote: "Chetna Cultural & Literary Development Platform • Open Access Repository"
+      footerNote: "JSM Cultural & Literary Development Platform • Open Access Library"
     },
     reader: {
       page: "Page",
@@ -528,7 +528,7 @@ export const translations = {
       submitBtn: "Upload & Preserve All Files",
       uploading: "Uploading and indexing...",
       fileProgress: "Upload Progress:",
-      successMsg: "All books successfully preserved in Chetna Library!",
+      successMsg: "All books successfully preserved in JSM Online Library!",
       tierHeader: "3-Tier Classification Hierarchy",
       formatLabel: "1. Format *",
       genreLabel: "2. Genre *",
@@ -546,7 +546,7 @@ export const translations = {
       highlightLandmark: "Highlight as Landmark Masterpiece (Feature on Homepage Shelves)"
     },
     admin: {
-      title: "Chetna Library Administration",
+      title: "JSM Library Administration",
       subtitle: "Manage all digitized works, genres, subgenres, and platform statistics",
       totalBooks: "Total Books",
       totalDownloads: "Total Downloads",
@@ -564,13 +564,13 @@ export const translations = {
       genresCount: "Genres",
       worksCount: "Books",
       close: "Close",
-      footerNote: "Chetna Digital Library Administration"
+      footerNote: "JSM Digital Library Administration"
     },
     auth: {
       modalBadge: "Free Digital Study Access",
       titleDownload: "Free PDF Download Membership",
-      subtitleDownload: "Sign in to download and preserve works from the Chetna Digital Library",
-      titleDefault: "Chetna Digital Library",
+      subtitleDownload: "Sign in to download and preserve works from the JSM Online Library",
+      titleDefault: "JSM Online Library",
       subtitleDefault: "Sign in to preserve your reading history and personal study collection",
       googleBtn: "Continue with Google Account",
       orEmail: "Or continue with Email",
@@ -618,7 +618,7 @@ export const translations = {
       submitting: "Submitting...",
       cancel: "Cancel",
       successTitle: "Recommendation Received!",
-      successDesc: "The Chetna research and digitization team will review the availability and copyright status of your suggested work.",
+      successDesc: "The JSM research and library team will review the availability and copyright status of your suggested work.",
       done: "Done"
     },
     downloadReady: {
@@ -727,10 +727,10 @@ export const translations = {
       home: "Home"
     },
     footer: {
-      about: "Chetna Digital Library is an open, authentic digital repository dedicated to preserving and disseminating the timeless literary and philosophical heritage of the Indian subcontinent.",
+      about: "JSM Online Library is an open, authentic digital library dedicated to preserving and disseminating the timeless literary and philosophical heritage of the Indian subcontinent.",
       majorGenres: "Major Literary Genres",
       initiatives: "Affiliated Literary & Cultural Institutions",
-      rights: "© 2026 Chetna Digital Archives. All rights reserved.",
+      rights: "© 2026 JSM Online Library. All rights reserved.",
       openAccess: "Open Access Library",
       culturalConscience: "Cultural Conscience & Development",
       freeDownloads: "Free PDF Downloads"
@@ -738,8 +738,8 @@ export const translations = {
   },
 
   ur: {
-    brand: "چیتنا",
-    brandSubtitle: "ڈیجیٹل آرکائیوز",
+    brand: "جے ایس ایم",
+    brandSubtitle: "آن لائن لائبریری",
     nav: {
       all: "تمام ذخیرہ",
       novel: "ناول",
@@ -760,7 +760,7 @@ export const translations = {
     },
     hero: {
       openAccessBadge: "ادبی و ثقافتی ورثہ",
-      title: "چیتنا ڈیجیٹل کتب خانہ",
+      title: "جے ایس ایم آن لائن لائبریری",
       descriptionMain: "برصغیر پاک و ہند کے عظیم مفکرین، ادیبوں اور فلسفیوں کے لافانی ادب کا کھلا، محفوظ اور مستند ڈیجیٹل کتب خانہ۔ پریم چند، کبیر، رابندر ناتھ ٹیگور، میر انیس اور بھگت سنگھ کی مکمل تصانیف اعلیٰ معیار میں پڑھیں اور ڈاؤن لوڈ کریں۔",
       readMore: "مزید پڑھیں",
       readLess: "مختصر کریں",
@@ -790,7 +790,7 @@ export const translations = {
       resetFilters: "فلٹر ختم کریں",
       viewAllCatalog: "مکمل کتب خانہ فہرست دیکھیں",
       viewCatalogCount: "کتب خانے کی تمام {count} محفوظ کتب دیکھیں",
-      drilldownHeaderTitle: "چیتنا ڈیجیٹل آرکائیوز",
+      drilldownHeaderTitle: "جے ایس ایم آن لائن لائبریری",
       drilldownHeaderSub: "صنف اور عہد کے لحاظ سے محفوظ ادبی تصانیف",
       allSubgenres: "تمام ذیلی اصناف",
       booksFound: "کتب دستیاب",
@@ -843,7 +843,7 @@ export const translations = {
       citationCopied: "حوالہ نقل ہو گیا!",
       close: "بند کریں",
       relatedBooks: "اس صنف کی دیگر تصانیف",
-      footerNote: "چیتنا ادبی و فکری فورم • کھلا ڈیجیٹل کتب خانہ"
+      footerNote: "جے ایس ایم ادبی و فکری فورم • کھلا ڈیجیٹل کتب خانہ"
     },
     reader: {
       page: "صفحہ",
@@ -895,7 +895,7 @@ export const translations = {
       submitBtn: "تمام فائلیں محفوظ کریں",
       uploading: "محفوظ کی جا رہی ہیں...",
       fileProgress: "پیش رفت:",
-      successMsg: "تمام کتب کامیابی کے ساتھ چیتنا کتب خانہ میں محفوظ ہو گئیں!",
+      successMsg: "تمام کتب کامیابی کے ساتھ جے ایس ایم کتب خانے میں محفوظ ہو گئیں!",
       tierHeader: "3 درجاتی درجہ بندی",
       formatLabel: "1. فارمیٹ *",
       genreLabel: "2. صنف *",
@@ -913,7 +913,7 @@ export const translations = {
       highlightLandmark: "اہم شاہکار کے طور پر مرکزی صفحے پر نمایاں کریں"
     },
     admin: {
-      title: "چیتنا کتب خانہ انتظام",
+      title: "جے ایس ایم کتب خانہ انتظام",
       subtitle: "تمام محفوظ تصانیف، اصناف اور اعداد و شمار کا انتظام",
       totalBooks: "کل کتب",
       totalDownloads: "کل ڈاؤن لوڈز",
@@ -931,13 +931,13 @@ export const translations = {
       genresCount: "اصناف",
       worksCount: "کتب",
       close: "بند کریں",
-      footerNote: "چیتنا ڈیجیٹل کتب خانہ نظم و نسق"
+      footerNote: "جے ایس ایم ڈیجیٹل کتب خانہ نظم و نسق"
     },
     auth: {
       modalBadge: "مفت ڈیجیٹل مطالعہ",
       titleDownload: "مفت PDF ڈاؤن لوڈ رکنیت",
-      subtitleDownload: "چیتنا ڈیجیٹل کتب خانہ سے کتب ڈاؤن لوڈ کرنے کے لیے سائن ان کریں",
-      titleDefault: "چیتنا ڈیجیٹل کتب خانہ",
+      subtitleDownload: "جے ایس ایم آن لائن لائبریری سے کتب ڈاؤن لوڈ کرنے کے لیے لاگ ان کریں",
+      titleDefault: "جے ایس ایم آن لائن لائبریری",
       subtitleDefault: "اپنے ذاتی مطالعے کا ریکارڈ محفوظ رکھنے کے لیے لاگ ان کریں",
       googleBtn: "گوگل اکاؤنٹ کے ساتھ جاری رکھیں",
       orEmail: "یا ای میل کے ذریعے",
@@ -985,7 +985,7 @@ export const translations = {
       submitting: "بھیجی جا رہی ہے...",
       cancel: "منسوخ کریں",
       successTitle: "آپ کی تجویز موصول ہو گئی!",
-      successDesc: "چیتنا کتب خانے کی ریسرچ ٹیم تجویز کردہ تصنیف کے کاپی رائٹ کی جانچ کرے گی۔",
+      successDesc: "جے ایس ایم کتب خانے کی ریسرچ ٹیم تجویز کردہ تصنیف کے کاپی رائٹ کی جانچ کرے گی۔",
       done: "مکمل"
     },
     downloadReady: {
@@ -1094,10 +1094,10 @@ export const translations = {
       home: "مرکزی صفحہ"
     },
     footer: {
-      about: "چیتنا ڈیجیٹل کتب خانہ برصغیر پاک و ہند کے عظیم مفکرین اور ادبا کے لافانی ورثے کے تحفظ اور اشاعت کے لیے وقف ایک مستند کتب خانہ ہے۔",
+      about: "جے ایس ایم آن لائن لائبریری برصغیر پاک و ہند کے عظیم مفکرین اور ادبا کے لافانی ورثے کے تحفظ اور اشاعت کے لیے وقف ایک مستند کتب خانہ ہے۔",
       majorGenres: "اہم اصنافِ ادب",
       initiatives: "ملحقہ ادبی و ثقافتی ادارے",
-      rights: "© 2026 چیتنا ڈیجیٹل آرکائیوز۔ جملہ حقوق محفوظ ہیں۔",
+      rights: "© 2026 جے ایس ایم آن لائن لائبریری۔ جملہ حقوق محفوظ ہیں۔",
       openAccess: "اوپن ایکسیس کتب خانہ",
       culturalConscience: "ثقافتی شعور و ترقی",
       freeDownloads: "مفت PDF ڈاؤن لوڈز"

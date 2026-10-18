@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Plus, ChevronRight } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { createSubgenre } from '../services/supabaseApi';
+import { getTrilingualNames } from '../services/transliterationService';
 import ArchiveCard from './bento/ArchiveCard';
 
 const containerVariants = {
@@ -63,12 +64,14 @@ export default function CategoryTiles({
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/(^-|-$)/g, '') || 'sg-' + Date.now();
         const firstGenreId = activeCategoryObj?.genres?.[0]?.id || 'general';
+        const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
         await createSubgenre({
           id: subId,
           category_id: selectedCategory,
           genre_id: firstGenreId,
-          name_hi: newSubName.trim(),
-          name_en: newSubName.trim()
+          name_hi: name_hi || newSubName.trim(),
+          name_en: name_en || newSubName.trim(),
+          name_ur: name_ur || undefined
         });
         if (onRefreshCategories) await onRefreshCategories();
       }
@@ -90,10 +93,10 @@ export default function CategoryTiles({
           <div>
             <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-zinc-400 block mb-3">
               {lang === 'hi'
-                ? 'चेतना डिजिटल पुस्तकालय • संग्रह अवलोकन'
+                ? 'जेएसएम ऑनलाइन लाइब्रेरी • संग्रह अवलोकन'
                 : lang === 'ur'
-                ? 'چیتنا ڈیجیٹل کتب خانہ • مجموعات کا جائزہ'
-                : 'CHETNA DIGITAL LIBRARY • EXPLORE COLLECTIONS'}
+                ? 'جے ایس ایم آن لائن لائبریری • مجموعات کا جائزہ'
+                : 'JSM ONLINE LIBRARY • EXPLORE COLLECTIONS'}
             </span>
             <h1 className="text-4xl md:text-7xl font-bold tracking-[-0.04em] text-white font-sans">
               {lang === 'hi'

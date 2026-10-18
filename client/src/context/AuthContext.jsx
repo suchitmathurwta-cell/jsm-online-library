@@ -4,9 +4,10 @@ import { supabase } from '../services/supabaseClient';
 const AuthContext = createContext({});
 
 const ADMIN_CREDENTIALS = {
-  email: 'admin@chetna.org',
+  email: 'admin@jsmlibrary.org',
+  secondaryEmail: 'admin@chetna.org',
   password: 'chetnaAdmin2026!',
-  passcode: 'chetna2026'
+  passcodes: ['jsm2026', 'jsm', 'jsmlibrary', 'chetna2026', 'chetna', 'admin']
 };
 
 export function AuthProvider({ children }) {
@@ -66,15 +67,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const loginAsAdmin = (emailOrPasscode, password) => {
-    const trimmedInput = (emailOrPasscode || '').trim();
+    const rawInput = (emailOrPasscode || '').trim();
+    const normalizedInput = rawInput.toLowerCase();
     const trimmedPass = (password || '').trim();
 
-    // Check against Master Passcode or Admin Email/Password
-    if (
-      trimmedInput === ADMIN_CREDENTIALS.passcode ||
-      trimmedInput === 'chetna' ||
-      (trimmedInput.toLowerCase() === ADMIN_CREDENTIALS.email && trimmedPass === ADMIN_CREDENTIALS.password)
-    ) {
+    // Check against Master Passcodes or Admin Email/Password
+    const isPasscodeMatch = ADMIN_CREDENTIALS.passcodes.includes(normalizedInput);
+    const isEmailMatch = (normalizedInput === ADMIN_CREDENTIALS.email || normalizedInput === ADMIN_CREDENTIALS.secondaryEmail) && trimmedPass === ADMIN_CREDENTIALS.password;
+
+    if (isPasscodeMatch || isEmailMatch) {
       setRole('admin');
       localStorage.setItem('chetna_user_role', 'admin');
       return { success: true };
@@ -82,7 +83,7 @@ export function AuthProvider({ children }) {
 
     // Try Supabase auth if provided
     if (trimmedPass) {
-      return signIn(trimmedInput, trimmedPass).then(({ user: authUser }) => {
+      return signIn(rawInput, trimmedPass).then(({ user: authUser }) => {
         setRole('admin');
         localStorage.setItem('chetna_user_role', 'admin');
         return { success: true, user: authUser };

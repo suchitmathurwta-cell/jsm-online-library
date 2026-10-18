@@ -101,7 +101,59 @@ export const LITERARY_DICTIONARY = {
   'of': { hi: 'ऑफ', en: 'Of', ur: 'آف' },
   'in': { hi: 'इन', en: 'In', ur: 'ان' },
   'for': { hi: 'फॉर', en: 'For', ur: 'فار' },
-  'by': { hi: 'द्वारा', en: 'By', ur: 'از' }
+  'by': { hi: 'द्वारा', en: 'By', ur: 'از' },
+
+  // Literary Categories & Genres
+  'philosophy': { hi: 'दर्शन', en: 'Philosophy', ur: 'فلسفہ' },
+  'darshan': { hi: 'दर्शन', en: 'Philosophy', ur: 'فلسفہ' },
+  'drama': { hi: 'नाटक', en: 'Drama', ur: 'ڈراما' },
+  'play': { hi: 'नाटक', en: 'Play', ur: 'ڈراما' },
+  'plays': { hi: 'नाटक', en: 'Plays', ur: 'ڈرامے' },
+  'theatre': { hi: 'रंगमंच', en: 'Theatre', ur: 'تھیٹر' },
+  'fiction': { hi: 'कथा साहित्य', en: 'Fiction', ur: 'افسانوی ادب' },
+  'non-fiction': { hi: 'गैर-काल्पनिक', en: 'Non-Fiction', ur: 'غیر افسانوی' },
+  'biography': { hi: 'जीवनी', en: 'Biography', ur: 'سوانح حیات' },
+  'jeewani': { hi: 'जीवनी', en: 'Biography', ur: 'سوانح حیات' },
+  'memoir': { hi: 'संस्मरण', en: 'Memoir', ur: 'یادداشتیں' },
+  'short stories': { hi: 'लघु कथाएँ', en: 'Short Stories', ur: 'مختصر کہانیاں' },
+  'short story': { hi: 'लघु कथा', en: 'Short Story', ur: 'مختصر کہانی' },
+  'folklore': { hi: 'लोक साहित्य', en: 'Folklore', ur: 'لوک ادب' },
+  'folk tales': { hi: 'लोक कथाएँ', en: 'Folk Tales', ur: 'لوک کہانیاں' },
+  'mythology': { hi: 'पौराणिक कथाएँ', en: 'Mythology', ur: 'دیومالا' },
+  'epics': { hi: 'महाकाव्य', en: 'Epics', ur: 'رزم نامہ' },
+  'children': { hi: 'बाल साहित्य', en: 'Children', ur: 'بچوں کا ادب' },
+  'children literature': { hi: 'बाल साहित्य', en: 'Children Literature', ur: 'بچوں کا ادب' },
+  'baal sahitya': { hi: 'बाल साहित्य', en: 'Children Literature', ur: 'بچوں کا ادب' },
+  'culture': { hi: 'संस्कृति', en: 'Culture', ur: 'ثقافت' },
+  'criticism': { hi: 'आलोचना', en: 'Criticism', ur: 'تنقید' },
+  'literary criticism': { hi: 'साहित्यिक आलोचना', en: 'Literary Criticism', ur: 'ادبی تنقید' },
+  'satire': { hi: 'व्यंग्य', en: 'Satire', ur: 'طنز و مزاح' },
+  'humor': { hi: 'हास्य', en: 'Humor', ur: 'مزاح' },
+  'science': { hi: 'विज्ञान', en: 'Science', ur: 'سائنس' },
+  'politics': { hi: 'राजनीति', en: 'Politics', ur: 'سیاست' },
+  'political': { hi: 'राजनीतिक', en: 'Political', ur: 'سیاسی' },
+  'sociology': { hi: 'समाजशास्त्र', en: 'Sociology', ur: 'عمرانیات' },
+  'economics': { hi: 'अर्थशास्त्र', en: 'Economics', ur: 'معاشیات' },
+  'religion': { hi: 'धर्म', en: 'Religion', ur: 'مذہب' },
+  'spirituality': { hi: 'अध्यात्म', en: 'Spirituality', ur: 'روحانیت' },
+  'sufism': { hi: 'सूफ़ीवाद', en: 'Sufism', ur: 'تصوف' },
+  'tasawwuf': { hi: 'तसव्वुफ़', en: 'Tasawwuf', ur: 'تصوف' },
+  'bhakti': { hi: 'भक्ति साहित्य', en: 'Bhakti', ur: 'بھگتی' },
+  'ghazal': { hi: 'ग़ज़ल', en: 'Ghazal', ur: 'غزل' },
+  'ghazals': { hi: 'ग़ज़लें', en: 'Ghazals', ur: 'غزلیات' },
+  'nazm': { hi: 'नज़्म', en: 'Nazm', ur: 'نظم' },
+  'rubai': { hi: 'रुबाई', en: 'Rubai', ur: 'رباعی' },
+  'rubaiyat': { hi: 'रुबाइयात', en: 'Rubaiyat', ur: 'رباعیات' },
+  'doha': { hi: 'दोहा', en: 'Doha', ur: 'دوہا' },
+  'translation': { hi: 'अनुवाद', en: 'Translation', ur: 'ترجمہ' },
+  'manuscript': { hi: 'पांडुलिपि', en: 'Manuscript', ur: 'مخطوطہ' },
+  'rare books': { hi: 'दुर्लभ पुस्तकें', en: 'Rare Books', ur: 'نایاب کتب' },
+  'archive': { hi: 'अभिलेखागार', en: 'Archive', ur: 'محفوظات' },
+  'collection': { hi: 'संग्रह', en: 'Collection', ur: 'مجموعہ' },
+  'anthology': { hi: 'संकलन', en: 'Anthology', ur: 'انتخاب' },
+  'periodical': { hi: 'सामयिकी', en: 'Periodical', ur: 'رسالہ' },
+  'magazine': { hi: 'पत्रिका', en: 'Magazine', ur: 'رسالہ' },
+  'journal': { hi: 'शोध पत्रिका', en: 'Journal', ur: 'جریدہ' }
 };
 
 const translitCache = new Map();
@@ -296,6 +348,26 @@ export function clientSideTransliterateFallback(text, sourceLang) {
   };
 }
 
+export async function fetchGtxTranslate(text, targetLang) {
+  if (!text || !text.trim()) return '';
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2800);
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text.trim())}`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeout);
+    if (!res.ok) return '';
+    const data = await res.json();
+    if (Array.isArray(data) && Array.isArray(data[0])) {
+      const parts = data[0].map((item) => (item && item[0] ? item[0] : '')).join('').trim();
+      return parts;
+    }
+  } catch (err) {
+    // Network / timeout - fall through
+  }
+  return '';
+}
+
 export async function transliterateAll(text, sourceLangHint = 'auto') {
   if (!text || !text.trim()) {
     return { hi: '', en: '', ur: '' };
@@ -323,9 +395,53 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
     srcLang = detectLanguage(trimmed);
   }
 
+  // 1. Try Google Translate GTX in parallel
+  try {
+    if (srcLang === 'en') {
+      const [hiRes, urRes] = await Promise.all([
+        fetchGtxTranslate(trimmed, 'hi'),
+        fetchGtxTranslate(trimmed, 'ur')
+      ]);
+
+      const hi = hiRes || phoneticEnglishToHindi(trimmed);
+      const ur = urRes || devanagariToUrdu(hi);
+
+      const result = { hi: hi || trimmed, en: trimmed, ur: ur || trimmed };
+      translitCache.set(cacheKey, result);
+      return result;
+    } else if (srcLang === 'hi') {
+      const [enRes, urRes] = await Promise.all([
+        fetchGtxTranslate(trimmed, 'en'),
+        fetchGtxTranslate(trimmed, 'ur')
+      ]);
+
+      const en = enRes || devanagariToEnglish(trimmed);
+      const ur = urRes || devanagariToUrdu(trimmed);
+
+      const result = { hi: trimmed, en: en || trimmed, ur: ur || trimmed };
+      translitCache.set(cacheKey, result);
+      return result;
+    } else if (srcLang === 'ur') {
+      const [hiRes, enRes] = await Promise.all([
+        fetchGtxTranslate(trimmed, 'hi'),
+        fetchGtxTranslate(trimmed, 'en')
+      ]);
+
+      const hi = hiRes || urduToDevanagari(trimmed);
+      const en = enRes || devanagariToEnglish(hi);
+
+      const result = { hi: hi || trimmed, en: en || trimmed, ur: trimmed };
+      translitCache.set(cacheKey, result);
+      return result;
+    }
+  } catch (err) {
+    // Falls through to fallback
+  }
+
+  // 2. Try Node backend API if available
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
 
     const apiRes = await fetch('/api/translate', {
       method: 'POST',
@@ -352,10 +468,28 @@ export async function transliterateAll(text, sourceLangHint = 'auto') {
       }
     }
   } catch (err) {
-    // Falls through to fallback
+    // Falls through to client-side fallback
   }
 
+  // 3. Client-side rule-based fallback
   const fallbackResult = clientSideTransliterateFallback(trimmed, srcLang);
   translitCache.set(cacheKey, fallbackResult);
   return fallbackResult;
 }
+
+/**
+ * Convenience helper to populate trilingual database fields
+ * returns { name_en, name_hi, name_ur }
+ */
+export async function getTrilingualNames(text, sourceLang = 'auto') {
+  if (!text || !text.trim()) {
+    return { name_en: '', name_hi: '', name_ur: '' };
+  }
+  const trans = await transliterateAll(text, sourceLang);
+  return {
+    name_en: trans.en || text.trim(),
+    name_hi: trans.hi || text.trim(),
+    name_ur: trans.ur || text.trim()
+  };
+}
+

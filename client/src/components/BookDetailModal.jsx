@@ -37,10 +37,10 @@ export default function BookDetailModal({
   };
 
   const citations = {
-    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
-    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}.`,
-    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'चेतना डिजिटल अभिलेखागार' : 'Chetna Digital Archive')}, ${book.year || '2026'}.`,
-    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'चेतना मुक्त पुस्तकालय द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved by Chetna Open Digital Library.'}`
+    chicago: `${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}, ${book.year || '2026'}.`,
+    apa: `${book.author_en || book.author_hi} (${book.year || '2026'}). ${book.title_en || book.title_hi}. ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}.`,
+    mla: `${book.author_hi || book.author_en}. "${book.title_hi || book.title_en}." ${book.publisher || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी' : 'JSM Online Library')}, ${book.year || '2026'}.`,
+    humanities: `[${book.year || 2026} CE] ${book.author_hi || book.author_en}. ${book.title_hi || book.title_en}. ${lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी द्वारा डिजिटाइज़्ड एवं संरक्षित।' : 'Digitized & Preserved by JSM Online Library.'}`
   };
 
   const handleCopyCitation = () => {
@@ -62,7 +62,7 @@ export default function BookDetailModal({
         {/* Top Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-white/[0.02]">
           <div className="text-[10px] text-zinc-400 font-mono tracking-[0.2em] uppercase flex items-center gap-2">
-            <span>{t.brand || 'CHETNA'}</span>
+            <span>{t.brand || 'JSM'}</span>
             <span>/</span>
             <span className="text-white font-bold">{book.category}</span>
           </div>
@@ -190,7 +190,7 @@ export default function BookDetailModal({
                     {t.details?.description || (lang === 'hi' ? 'पुस्तक परिचय' : lang === 'ur' ? 'کتاب کا تعارف' : 'About this Book')}
                   </h3>
                   <p className="text-xs text-zinc-300 leading-relaxed bg-white/[0.03] p-3.5 rounded-[16px] border border-white/[0.08] font-sans">
-                    {book[`description_${lang}`] || book.description || book.description_en || (lang === 'hi' ? 'चेतना डिजिटल पुस्तकालय में उपलब्ध प्रामाणिक संस्करण।' : lang === 'ur' ? 'چیتنا ڈیجیٹل کتب خانے میں محفوظ مستند ایڈیشن۔' : 'Preserved digital edition in the Chetna Digital Library.')}
+                    {book[`description_${lang}`] || book.description || book.description_en || (lang === 'hi' ? 'जेएसएम ऑनलाइन लाइब्रेरी में उपलब्ध प्रामाणिक संस्करण।' : lang === 'ur' ? 'جے ایس ایم آن لائن لائبریری میں محفوظ مستند ایڈیشن۔' : 'Preserved digital edition in the JSM Online Library.')}
                   </p>
                 </div>
 

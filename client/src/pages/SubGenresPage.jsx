@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { createSubgenre, deleteSubgenre, updateSubgenre } from '../services/supabaseApi';
+import { getTrilingualNames } from '../services/transliterationService';
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
 import { containerVariants, itemVariants } from '../components/BentoGrid';
@@ -86,12 +87,14 @@ export default function SubGenresPage({
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || 'sg-' + Date.now();
+      const { name_en, name_hi, name_ur } = await getTrilingualNames(newSubName.trim());
       await createSubgenre({
         id: subId,
         genre_id: genreSlug,
         category_id: categorySlug,
-        name_hi: newSubName.trim(),
-        name_en: newSubName.trim()
+        name_hi: name_hi || newSubName.trim(),
+        name_en: name_en || newSubName.trim(),
+        name_ur: name_ur || undefined
       });
       setNewSubName('');
       setShowCreateSub(false);

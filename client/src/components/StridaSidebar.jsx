@@ -52,10 +52,13 @@ export default function StridaSidebar({
             className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5 group"
             to="/"
           >
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black flex items-center justify-center text-sm shadow-[0_0_20px_rgba(245,158,11,0.4)] group-hover:scale-105 transition-transform">
-              चे
+            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 text-black font-black flex items-center justify-center text-xs font-mono tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)] group-hover:scale-105 transition-transform">
+              JSM
             </span>
-            <span className="font-sans font-black tracking-[-0.03em] text-lg text-white">Chetna</span>
+            <div className="flex flex-col">
+              <span className="font-sans font-black tracking-[-0.03em] text-lg text-white leading-tight">JSM</span>
+              <span className="text-[10px] font-mono tracking-wider uppercase text-amber-400 font-semibold -mt-0.5">Online Library</span>
+            </div>
           </Link>
 
           <div className="flex items-center gap-2">

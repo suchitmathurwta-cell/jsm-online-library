@@ -14,6 +14,10 @@ import {
   deleteBookRecord
 } from '../services/supabaseApi';
 import {
+  transliterateAll,
+  getTrilingualNames
+} from '../services/transliterationService';
+import {
   X,
   BookOpen,
   Trash2,
@@ -30,7 +34,9 @@ import {
   ChevronDown,
   ChevronRight,
   Plus,
-  Edit3
+  Edit3,
+  Languages,
+  Sparkles
 } from 'lucide-react';
 
 export default function AdminManageModal({
@@ -58,11 +64,16 @@ export default function AdminManageModal({
   const [editingItem, setEditingItem] = useState(null); // { type: 'category'|'genre'|'subgenre', data, catId, genreId }
   const [editNameHi, setEditNameHi] = useState('');
   const [editNameEn, setEditNameEn] = useState('');
+  const [editNameUr, setEditNameUr] = useState('');
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [isTranslatingEdit, setIsTranslatingEdit] = useState(false);
 
   // New item creation state
-  const [addingUnder, setAddingUnder] = useState(null); // { type: 'genre'|'subgenre', catId, genreId }
+  const [addingUnder, setAddingUnder] = useState(null); // { type: 'category'|'genre'|'subgenre', catId, genreId }
   const [newItemName, setNewItemName] = useState('');
+  const [previewHi, setPreviewHi] = useState('');
+  const [previewUr, setPreviewUr] = useState('');
+  const [translatingPreview, setTranslatingPreview] = useState(false);
 
   const fetchLibraryData = async () => {
     setIsLoading(true);
@@ -129,25 +140,71 @@ export default function AdminManageModal({
     }
   };
 
+  useEffect(() => {
+    if (!newItemName.trim()) {
+      setPreviewHi('');
+      setPreviewUr('');
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setTranslatingPreview(true);
+      try {
+        const res = await transliterateAll(newItemName.trim());
+        setPreviewHi(res.hi || '');
+        setPreviewUr(res.ur || '');
+      } catch (e) {
+        console.warn('Transliteration preview notice:', e);
+      } finally {
+        setTranslatingPreview(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [newItemName]);
+
+  const handleAutoTranslateEdit = async () => {
+    if (!editNameEn.trim()) return;
+    setIsTranslatingEdit(true);
+    try {
+      const res = await transliterateAll(editNameEn.trim());
+      if (res.hi) setEditNameHi(res.hi);
+      if (res.ur) setEditNameUr(res.ur);
+    } catch (e) {
+      console.warn('Auto translate edit error:', e);
+    } finally {
+      setIsTranslatingEdit(false);
+    }
+  };
+
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editingItem) return;
     setIsSubmittingEdit(true);
     try {
+      let finalHi = editNameHi.trim();
+      let finalUr = editNameUr.trim();
+      if (!finalHi && editNameEn.trim()) {
+        const trans = await transliterateAll(editNameEn.trim());
+        finalHi = trans.hi || editNameEn.trim();
+        if (!finalUr) finalUr = trans.ur || '';
+      }
+
       if (editingItem.type === 'category') {
         await updateFormat(editingItem.data.id, {
-          name_hi: editNameHi.trim(),
-          name_en: editNameEn.trim()
+          name_hi: finalHi,
+          name_en: editNameEn.trim(),
+          name_ur: finalUr || undefined
         });
       } else if (editingItem.type === 'genre') {
         await updateGenre(editingItem.catId, editingItem.data.id, {
-          name_hi: editNameHi.trim(),
-          name_en: editNameEn.trim()
+          name_hi: finalHi,
+          name_en: editNameEn.trim(),
+          name_ur: finalUr || undefined
         });
       } else if (editingItem.type === 'subgenre') {
         await updateSubgenre(editingItem.catId, editingItem.genreId, editingItem.data.id, {
-          name_hi: editNameHi.trim(),
-          name_en: editNameEn.trim()
+          name_hi: finalHi,
+          name_en: editNameEn.trim(),
+          name_ur: finalUr || undefined
         });
       }
 
@@ -164,29 +221,53 @@ export default function AdminManageModal({
     e.preventDefault();
     if (!addingUnder || !newItemName.trim()) return;
     try {
-      const generatedId = newItemName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || (`item-${Date.now()}`);
+      const generatedId =
+        newItemName
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '') || `item-${Date.now()}`;
 
-      if (addingUnder.type === 'genre') {
+      // Get accurate trilingual names
+      const trilingual = await getTrilingualNames(newItemName.trim());
+      const name_en = trilingual.name_en || newItemName.trim();
+      const name_hi = previewHi || trilingual.name_hi || newItemName.trim();
+      const name_ur = previewUr || trilingual.name_ur || newItemName.trim();
+
+      if (addingUnder.type === 'category') {
+        await createFormat({
+          id: generatedId,
+          name_hi,
+          name_en,
+          name_ur,
+          description_hi: `${name_hi} संग्रह`,
+          description_en: `${name_en} collection`
+        });
+      } else if (addingUnder.type === 'genre') {
         await createGenre({
           id: generatedId,
           category_id: addingUnder.catId,
-          name_hi: newItemName.trim(),
-          name_en: newItemName.trim(),
-          description_hi: newItemName.trim() + ' से संबंधित विशिष्ट साहित्यिक विधा',
-          description_en: 'Curated works on ' + newItemName.trim()
+          name_hi,
+          name_en,
+          name_ur,
+          description_hi: `${name_hi} से संबंधित विशिष्ट साहित्यिक विधा`,
+          description_en: `Curated works on ${name_en}`
         });
       } else if (addingUnder.type === 'subgenre') {
         await createSubgenre({
           id: generatedId,
           category_id: addingUnder.catId,
           genre_id: addingUnder.genreId,
-          name_hi: newItemName.trim(),
-          name_en: newItemName.trim()
+          name_hi,
+          name_en,
+          name_ur
         });
       }
 
       setAddingUnder(null);
       setNewItemName('');
+      setPreviewHi('');
+      setPreviewUr('');
       fetchLibraryData();
     } catch (err) {
       alert('Error creating category item: ' + err.message);
@@ -197,6 +278,7 @@ export default function AdminManageModal({
     setEditingItem({ type, data, catId, genreId });
     setEditNameHi(data.name_hi || '');
     setEditNameEn(data.name_en || '');
+    setEditNameUr(data.name_ur || '');
   };
 
   const filteredBooks = books.filter((b) => {
@@ -283,6 +365,70 @@ export default function AdminManageModal({
           {/* TAB 1: Hierarchy Tree Manager */}
           {activeTab === 'hierarchy' && (
             <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 font-rekhta-serif">
+                    {lang === 'hi' ? 'पुस्तकालय संग्रह एवं विधा वर्गीकरण' : (lang === 'ur' ? 'کتب خانہ مجموعات و اصناف' : 'Library Collections & Taxonomy')}
+                  </h3>
+                  <p className="text-xs text-stone-500">
+                    {lang === 'hi' ? 'श्रेणी, विधा और उप-विधा जोड़ें व प्रबंधित करें' : 'Manage categories, genres and sub-genres'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAddingUnder({ type: 'category' })}
+                  className="px-3.5 py-2 text-xs font-bold bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{lang === 'hi' ? '+ नई श्रेणी जोड़ें' : (lang === 'ur' ? '+ نیا زمرہ شامل کریں' : '+ Add New Category')}</span>
+                </button>
+              </div>
+
+              {/* Inline Add Category Form */}
+              {addingUnder && addingUnder.type === 'category' && (
+                <form onSubmit={handleCreateNewItem} className="p-4 bg-blue-50/80 rounded-2xl border border-blue-200 space-y-2.5 animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                      <Plus className="w-3.5 h-3.5 text-blue-700" />
+                      <span>{lang === 'hi' ? 'नई मुख्य श्रेणी बनाएं' : (lang === 'ur' ? 'نیا اہم زمرہ بنائیں' : 'Create New Category')}</span>
+                    </span>
+                    <button type="button" onClick={() => { setAddingUnder(null); setNewItemName(''); }} className="text-xs text-stone-500 hover:text-stone-800 cursor-pointer">
+                      ✕
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newItemName}
+                      onChange={(e) => setNewItemName(e.target.value)}
+                      placeholder={lang === 'hi' ? 'अंग्रेज़ी में नाम लिखें (जैसे Philosophy, Science)...' : 'Type name in English (e.g. Philosophy)...'}
+                      className="flex-1 px-3.5 py-2 text-xs bg-white border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium"
+                      autoFocus
+                    />
+                    <button type="submit" className="px-4 py-2 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl cursor-pointer shadow-xs transition">
+                      {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
+                    </button>
+                    <button type="button" onClick={() => { setAddingUnder(null); setNewItemName(''); }} className="px-3 py-2 text-xs text-stone-600 hover:bg-stone-200/60 rounded-xl cursor-pointer">
+                      {lang === 'hi' ? 'रद्द करें' : 'Cancel'}
+                    </button>
+                  </div>
+                  {newItemName.trim() && (
+                    <div className="p-2.5 bg-white/90 rounded-xl border border-blue-100 text-[11.5px] text-stone-700 flex flex-wrap items-center gap-x-4 gap-y-1">
+                      <span className="font-semibold text-blue-700 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" />
+                        <span>{lang === 'hi' ? 'स्वतः देवनागरी व उर्दू अनुवाद:' : 'Auto translation:'}</span>
+                      </span>
+                      <span>
+                        <strong>हिंदी:</strong> {translatingPreview ? 'अनुवाद जारी...' : (previewHi || '...')}
+                      </span>
+                      <span>
+                        <strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}
+                      </span>
+                    </div>
+                  )}
+                </form>
+              )}
+
               <div className="space-y-3">
                 {categories.map((cat) => {
                   const isCatOpen = !!expandedCats[cat.id];
@@ -343,21 +489,33 @@ export default function AdminManageModal({
                         <div className="p-4 pl-6 space-y-3 bg-stone-50/30">
                           {/* Inline Add Genre Form */}
                           {addingUnder && addingUnder.type === 'genre' && addingUnder.catId === cat.id && (
-                            <form onSubmit={handleCreateNewItem} className="p-3 bg-blue-50/60 rounded-xl border border-blue-200 flex items-center gap-2">
-                              <input
-                                type="text"
-                                value={newItemName}
-                                onChange={(e) => setNewItemName(e.target.value)}
-                                placeholder={lang === 'hi' ? 'नई विधा का नाम...' : (lang === 'ur' ? 'نئی صنف کا نام...' : 'New genre title...')}
-                                className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg"
-                                autoFocus
-                              />
-                              <button type="submit" className="px-3 py-1.5 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">
-                                {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
-                              </button>
-                              <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1.5 text-xs text-stone-500 cursor-pointer">
-                                {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
-                              </button>
+                            <form onSubmit={handleCreateNewItem} className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-200 space-y-2 animate-in fade-in">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  value={newItemName}
+                                  onChange={(e) => setNewItemName(e.target.value)}
+                                  placeholder={lang === 'hi' ? 'नई विधा का नाम (जैसे Fiction, Essays)...' : (lang === 'ur' ? 'نئی صنف کا نام...' : 'New genre title (e.g. Fiction)...')}
+                                  className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 outline-hidden focus:border-[#1d4ed8]"
+                                  autoFocus
+                                />
+                                <button type="submit" className="px-3.5 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-lg cursor-pointer shadow-xs transition">
+                                  {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
+                                </button>
+                                <button type="button" onClick={() => { setAddingUnder(null); setNewItemName(''); }} className="px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-800 cursor-pointer">
+                                  {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                                </button>
+                              </div>
+                              {newItemName.trim() && (
+                                <div className="p-2 bg-white/80 rounded-lg border border-blue-100 text-[11px] text-stone-700 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                  <span className="font-semibold text-blue-700 flex items-center gap-1">
+                                    <Sparkles className="w-2.5 h-2.5" />
+                                    <span>{lang === 'hi' ? 'स्वतः अनुवाद:' : 'Auto translation:'}</span>
+                                  </span>
+                                  <span><strong>हिंदी:</strong> {translatingPreview ? '...' : (previewHi || '...')}</span>
+                                  <span><strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}</span>
+                                </div>
+                              )}
                             </form>
                           )}
 
@@ -411,22 +569,34 @@ export default function AdminManageModal({
                                   {isGenreOpen && (
                                     <div className="p-3 pl-8 bg-stone-50/50 space-y-2">
                                       {addingUnder && addingUnder.type === 'subgenre' && addingUnder.genreId === g.id && (
-                                        <form onSubmit={handleCreateNewItem} className="p-2.5 bg-amber-50/60 rounded-lg border border-amber-200 flex items-center gap-2">
-                                          <input
-                                            type="text"
-                                            value={newItemName}
-                                            onChange={(e) => setNewItemName(e.target.value)}
-                                            placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम...' : (lang === 'ur' ? 'نئی ذیلی صنف...' : 'New sub-genre name...')}
-                                            className="flex-1 px-3 py-1 text-xs bg-white border border-stone-300 rounded-lg"
-                                            autoFocus
-                                          />
-                                          <button type="submit" className="px-3 py-1 bg-[#1d4ed8] text-white text-xs font-bold rounded-lg cursor-pointer">
-                                            {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
-                                          </button>
-                                          <button type="button" onClick={() => setAddingUnder(null)} className="px-2 py-1 text-xs text-stone-500 cursor-pointer">
-                                            {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
-                                          </button>
-                                        </form>
+                                        <form onSubmit={handleCreateNewItem} className="p-3 bg-amber-50/70 rounded-xl border border-amber-200 space-y-2 animate-in fade-in">
+                                          <div className="flex items-center gap-2">
+                                            <input
+                                              type="text"
+                                              value={newItemName}
+                                              onChange={(e) => setNewItemName(e.target.value)}
+                                              placeholder={lang === 'hi' ? 'नए उप-वर्ग का नाम (जैसे Ghazals, Nazm)...' : (lang === 'ur' ? 'نئی ذیلی صنف...' : 'New sub-genre name...')}
+                                              className="flex-1 px-3 py-1.5 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 outline-hidden focus:border-[#1d4ed8]"
+                                              autoFocus
+                                            />
+                                            <button type="submit" className="px-3.5 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-lg cursor-pointer shadow-xs transition">
+                                              {lang === 'hi' ? '+ जोड़ें' : (lang === 'ur' ? '+ شامل کریں' : '+ Add')}
+                                            </button>
+                                            <button type="button" onClick={() => { setAddingUnder(null); setNewItemName(''); }} className="px-2.5 py-1.5 text-xs text-stone-500 hover:text-stone-800 cursor-pointer">
+                                              {lang === 'hi' ? 'रद्द करें' : (lang === 'ur' ? 'منسوخ' : 'Cancel')}
+                                            </button>
+                                          </div>
+                                          {newItemName.trim() && (
+                                            <div className="p-2 bg-white/80 rounded-lg border border-amber-200 text-[11px] text-stone-700 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                              <span className="font-semibold text-amber-800 flex items-center gap-1">
+                                                <Sparkles className="w-2.5 h-2.5" />
+                                                <span>{lang === 'hi' ? 'स्वतः अनुवाद:' : 'Auto translation:'}</span>
+                                              </span>
+                                              <span><strong>हिंदी:</strong> {translatingPreview ? '...' : (previewHi || '...')}</span>
+                                              <span><strong>اردو:</strong> {translatingPreview ? '...' : (previewUr || '...')}</span>
+                                            </div>
+                                          )}
+                                         </form>
                                       )}
 
                                       {subgenres.length > 0 ? (
@@ -613,27 +783,54 @@ export default function AdminManageModal({
             <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
               <div>
                 <label className="font-bold text-stone-700 block mb-1">
-                  {lang === 'hi' ? 'नाम (हिंदी / देवनागरी)' : (lang === 'ur' ? 'نام (ہندی)' : 'Name (Hindi)')}
+                  {lang === 'hi' ? 'नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'نام (انگریزی)' : 'Name (English)')}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={editNameEn}
+                    onChange={(e) => setEditNameEn(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslateEdit}
+                    disabled={isTranslatingEdit || !editNameEn.trim()}
+                    className="px-3 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-xl font-bold flex items-center gap-1.5 transition cursor-pointer shrink-0 disabled:opacity-50"
+                    title="Auto-translate to Hindi and Urdu"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                    <span>{isTranslatingEdit ? '...' : (lang === 'hi' ? 'स्वतः अनुवाद' : 'Translate')}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-stone-700 block mb-1 flex items-center justify-between">
+                  <span>{lang === 'hi' ? 'नाम (हिंदी / देवनागरी)' : (lang === 'ur' ? 'نام (ہندی)' : 'Name (Hindi / Devanagari)')}</span>
+                  <span className="text-[10.5px] font-normal text-stone-400">स्वचालित अनुवादित</span>
                 </label>
                 <input
                   type="text"
                   value={editNameHi}
                   onChange={(e) => setEditNameHi(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium font-hindi-serif"
                   required
                 />
               </div>
 
               <div>
                 <label className="font-bold text-stone-700 block mb-1">
-                  {lang === 'hi' ? 'नाम (अंग्रेज़ी)' : (lang === 'ur' ? 'نام (انگریزی)' : 'Name (English)')}
+                  {lang === 'hi' ? 'नाम (उर्दू)' : (lang === 'ur' ? 'نام (اردو)' : 'Name (Urdu)')}
                 </label>
                 <input
                   type="text"
-                  value={editNameEn}
-                  onChange={(e) => setEditNameEn(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8]"
-                  required
+                  value={editNameUr}
+                  onChange={(e) => setEditNameUr(e.target.value)}
+                  dir="rtl"
+                  className="w-full px-3 py-2 border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium font-urdu"
+                  placeholder="نام برائے اردو"
                 />
               </div>
 

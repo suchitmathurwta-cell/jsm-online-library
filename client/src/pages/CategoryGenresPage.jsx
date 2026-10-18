@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { createGenre, deleteGenre, updateGenre } from '../services/supabaseApi';
+import { getTrilingualNames } from '../services/transliterationService';
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
 import { containerVariants, itemVariants } from '../components/BentoGrid';
@@ -104,13 +105,15 @@ export default function CategoryGenresPage({
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '') || 'genre-' + Date.now();
+      const { name_en, name_hi, name_ur } = await getTrilingualNames(newGenreName.trim());
       await createGenre({
         id: genreId,
         category_id: catId,
-        name_hi: newGenreName.trim(),
-        name_en: newGenreName.trim(),
-        description_hi: newGenreName.trim() + ' से संबंधित विशिष्ट साहित्यिक विधा',
-        description_en: 'Curated works on ' + newGenreName.trim()
+        name_hi: name_hi || newGenreName.trim(),
+        name_en: name_en || newGenreName.trim(),
+        name_ur: name_ur || undefined,
+        description_hi: (name_hi || newGenreName.trim()) + ' से संबंधित विशिष्ट साहित्यिक विधा',
+        description_en: 'Curated works on ' + (name_en || newGenreName.trim())
       });
       setNewGenreName('');
       setShowCreateGenreForCat(null);

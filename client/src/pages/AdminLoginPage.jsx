@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Lock, Mail, Key, ArrowRight, BookOpen, AlertCircle, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Lock, Mail, Key, ArrowRight, BookOpen, AlertCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 
 export default function AdminLoginPage({ lang = 'hi', t }) {
   const navigate = useNavigate();
@@ -10,8 +10,10 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
 
   const [authType, setAuthType] = useState('passcode'); // 'passcode' | 'credentials'
   const [passcode, setPasscode] = useState('');
-  const [email, setEmail] = useState('admin@chetna.org');
+  const [showPasscode, setShowPasscode] = useState(false);
+  const [email, setEmail] = useState('admin@jsmlibrary.org');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -90,7 +92,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
             <button
               type="button"
               onClick={() => { setAuthType('passcode'); setError(''); }}
-              className={`py-2 rounded-xl transition ${
+              className={`py-2 rounded-xl transition cursor-pointer ${
                 authType === 'passcode'
                   ? 'bg-white text-stone-900 shadow-xs font-bold'
                   : 'text-stone-500 hover:text-stone-800'
@@ -101,7 +103,7 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
             <button
               type="button"
               onClick={() => { setAuthType('credentials'); setError(''); }}
-              className={`py-2 rounded-xl transition ${
+              className={`py-2 rounded-xl transition cursor-pointer ${
                 authType === 'credentials'
                   ? 'bg-white text-stone-900 shadow-xs font-bold'
                   : 'text-stone-500 hover:text-stone-800'
@@ -127,16 +129,30 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showPasscode ? 'text' : 'password'}
                     value={passcode}
                     onChange={(e) => setPasscode(e.target.value)}
-                    placeholder={al.passcodePlaceholder}
+                    placeholder={al.passcodePlaceholder || 'e.g. jsm2026'}
                     autoFocus
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-medium"
+                    className="w-full pl-10 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-mono font-semibold text-sm text-stone-900 placeholder:text-stone-400 placeholder:font-sans placeholder:font-normal"
                   />
-                  <Key className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
+                  <Key className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasscode(!showPasscode)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-stone-700 transition rounded-lg cursor-pointer"
+                    title={showPasscode ? "Hide passcode" : "Show passcode"}
+                  >
+                    {showPasscode ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
+                <p className="mt-1 text-[11px] text-stone-400">
+                  {lang === 'hi' ? 'पासकोड: jsm2026' : (lang === 'ur' ? 'پاس کوڈ: jsm2026' : 'Passcode: jsm2026')}
+                </p>
               </div>
             ) : (
               <>
@@ -149,11 +165,14 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@chetna.org"
+                      placeholder="admin@jsmlibrary.org"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck="false"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-medium"
+                      className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-medium text-stone-900 placeholder:text-stone-400"
                     />
-                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 pointer-events-none" />
                   </div>
                 </div>
 
@@ -163,14 +182,25 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      spellCheck="false"
                       required
-                      className="w-full pl-10 pr-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-medium"
+                      className="w-full pl-10 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-mono font-semibold text-stone-900 placeholder:text-stone-400"
                     />
-                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
+                    <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-stone-700 transition rounded-lg cursor-pointer"
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
               </>

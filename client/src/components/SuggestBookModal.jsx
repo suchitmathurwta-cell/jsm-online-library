@@ -112,7 +112,7 @@ export default function SuggestBookModal({
                 value={bookTitle}
                 onChange={(e) => setBookTitle(e.target.value)}
                 placeholder={s.bookTitlePlaceholder || 'Enter title of the work...'}
-                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition"
+                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition text-stone-900"
                 required
                 autoFocus
               />
@@ -128,7 +128,7 @@ export default function SuggestBookModal({
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
                   placeholder={s.authorPlaceholder || 'Author name...'}
-                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden transition"
+                  className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden transition text-stone-900"
                 />
               </div>
 
@@ -139,7 +139,7 @@ export default function SuggestBookModal({
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer"
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer text-stone-900"
                 >
                   <option value="novel">{t.nav.novel}</option>
                   <option value="story">{t.nav.story}</option>
@@ -162,8 +162,8 @@ export default function SuggestBookModal({
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 rows="3"
-                placeholder={s.reasonPlaceholder || 'Describe why this work should be preserved in Chetna Library...'}
-                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden leading-relaxed"
+                placeholder={s.reasonPlaceholder || 'Describe why this work should be preserved in JSM Online Library...'}
+                className="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden leading-relaxed text-stone-900"
               />
             </div>
 
@@ -176,7 +176,7 @@ export default function SuggestBookModal({
                 value={userEmail}
                 onChange={(e) => setUserEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full px-4 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden transition"
+                className="w-full px-4 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden transition text-stone-900"
               />
             </div>
 

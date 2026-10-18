@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Shield, ShieldAlert, ShieldCheck, KeyRound, Eye, LogOut, X, Check, ArrowRight, Lock } from 'lucide-react';
+import { Shield, ShieldAlert, ShieldCheck, KeyRound, Eye, EyeOff, LogOut, X, Check, ArrowRight, Lock } from 'lucide-react';
 
 export function AdminOnly({ children, fallback = null }) {
   const { isAdmin } = useAuth();
@@ -71,6 +71,7 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal, lang = 'hi', t }) {
 export function AdminQuickChallengeModal({ lang = 'hi', t }) {
   const { isPasscodeModalOpen, setIsPasscodeModalOpen, isAdmin, loginAsAdmin, logoutAdmin, toggleAdminRole } = useAuth();
   const [inputVal, setInputVal] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -124,7 +125,7 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
           </div>
           <div>
             <h3 className="text-lg font-bold text-stone-900 font-rekhta-serif">
-              {ag.gateTitle || 'Chetna Library Administration'}
+              {ag.gateTitle || 'JSM Library Administration'}
             </h3>
             <p className="text-xs text-stone-500">
               {ag.gateSubtitle || 'Sign in to manage books and collections'}
@@ -181,14 +182,30 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
                 {ag.passcodeLabel || 'Admin Passcode'}
               </label>
-              <input
-                type="password"
-                value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder={ag.passcodePlaceholder || 'Enter passcode...'}
-                autoFocus
-                className="w-full px-4 py-2.5 text-xs bg-stone-50 hover:bg-white focus:bg-white border border-stone-300 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 rounded-xl outline-hidden transition font-medium"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  placeholder={ag.passcodePlaceholder || 'e.g. jsm2026'}
+                  autoFocus
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  className="w-full pl-4 pr-11 py-2.5 text-sm bg-stone-50 hover:bg-white focus:bg-white border border-stone-300 focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/20 rounded-xl outline-hidden transition font-mono font-semibold text-stone-900 placeholder:text-stone-400 placeholder:font-sans placeholder:font-normal"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-stone-400 hover:text-stone-700 transition rounded-lg cursor-pointer"
+                  title={showPassword ? "Hide passcode" : "Show passcode"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="mt-1 text-[11px] text-stone-400">
+                {lang === 'hi' ? 'पासकोड: jsm2026' : (lang === 'ur' ? 'پاس کوڈ: jsm2026' : 'Passcode: jsm2026')}
+              </p>
             </div>
 
             {errorMsg && (
@@ -226,7 +243,7 @@ export function AdminQuickChallengeModal({ lang = 'hi', t }) {
 
         <div className="mt-5 pt-3.5 border-t border-stone-100 flex items-center justify-between text-[11px] text-stone-400">
           <span>{ag.shortcut ? `${ag.shortcut}` : 'Ctrl + Shift + A'}</span>
-          <span className="text-[10px]">Chetna Security</span>
+          <span className="text-[10px]">JSM Security</span>
         </div>
       </div>
     </div>

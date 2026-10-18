@@ -12,14 +12,14 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
           {/* Col 1: Brand & Purpose */}
           <div className="md:col-span-5 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-sans font-bold text-sm shadow-xs">
-                <span>{lang === 'ur' ? 'چ' : (lang === 'en' ? 'CH' : 'चे')}</span>
+              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-black font-sans font-bold text-xs shadow-xs tracking-tighter">
+                <span>{lang === 'ur' ? 'جےایس‌ایم' : (lang === 'en' ? 'JSM' : 'JSM')}</span>
               </div>
               <span className="font-sans text-xl font-bold tracking-tight text-white">
-                {t.brand || 'CHETNA'}
+                {t.brand || 'JSM'}
               </span>
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-400 bg-white/[0.06] px-2.5 py-0.5 rounded-full border border-white/[0.08]">
-                {t.brandSubtitle || 'ARCHIVE'}
+                {t.brandSubtitle || 'ONLINE LIBRARY'}
               </span>
             </div>
 
@@ -75,7 +75,7 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
 
         {/* Bottom Credits Bar */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-          <p>© {new Date().getFullYear()} CHETNA DIGITAL ARCHIVES • PUBLIC TRUST</p>
+          <p>© {new Date().getFullYear()} JSM ONLINE LIBRARY • PUBLIC TRUST</p>
           <div className="flex items-center gap-4 text-zinc-400">
             <span className="hover:text-white transition cursor-pointer">PRIVACY</span>
             <span>•</span>

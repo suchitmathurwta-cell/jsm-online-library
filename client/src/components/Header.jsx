@@ -202,17 +202,17 @@ export default function Header({
           <Link
             to="/"
             className="flex items-center gap-2 pr-1 group shrink-0 focus:outline-hidden"
-            title="Chetna E-Library — Digital Archive"
+            title="JSM Online Library"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-black font-sans font-bold text-xs shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0">
-              <span>{lang === 'ur' ? 'چ' : lang === 'en' ? 'CH' : 'चे'}</span>
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-black font-sans font-bold text-xs shadow-xs group-hover:scale-105 transition-transform duration-200 shrink-0 tracking-tighter">
+              <span>{lang === 'ur' ? 'جےایس‌ایم' : 'JSM'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="font-sans text-xs sm:text-sm font-bold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
-                {lang === 'ur' ? 'چیتنا' : lang === 'en' ? 'Chetna' : 'चेतना'}
+                {lang === 'ur' ? 'جے ایس ایم' : (lang === 'en' ? 'JSM' : 'जेएसएम')}
               </span>
               <span className="text-[8px] font-mono uppercase tracking-[0.2em] text-zinc-400 border border-white/[0.1] px-1.5 py-0.5 rounded-full hidden xl:inline">
-                {lang === 'ur' ? 'کتب خانہ' : lang === 'en' ? 'ARCHIVE' : 'अभिलेखागार'}
+                {lang === 'ur' ? 'آن لائن لائبریری' : lang === 'en' ? 'ONLINE LIBRARY' : 'ऑनलाइन लाइब्रेरी'}
               </span>
             </div>
           </Link>
@@ -582,7 +582,7 @@ export default function Header({
               <div className="p-3 bg-black/60 border-t border-white/[0.06] flex items-center justify-between text-[10px] font-mono text-zinc-500">
                 <span className="flex items-center gap-1.5">
                   <Command className="w-3 h-3" />
-                  <span>Chetna Studio Spotlight</span>
+                  <span>JSM Spotlight</span>
                 </span>
                 <span className="flex items-center gap-3">
                   <span>[↵ to explore]</span>
