@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, User, Settings, Sparkles, Menu, ChevronRight, Globe, Check, ArrowUpRight, LogOut } from 'lucide-react';
+import { Search, X, User, Settings, Sparkles, Menu, ChevronRight, Globe, Check, ArrowUpRight, LogOut, ShieldCheck, Eye } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryColor } from '../data/categoryColors';
@@ -21,7 +21,7 @@ export default function StridaSidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAdmin, isAuthorizedAdmin, signOut } = useAuth();
+  const { user, isAdmin, isAuthorizedAdmin, toggleAdminRole, signOut } = useAuth();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef(null);
@@ -202,6 +202,62 @@ export default function StridaSidebar({
             )}
           </div>
         </div>
+
+        {/* Always-Visible Mobile Admin Control Bar for Authorized Admins */}
+        {isAuthorizedAdmin && (
+          <div className="lg:hidden p-3 rounded-2xl bg-[#141418] border-2 border-amber-400 shadow-[0_6px_25px_rgba(245,158,11,0.25)] space-y-2.5">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="w-5 h-5 rounded-full bg-amber-400 text-black flex items-center justify-center shrink-0">
+                  {isAdmin ? <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" /> : <Eye className="w-3.5 h-3.5 stroke-[2.5]" />}
+                </span>
+                <span className="text-xs font-mono font-extrabold text-amber-300 tracking-wide">
+                  {isAdmin ? (t?.adminGuard?.adminMode || 'Admin Mode') : (t?.adminGuard?.visitorView || 'Reader View')}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={toggleAdminRole}
+                className="px-3 py-1 rounded-full text-[11px] font-mono font-extrabold bg-white text-black hover:bg-zinc-200 active:scale-95 transition cursor-pointer shadow-xs shrink-0"
+              >
+                {isAdmin
+                  ? `👁️ ${t?.adminGuard?.visitorView || 'Reader View'}`
+                  : `🛡️ ${t?.adminGuard?.adminMode || 'Admin Mode'}`}
+              </button>
+            </div>
+
+            {isAdmin && (
+              <div className="grid grid-cols-2 gap-2 pt-1 border-t border-white/[0.1]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    if (onOpenUpload) onOpenUpload();
+                  }}
+                  className="py-2 px-3 rounded-xl text-black text-[11px] font-black font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm cursor-pointer active:scale-95"
+                  style={{
+                    background: 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #D97706 100%)',
+                  }}
+                >
+                  <span>↑</span>
+                  <span>{t?.nav?.uploadBook || 'Upload E-Book'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    if (onOpenAdmin) onOpenAdmin();
+                  }}
+                  className="py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-600 text-[11px] font-bold font-mono uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Settings className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{t?.adminGuard?.cms || 'Manage'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Real-time Search Input Box */}
         {setSearchQuery && (
