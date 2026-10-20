@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { X, Mail, Lock, User, Sparkles, Download, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Mail, Lock, User, Sparkles, Download, CheckCircle2, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { translations } from '../locales/translations';
 
@@ -7,7 +7,7 @@ export default function AuthModal({
   isOpen,
   onClose,
   onSuccess,
-  initialMode = 'signup',
+  initialMode = 'signin',
   bookTitle = '',
   lang = 'hi',
   t: customT
@@ -16,13 +16,22 @@ export default function AuthModal({
   const t = customT || translations[lang] || translations.hi;
   const authT = t.auth || translations.hi.auth;
 
-  const [isSignUp, setIsSignUp] = useState(initialMode === 'signup');
+  const [isSignUp, setIsSignUp] = useState(bookTitle ? true : initialMode === 'signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsSignUp(bookTitle ? true : initialMode === 'signup');
+      setErrorMsg('');
+      setSuccessMsg('');
+    }
+  }, [isOpen, bookTitle, initialMode]);
 
   if (!isOpen) return null;
 
@@ -50,7 +59,7 @@ export default function AuthModal({
     try {
       if (isSignUp) {
         await signUp(email.trim(), password, fullName.trim());
-        setSuccessMsg(lang === 'hi' ? 'खाता सफलतापूर्वक बन गया!' : (lang === 'ur' ? 'اکاؤنٹ کامیابی سے بن گیا!' : 'Account created successfully!'));
+        setSuccessMsg(lang === 'hi' ? 'खाता सफलतापूर्वक बन गया!' : (lang === 'ur' ? 'اکاؤنٹ کامیابی سے بن گیا!' : 'Signed in successfully!'));
         setTimeout(() => {
           if (onSuccess) onSuccess();
           onClose();
@@ -72,14 +81,14 @@ export default function AuthModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-200">
-      <div 
-        className="relative bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-stone-200"
+      <div
+        className="relative bg-white text-stone-900 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-stone-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Cultural Banner */}
         <div className="bg-gradient-to-br from-stone-900 via-stone-800 to-indigo-950 text-white p-6 sm:p-7 relative overflow-hidden">
           <div className="absolute right-0 top-0 w-36 h-36 bg-blue-500/15 rounded-full blur-2xl pointer-events-none"></div>
-          
+
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-full text-stone-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
@@ -96,8 +105,8 @@ export default function AuthModal({
             {isSignUp ? authT.titleDefault : authT.titleDownload}
           </h2>
           <p className="text-xs text-stone-300 mt-1.5 leading-relaxed font-normal">
-            {bookTitle 
-              ? (lang === 'hi' 
+            {bookTitle
+              ? (lang === 'hi'
                   ? `"${bookTitle}" की उच्च गुणवत्ता वाली PDF डाउनलोड करने हेतु कृपया साइन इन करें।`
                   : (lang === 'ur'
                       ? `"${bookTitle}" کی PDF ڈاؤنلوڈ کے لیے لاگ ان کریں۔`
@@ -110,21 +119,21 @@ export default function AuthModal({
         <div className="flex border-b border-stone-100 bg-stone-50/80 px-6 pt-3">
           <button
             type="button"
-            onClick={() => { setIsSignUp(true); setErrorMsg(''); }}
-            className={`flex-1 pb-3 text-xs font-bold transition border-b-2 cursor-pointer ${
-              isSignUp ? 'border-[#1d4ed8] text-[#1d4ed8]' : 'border-transparent text-stone-500 hover:text-stone-800'
-            }`}
-          >
-            {authT.submitSignUp.split(' ')[0]} ({lang === 'hi' ? 'नया खाता' : (lang === 'ur' ? 'نیا اکاؤنٹ' : 'Sign Up')})
-          </button>
-          <button
-            type="button"
             onClick={() => { setIsSignUp(false); setErrorMsg(''); }}
             className={`flex-1 pb-3 text-xs font-bold transition border-b-2 cursor-pointer ${
               !isSignUp ? 'border-[#1d4ed8] text-[#1d4ed8]' : 'border-transparent text-stone-500 hover:text-stone-800'
             }`}
           >
             {authT.submitSignIn.split(' ')[0]} ({lang === 'hi' ? 'लॉग इन' : (lang === 'ur' ? 'لاگ ان' : 'Sign In')})
+          </button>
+          <button
+            type="button"
+            onClick={() => { setIsSignUp(true); setErrorMsg(''); }}
+            className={`flex-1 pb-3 text-xs font-bold transition border-b-2 cursor-pointer ${
+              isSignUp ? 'border-[#1d4ed8] text-[#1d4ed8]' : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            {authT.submitSignUp.split(' ')[0]} ({lang === 'hi' ? 'नया खाता' : (lang === 'ur' ? 'نیا اکاؤنٹ' : 'Sign Up')})
           </button>
         </div>
 
@@ -180,7 +189,7 @@ export default function AuthModal({
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder={authT.fullNamePlaceholder}
-                    className="w-full pl-10 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium"
+                    className="w-full pl-10 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium text-stone-900 placeholder:text-stone-400"
                   />
                 </div>
               </div>
@@ -198,7 +207,10 @@ export default function AuthModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={authT.emailPlaceholder}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  className="w-full pl-10 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium text-stone-900 placeholder:text-stone-400"
                 />
               </div>
             </div>
@@ -210,14 +222,25 @@ export default function AuthModal({
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={authT.passwordPlaceholder}
-                  className="w-full pl-10 pr-4 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-1 focus:ring-[#1d4ed8] outline-hidden transition font-medium text-stone-900 placeholder:text-stone-400"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 transition cursor-pointer"
+                  title={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
