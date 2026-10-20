@@ -90,84 +90,117 @@ export default function StridaSidebar({
             : 'A digital library for timeless literature, ideas & poetry.'}
         </p>
 
-        {/* 1. Compact Language Selector Dropdown (HIN, ENG, URD) */}
-        <div ref={langDropdownRef} className="relative z-50">
-          <button
-            type="button"
-            onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-            className="inline-flex items-center gap-2 px-2.5 py-1 text-[11px] font-mono font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white rounded-lg border border-white/[0.1] hover:border-white/20 transition cursor-pointer select-none"
-            title="Select Language / भाषा चुनें"
-          >
-            <div className="flex items-center gap-1.5">
-              <Globe className="w-3 h-3 text-amber-400" />
-              <span className="text-zinc-400 text-[10px] uppercase tracking-wider font-mono font-bold">LANG:</span>
-              <span className="font-semibold text-white tracking-wide">
-                {getLangLabel()}
-              </span>
-            </div>
-            <span className="text-[7px] text-zinc-400 ml-0.5">▼</span>
-          </button>
+        {/* 1. Compact Language Selector Dropdown (HIN, ENG, URD) + Mobile Quick Sign-In */}
+        <div className="flex items-center justify-between gap-2">
+          <div ref={langDropdownRef} className="relative z-50">
+            <button
+              type="button"
+              onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+              className="inline-flex items-center gap-2 px-2.5 py-1 text-[11px] font-mono font-medium text-zinc-300 bg-white/[0.04] hover:bg-white/[0.08] hover:text-white rounded-lg border border-white/[0.1] hover:border-white/20 transition cursor-pointer select-none"
+              title="Select Language / भाषा चुनें"
+            >
+              <div className="flex items-center gap-1.5">
+                <Globe className="w-3 h-3 text-amber-400" />
+                <span className="text-zinc-400 text-[10px] uppercase tracking-wider font-mono font-bold">LANG:</span>
+                <span className="font-semibold text-white tracking-wide">
+                  {getLangLabel()}
+                </span>
+              </div>
+              <span className="text-[7px] text-zinc-400 ml-0.5">▼</span>
+            </button>
 
-          <AnimatePresence>
-            {langDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -4, scale: 0.98 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -4, scale: 0.98 }}
-                transition={{ duration: 0.15 }}
-                className="absolute left-0 mt-1.5 w-48 bg-[#141416]/98 backdrop-blur-2xl rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] border border-white/[0.15] p-1 text-[11px] z-50 text-white space-y-0.5"
+            <AnimatePresence>
+              {langDropdownOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 mt-1.5 w-48 bg-[#141416]/98 backdrop-blur-2xl rounded-xl shadow-[0_16px_40px_rgba(0,0,0,0.9)] border border-white/[0.15] p-1 text-[11px] z-50 text-white space-y-0.5"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('hi');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
+                      lang === 'hi' ? 'font-bold text-white bg-amber-500/20 border border-amber-500/30' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+                      <span className="font-sans font-medium">हिंदी (HIN)</span>
+                    </span>
+                    {lang === 'hi' && <Check className="w-3 h-3 text-amber-400" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('en');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
+                      lang === 'en' ? 'font-bold text-white bg-blue-500/20 border border-blue-500/30' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                      <span className="font-sans font-medium">English (ENG)</span>
+                    </span>
+                    {lang === 'en' && <Check className="w-3 h-3 text-blue-400" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLang('ur');
+                      setLangDropdownOpen(false);
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-lg ${
+                      lang === 'ur' ? 'font-bold text-white bg-emerald-500/20 border border-emerald-500/30' : 'text-zinc-300'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                      <span className="font-urdu font-medium text-xs">اردو (URD)</span>
+                    </span>
+                    {lang === 'ur' && <Check className="w-3 h-3 text-emerald-400" />}
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Mobile Quick Account / Sign In Button */}
+          <div className="lg:hidden flex items-center gap-1.5">
+            {user ? (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/[0.12] text-[11px] font-mono text-zinc-200 max-w-[180px]">
+                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[9px] shrink-0">
+                  {user.email?.[0]?.toUpperCase() || 'U'}
+                </span>
+                <span className="truncate">{user.email}</span>
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="text-zinc-400 hover:text-red-400 pl-1 cursor-pointer shrink-0"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onOpenAuth) onOpenAuth();
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-semibold text-zinc-200 bg-white/[0.06] hover:bg-white/[0.12] rounded-lg border border-white/[0.12] transition cursor-pointer"
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang('hi');
-                    setLangDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
-                    lang === 'hi' ? 'font-bold text-white bg-amber-500/20 border border-amber-500/30' : 'text-zinc-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
-                    <span className="font-sans font-medium">हिंदी (HIN)</span>
-                  </span>
-                  {lang === 'hi' && <Check className="w-3 h-3 text-amber-400" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang('en');
-                    setLangDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] transition cursor-pointer rounded-lg ${
-                    lang === 'en' ? 'font-bold text-white bg-blue-500/20 border border-blue-500/30' : 'text-zinc-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-                    <span className="font-sans font-medium">English (ENG)</span>
-                  </span>
-                  {lang === 'en' && <Check className="w-3 h-3 text-blue-400" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setLang('ur');
-                    setLangDropdownOpen(false);
-                  }}
-                  className={`w-full text-left px-2.5 py-1.5 flex items-center justify-between hover:bg-white/[0.08] font-urdu transition cursor-pointer rounded-lg ${
-                    lang === 'ur' ? 'font-bold text-white bg-emerald-500/20 border border-emerald-500/30' : 'text-zinc-300'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
-                    <span className="font-urdu font-medium text-xs">اردو (URD)</span>
-                  </span>
-                  {lang === 'ur' && <Check className="w-3 h-3 text-emerald-400" />}
-                </button>
-              </motion.div>
+                <User className="w-3 h-3 text-amber-400" />
+                <span>{t?.nav?.signIn || 'Sign In'}</span>
+              </button>
             )}
-          </AnimatePresence>
+          </div>
         </div>
 
         {/* Real-time Search Input Box */}

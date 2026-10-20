@@ -26,20 +26,20 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal, lang = 'hi', t }) {
   if (!isAdmin) {
     return (
       <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-bottom-3 duration-300">
-        <div className="flex items-center gap-1.5 bg-[#111111]/95 text-white p-1.5 pr-3 rounded-full shadow-xl border border-white/15 backdrop-blur-md">
-          <div className="w-5 h-5 rounded-full bg-zinc-800 text-amber-400 flex items-center justify-center font-bold text-[10px] border border-white/10">
+        <div className="flex items-center gap-2 bg-[#0A0A0D] text-white px-3 py-2 sm:py-1.5 rounded-full border-2 border-amber-400 shadow-[0_10px_30px_rgba(0,0,0,0.95),0_0_20px_rgba(245,158,11,0.35)]">
+          <div className="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-zinc-800 text-amber-400 flex items-center justify-center font-bold text-[10px] border border-amber-400/40 shrink-0">
             <Eye className="w-3.5 h-3.5" />
           </div>
-          <span className="text-[11px] font-mono font-medium tracking-wide text-zinc-300">
+          <span className="text-xs sm:text-[11px] font-mono font-bold tracking-wide text-white">
             {ag.visitorView || 'Reader View'}
           </span>
-          <span className="text-zinc-600">|</span>
+          <span className="text-zinc-500 font-bold">|</span>
           <button
             onClick={toggleAdminRole}
             title={ag.switchToAdmin || 'Switch to Admin Mode'}
-            className="flex items-center gap-1 text-[11px] text-black bg-amber-400 hover:bg-amber-300 px-2.5 py-0.5 rounded-full cursor-pointer transition font-bold"
+            className="flex items-center gap-1.5 text-xs sm:text-[11px] text-black bg-amber-400 hover:bg-amber-300 active:scale-95 px-3 py-1 sm:py-0.5 rounded-full cursor-pointer transition font-extrabold shadow-sm"
           >
-            <ShieldCheck className="w-3 h-3" />
+            <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
             <span>{ag.adminMode || 'Admin Mode'}</span>
           </button>
         </div>
@@ -49,29 +49,31 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal, lang = 'hi', t }) {
 
   return (
     <div className="fixed bottom-4 left-4 z-50 animate-in slide-in-from-bottom-3 duration-300">
-      <div className="flex items-center gap-1.5 bg-[#111111]/95 text-white p-1.5 pr-3 rounded-full shadow-xl border border-amber-500/30 backdrop-blur-md">
-        <div className="w-5 h-5 rounded-full bg-amber-400 text-[#111111] flex items-center justify-center font-bold text-[10px] shadow-xs">
-          <ShieldCheck className="w-3.5 h-3.5" />
+      <div className="flex items-center gap-2 bg-[#0A0A0D] text-white px-3 py-2 sm:py-1.5 rounded-full border-2 border-amber-400 shadow-[0_10px_30px_rgba(0,0,0,0.95),0_0_20px_rgba(245,158,11,0.35)]">
+        <div className="w-6 h-6 sm:w-5 sm:h-5 rounded-full bg-amber-400 text-black flex items-center justify-center font-bold text-[10px] shadow-xs shrink-0">
+          <ShieldCheck className="w-3.5 h-3.5 stroke-[2.5]" />
         </div>
-        <span className="text-[11px] font-mono font-medium tracking-wide text-zinc-200">
+        <span className="text-xs sm:text-[11px] font-mono font-extrabold tracking-wide text-amber-300">
           {ag.adminMode || 'Admin Mode'}
         </span>
-        <span className="text-zinc-600">|</span>
+        <span className="text-zinc-500 font-bold">|</span>
         {onOpenAdminModal && (
-          <button
-            onClick={onOpenAdminModal}
-            className="text-[11px] text-zinc-300 hover:text-white hover:underline cursor-pointer transition font-medium"
-          >
-            {ag.cms || 'Manage ⚙️'}
-          </button>
+          <>
+            <button
+              onClick={onOpenAdminModal}
+              className="text-xs sm:text-[11px] text-white hover:text-amber-300 bg-zinc-800 hover:bg-zinc-700 px-2.5 py-1 sm:py-0.5 rounded-full border border-zinc-600 cursor-pointer transition font-bold"
+            >
+              {ag.cms || 'Manage ⚙️'}
+            </button>
+            <span className="text-zinc-500 font-bold">|</span>
+          </>
         )}
-        <span className="text-zinc-600">|</span>
         <button
           onClick={toggleAdminRole}
           title={ag.visitorView || 'Switch to Reader View'}
-          className="flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700 px-2 py-0.5 rounded-full border border-zinc-700 cursor-pointer transition font-medium"
+          className="flex items-center gap-1 text-xs sm:text-[11px] text-black bg-white hover:bg-zinc-200 active:scale-95 px-2.5 py-1 sm:py-0.5 rounded-full cursor-pointer transition font-extrabold shadow-sm"
         >
-          <Eye className="w-3 h-3 text-zinc-400" />
+          <Eye className="w-3.5 h-3.5 text-black" />
           <span>{ag.visitorView || 'Reader View'}</span>
         </button>
       </div>
@@ -80,6 +82,5 @@ export function AdminToggleFloatingBadge({ onOpenAdminModal, lang = 'hi', t }) {
 }
 
 export function AdminQuickChallengeModal() {
-  // Passcode backdoor modal is disabled so unauthorized users can never trigger or guess a passcode
   return null;
 }
