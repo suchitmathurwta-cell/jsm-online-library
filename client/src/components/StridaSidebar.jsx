@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, User, Settings, Sparkles, Menu, ChevronRight, Globe, Check, ArrowUpRight } from 'lucide-react';
+import { Search, X, User, Settings, Sparkles, Menu, ChevronRight, Globe, Check, ArrowUpRight, LogOut } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryColor } from '../data/categoryColors';
@@ -21,7 +21,7 @@ export default function StridaSidebar({
 }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isAuthorizedAdmin, signOut } = useAuth();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const langDropdownRef = useRef(null);
@@ -282,7 +282,7 @@ export default function StridaSidebar({
       </div>
 
       {/* Bottom: Admin Action Valve & User State */}
-      <div className={`pt-4 space-y-3 ${isMobileNavOpen ? 'block' : 'hidden lg:block'}`}>
+      <div className={`pt-4 space-y-3 ${isAuthorizedAdmin ? 'pb-10' : ''} ${isMobileNavOpen ? 'block' : 'hidden lg:block'}`}>
         {/* Radiant High-Contrast Upload Button */}
         <AdminOnly>
           <button
@@ -316,8 +316,8 @@ export default function StridaSidebar({
         {/* User Profile / Admin Mode Trigger */}
         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs font-mono text-zinc-400">
           {user ? (
-            <div className="flex items-center gap-2 truncate">
-              <div className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px]">
+            <div className="flex items-center gap-2 truncate min-w-0">
+              <div className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px] shrink-0">
                 {user.email?.[0]?.toUpperCase() || 'U'}
               </div>
               <span className="truncate text-[11px] text-zinc-300">{user.email}</span>
@@ -335,20 +335,31 @@ export default function StridaSidebar({
             </button>
           )}
 
-          <AdminOnly>
-            {onOpenAdmin && (
+          <div className="flex items-center gap-1 shrink-0">
+            <AdminOnly>
+              {onOpenAdmin && (
+                <button
+                  onClick={() => {
+                    setIsMobileNavOpen(false);
+                    onOpenAdmin();
+                  }}
+                  className="p-1 text-zinc-400 hover:text-white hover:bg-white/[0.08] rounded-md transition-colors cursor-pointer"
+                  title="Admin Management"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </AdminOnly>
+            {user && (
               <button
-                onClick={() => {
-                  setIsMobileNavOpen(false);
-                  onOpenAdmin();
-                }}
-                className="p-1 text-zinc-400 hover:text-white hover:bg-white/[0.08] rounded-md transition-colors cursor-pointer"
-                title="Admin Management"
+                onClick={() => signOut()}
+                className="p-1 text-zinc-400 hover:text-red-400 hover:bg-white/[0.08] rounded-md transition-colors cursor-pointer"
+                title="Sign Out"
               >
-                <Settings className="w-3.5 h-3.5" />
+                <LogOut className="w-3.5 h-3.5" />
               </button>
             )}
-          </AdminOnly>
+          </div>
         </div>
       </div>
     </aside>

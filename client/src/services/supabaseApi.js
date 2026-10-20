@@ -115,7 +115,8 @@ export async function getCategoriesWithHierarchy() {
       supabase.from('books').select('id, category, genre, subgenre, title_hi, title_en')
     ]);
 
-    const rawCategories = (catRes.data && catRes.data.length > 0) ? catRes.data : DEFAULT_CATEGORIES;
+    const dbCategories = (catRes.data || []).filter(c => c && c.id && !String(c.id).startsWith('__'));
+    const rawCategories = dbCategories.length > 0 ? dbCategories : DEFAULT_CATEGORIES;
     const genres = genreRes.data || [];
     const subgenres = subRes.data || [];
     const books = bookRes.data || [];
@@ -591,3 +592,126 @@ export async function getBookById(id) {
   return null;
 }
 
+
+// 7. Authorized Admin Email Registry (Persisted in Supabase + localStorage)
+export const DEFAULT_ADMIN_EMAILS = [
+  'suchitmathurwta@gmail.com',
+  'farzanamehdi21@gmail.com'
+];
+
+const ADMIN_REGISTRY_ROW_ID = '__jsm_admin_registry__';
+const ADMIN_EMAILS_STORAGE_KEY = 'jsm_authorized_admin_emails_v1';
+
+function normalizeEmailList(list = []) {
+  const merged = [...DEFAULT_ADMIN_EMAILS, ...(Array.isArray(list) ? list : [])];
+  const seen = new Set();
+  const result = [];
+  for (const item of merged) {
+    const clean = String(item || '').trim().toLowerCase();
+    if (clean && clean.includes('@') && !seen.has(clean)) {
+      seen.add(clean);
+      result.push(clean);
+    }
+  }
+  return result;
+}
+
+export function getCachedAdminEmails() {
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const raw = window.localStorage.getItem(ADMIN_EMAILS_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return normalizeEmailList(parsed);
+        }
+      }
+    }
+  } catch (e) {}
+  return [...DEFAULT_ADMIN_EMAILS];
+}
+
+export async function getAdminEmails() {
+  const localList = getCachedAdminEmails();
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('name_en')
+      .eq('id', ADMIN_REGISTRY_ROW_ID)
+      .maybeSingle();
+
+    if (!error && data && data.name_en) {
+      const parsed = JSON.parse(data.name_en);
+      if (Array.isArray(parsed)) {
+        const seen = new Set();
+        const dbList = [];
+        for (const item of ['suchitmathurwta@gmail.com', ...parsed]) {
+          const clean = String(item || '').trim().toLowerCase();
+          if (clean && clean.includes('@') && !seen.has(clean)) {
+            seen.add(clean);
+            dbList.push(clean);
+          }
+        }
+        try {
+          window.localStorage.setItem(ADMIN_EMAILS_STORAGE_KEY, JSON.stringify(dbList));
+        } catch (e) {}
+        return dbList;
+      }
+    }
+  } catch (e) {
+    console.warn('Notice fetching admin registry from Supabase:', e);
+  }
+  return localList;
+}
+
+export async function saveAdminEmails(emailsList) {
+  const seen = new Set();
+  const finalEmails = [];
+  for (const item of ['suchitmathurwta@gmail.com', ...(Array.isArray(emailsList) ? emailsList : [])]) {
+    const clean = String(item || '').trim().toLowerCase();
+    if (clean && clean.includes('@') && !seen.has(clean)) {
+      seen.add(clean);
+      finalEmails.push(clean);
+    }
+  }
+
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem(ADMIN_EMAILS_STORAGE_KEY, JSON.stringify(finalEmails));
+    }
+  } catch (e) {}
+
+  const { error } = await supabase.from('categories').upsert({
+    id: ADMIN_REGISTRY_ROW_ID,
+    name_hi: 'SYS_ADMIN_REGISTRY',
+    name_en: JSON.stringify(finalEmails)
+  });
+
+  if (error) {
+    console.warn('Supabase admin registry sync warning:', error);
+  }
+
+  return finalEmails;
+}
+
+export async function addAdminEmailToRegistry(email) {
+  const clean = String(email || '').trim().toLowerCase();
+  if (!clean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+    throw new Error('Please enter a valid email address.');
+  }
+  const current = await getAdminEmails();
+  if (current.includes(clean)) {
+    return current;
+  }
+  return await saveAdminEmails([...current, clean]);
+}
+
+export async function removeAdminEmailFromRegistry(email) {
+  const clean = String(email || '').trim().toLowerCase();
+  if (clean === 'suchitmathurwta@gmail.com') {
+    throw new Error('Primary owner admin (suchitmathurwta@gmail.com) cannot be removed.');
+  }
+  const current = await getAdminEmails();
+  const updated = current.filter(e => e !== clean);
+  return await saveAdminEmails(updated);
+}

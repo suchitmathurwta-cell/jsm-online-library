@@ -305,22 +305,18 @@ export default function Header({
             </AnimatePresence>
           </div>
 
-          {/* Hairline Divider */}
-          <span className="h-4 w-px bg-white/[0.1] hidden sm:block shrink-0" />
-
-          {/* 1.4 High-Contrast "Upload Work" Action Button */}
-          <button
-            type="button"
-            onClick={onOpenUpload}
-            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02] active:scale-95 shrink-0"
-            title={t.nav.uploadBook || 'Upload Work'}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{t.nav.uploadBook || 'Upload Work'}</span>
-          </button>
-
-          {/* 1.5 Admin Management Cog (Admin Only) */}
+          {/* 1.4 High-Contrast "Upload Work" & Admin Management Cog (Admin Only) */}
           <AdminOnly>
+            <span className="h-4 w-px bg-white/[0.1] hidden sm:block shrink-0" />
+            <button
+              type="button"
+              onClick={onOpenUpload}
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white hover:bg-zinc-200 text-black text-[11px] sm:text-xs font-semibold font-mono uppercase tracking-wider transition-all duration-150 cursor-pointer shadow-xs hover:scale-[1.02] active:scale-95 shrink-0"
+              title={t.nav.uploadBook || 'Upload Work'}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{t.nav.uploadBook || 'Upload Work'}</span>
+            </button>
             <button
               type="button"
               onClick={onOpenAdmin}
@@ -665,17 +661,19 @@ export default function Header({
 
             {/* Mobile Actions */}
             <div className="pt-3 border-t border-white/[0.08] flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenUpload();
-                  setMobileMenuOpen(false);
-                }}
-                className="flex-1 py-2 text-xs text-center bg-white hover:bg-zinc-200 text-black rounded-full font-mono uppercase tracking-wider font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{t.nav.uploadBook || 'Upload Work'}</span>
-              </button>
+              <AdminOnly>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenUpload();
+                    setMobileMenuOpen(false);
+                  }}
+                  className="flex-1 py-2 text-xs text-center bg-white hover:bg-zinc-200 text-black rounded-full font-mono uppercase tracking-wider font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{t.nav.uploadBook || 'Upload Work'}</span>
+                </button>
+              </AdminOnly>
               {!user && (
                 <button
                   type="button"

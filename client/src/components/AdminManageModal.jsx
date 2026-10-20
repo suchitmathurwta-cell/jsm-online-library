@@ -17,6 +17,7 @@ import {
   transliterateAll,
   getTrilingualNames
 } from '../services/transliterationService';
+import { useAuth } from '../context/AuthContext';
 import {
   X,
   BookOpen,
@@ -36,7 +37,10 @@ import {
   Plus,
   Edit3,
   Languages,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  UserPlus,
+  Mail
 } from 'lucide-react';
 
 export default function AdminManageModal({
@@ -49,12 +53,18 @@ export default function AdminManageModal({
   lang = 'hi',
   t
 }) {
-  const [activeTab, setActiveTab] = useState('hierarchy'); // 'hierarchy' | 'books'
+  const { user, adminEmails = [], grantAdminAccess, revokeAdminAccess } = useAuth();
+  const [activeTab, setActiveTab] = useState('hierarchy'); // 'hierarchy' | 'books' | 'admins'
   const [books, setBooks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+  // Admin Access Management State
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [isUpdatingAdmins, setIsUpdatingAdmins] = useState(false);
+  const [adminActionStatus, setAdminActionStatus] = useState(null);
 
   // Hierarchy expansion state
   const [expandedCats, setExpandedCats] = useState({});
@@ -288,6 +298,67 @@ export default function AdminManageModal({
     setEditNameUr(data.name_ur || '');
   };
 
+  const handleGrantAdminAccess = async (e) => {
+    e.preventDefault();
+    const cleanEmail = (newAdminEmail || '').trim().toLowerCase();
+    if (!cleanEmail) return;
+    setIsUpdatingAdmins(true);
+    setAdminActionStatus(null);
+    try {
+      await grantAdminAccess(cleanEmail);
+      setNewAdminEmail('');
+      setAdminActionStatus({
+        type: 'success',
+        message:
+          lang === 'hi'
+            ? `✓ ${cleanEmail} को प्रशासक अधिकार प्रदान किए गए। जब वे इस ईमेल से साइन इन करेंगे, तो उन्हें Admin Mode टॉगल दिखाई देगा।`
+            : lang === 'ur'
+            ? `✓ ${cleanEmail} کو ایڈمن رسائی دے دی گئی ہے۔`
+            : `✓ Admin access granted to ${cleanEmail}. Once they sign in with this email, they will see the Admin Mode toggle.`
+      });
+    } catch (err) {
+      setAdminActionStatus({
+        type: 'error',
+        message: err.message || 'Could not grant admin access.'
+      });
+    } finally {
+      setIsUpdatingAdmins(false);
+    }
+  };
+
+  const handleRevokeAdminAccess = async (targetEmail) => {
+    if (targetEmail === 'suchitmathurwta@gmail.com') return;
+    const confirmMsg =
+      lang === 'hi'
+        ? `क्या आप ${targetEmail} से प्रशासक अधिकार हटाना चाहते हैं?`
+        : lang === 'ur'
+        ? `کیا آپ ${targetEmail} سے ایڈمن رسائی ختم کرنا چاہتے ہیں؟`
+        : `Revoke admin access for ${targetEmail}?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsUpdatingAdmins(true);
+    setAdminActionStatus(null);
+    try {
+      await revokeAdminAccess(targetEmail);
+      setAdminActionStatus({
+        type: 'success',
+        message:
+          lang === 'hi'
+            ? `✓ ${targetEmail} का प्रशासक अधिकार हटा दिया गया।`
+            : lang === 'ur'
+            ? `✓ ${targetEmail} کی ایڈمن رسائی ختم کر دی گئی۔`
+            : `✓ Admin access revoked for ${targetEmail}.`
+      });
+    } catch (err) {
+      setAdminActionStatus({
+        type: 'error',
+        message: err.message || 'Could not revoke admin access.'
+      });
+    } finally {
+      setIsUpdatingAdmins(false);
+    }
+  };
+
   const filteredBooks = books.filter((b) => {
     const q = searchTerm.toLowerCase();
     return (
@@ -340,8 +411,8 @@ export default function AdminManageModal({
           </div>
         </div>
 
-        {/* Navigation Tabs: Hierarchy vs Books */}
-        <div className="flex border-b border-stone-200 px-6 pt-3 bg-stone-50/50 gap-4">
+        {/* Navigation Tabs: Hierarchy vs Books vs Admin Access */}
+        <div className="flex flex-wrap border-b border-stone-200 px-6 pt-3 bg-stone-50/50 gap-4">
           <button
             onClick={() => setActiveTab('hierarchy')}
             className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition cursor-pointer ${
@@ -363,6 +434,22 @@ export default function AdminManageModal({
           >
             <BookOpen className="w-4 h-4" />
             <span>📚 {t.admin.tabBooks} ({books.length})</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('admins');
+              setAdminActionStatus(null);
+            }}
+            className={`pb-2.5 text-xs font-bold flex items-center gap-2 border-b-2 transition cursor-pointer ${
+              activeTab === 'admins'
+                ? 'border-[#1d4ed8] text-[#1d4ed8]'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>
+              🛡️ {lang === 'hi' ? 'प्रशासक अधिकार (Admins)' : (lang === 'ur' ? 'ایڈمن رسائی (Admins)' : 'Admin Access')} ({adminEmails.length})
+            </span>
           </button>
         </div>
 
@@ -765,6 +852,159 @@ export default function AdminManageModal({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 3: Admin Access Manager */}
+          {activeTab === 'admins' && (
+            <div className="space-y-5">
+              <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-bold text-stone-900 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#1d4ed8]" />
+                    <span>
+                      {lang === 'hi'
+                        ? 'प्रशासक अनुमति एवं ईमेल नियंत्रण'
+                        : lang === 'ur'
+                        ? 'ایڈمن رسائی اور ای میل کنٹرول'
+                        : 'Authorized Administrators & Access Control'}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                    {lang === 'hi'
+                      ? 'सामान्य आगंतुकों को केवल पाठक दृश्य (Reader View) दिखाई देता है। केवल नीचे सूचीबद्ध ईमेल से साइन इन करने वाले उपयोगकर्ता ही Admin Mode टॉगल और संपादन विकल्प देख सकते हैं।'
+                      : lang === 'ur'
+                      ? 'عام قارئین کو صرف ریڈر ویو نظر آتا ہے۔ صرف نیچے درج ای میلز سے لاگ ان کرنے والے افراد کو ایڈمن ٹوگل اور اختیارات نظر آئیں گے۔'
+                      : 'General visitors only see Reader View and never see the Admin toggle. Only users signed in with an email listed below can see the Admin/Reader View toggle and manage the library.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Add Admin Email Form */}
+              <form
+                onSubmit={handleGrantAdminAccess}
+                className="p-4 rounded-2xl bg-stone-50 border border-stone-200 space-y-3"
+              >
+                <label className="block text-xs font-bold text-stone-800">
+                  {lang === 'hi'
+                    ? 'नए प्रशासक को ईमेल द्वारा अधिकार दें'
+                    : lang === 'ur'
+                    ? 'نئے ایڈمن کا ای میل شامل کریں'
+                    : 'Grant Admin Access by Email'}
+                </label>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <div className="relative flex-1">
+                    <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <input
+                      type="email"
+                      required
+                      value={newAdminEmail}
+                      onChange={(e) => setNewAdminEmail(e.target.value)}
+                      placeholder={
+                        lang === 'hi'
+                          ? 'ईमेल पता दर्ज करें (उदा. colleague@gmail.com)...'
+                          : lang === 'ur'
+                          ? 'ای میل درج کریں (مثلاً colleague@gmail.com)...'
+                          : 'Enter email address (e.g. colleague@gmail.com)...'
+                      }
+                      className="w-full pl-10 pr-4 py-2.5 text-xs bg-white border border-stone-300 rounded-xl outline-hidden focus:border-[#1d4ed8] text-stone-900 font-medium"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isUpdatingAdmins || !newAdminEmail.trim()}
+                    className="px-4 py-2.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>
+                      {isUpdatingAdmins
+                        ? '...'
+                        : lang === 'hi'
+                        ? '+ एडमिन अधिकार दें'
+                        : lang === 'ur'
+                        ? '+ ایڈمن رسائی دیں'
+                        : '+ Grant Admin Access'}
+                    </span>
+                  </button>
+                </div>
+
+                {adminActionStatus && (
+                  <div
+                    className={`p-3 rounded-xl text-xs font-semibold border ${
+                      adminActionStatus.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : 'bg-red-50 text-red-700 border-red-200'
+                    }`}
+                  >
+                    {adminActionStatus.message}
+                  </div>
+                )}
+              </form>
+
+              {/* Current Authorized Admins List */}
+              <div className="border border-stone-200 rounded-2xl overflow-hidden bg-white">
+                <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+                  <span className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+                    {lang === 'hi'
+                      ? `सक्रिय प्रशासक (${adminEmails.length})`
+                      : lang === 'ur'
+                      ? `موجودہ ایڈمنز (${adminEmails.length})`
+                      : `Authorized Admin Emails (${adminEmails.length})`}
+                  </span>
+                </div>
+                <div className="divide-y divide-stone-100">
+                  {adminEmails.map((adminEmail) => {
+                    const isPrimaryOwner = adminEmail === 'suchitmathurwta@gmail.com';
+                    const isCurrentUser = (user?.email || '').toLowerCase() === adminEmail;
+
+                    return (
+                      <div
+                        key={adminEmail}
+                        className="px-4 py-3.5 flex items-center justify-between gap-3 hover:bg-stone-50/80 transition"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-[#1d4ed8] font-bold text-xs flex items-center justify-center shrink-0 uppercase">
+                            {adminEmail[0] || 'A'}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs sm:text-sm font-bold text-stone-900 truncate font-mono">
+                                {adminEmail}
+                              </span>
+                              {isPrimaryOwner && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                  {lang === 'hi' ? 'मुख्य प्रशासक' : lang === 'ur' ? 'بنیادی ایڈمن' : 'Primary Owner'}
+                                </span>
+                              )}
+                              {!isPrimaryOwner && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1d4ed8] border border-blue-200">
+                                  {lang === 'hi' ? 'प्रशासक' : lang === 'ur' ? 'ایڈمن' : 'Admin'}
+                                </span>
+                              )}
+                              {isCurrentUser && (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  {lang === 'hi' ? 'आप (सक्रिय)' : lang === 'ur' ? 'آپ' : 'You'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {!isPrimaryOwner && (
+                          <button
+                            type="button"
+                            onClick={() => handleRevokeAdminAccess(adminEmail)}
+                            disabled={isUpdatingAdmins}
+                            className="px-3 py-1.5 text-[11px] font-bold text-red-600 hover:text-white bg-red-50 hover:bg-red-600 border border-red-200 rounded-lg transition cursor-pointer shrink-0 disabled:opacity-50"
+                          >
+                            {lang === 'hi' ? 'अधिकार हटाएं' : lang === 'ur' ? 'ہٹائیں' : 'Revoke'}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

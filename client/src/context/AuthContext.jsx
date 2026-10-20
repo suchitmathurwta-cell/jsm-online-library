@@ -1,110 +1,169 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
+import {
+  DEFAULT_ADMIN_EMAILS,
+  getCachedAdminEmails,
+  getAdminEmails,
+  addAdminEmailToRegistry,
+  removeAdminEmailFromRegistry
+} from '../services/supabaseApi';
 
 const AuthContext = createContext({});
 
-const ADMIN_CREDENTIALS = {
-  email: 'admin@jsmlibrary.org',
-  secondaryEmail: 'admin@chetna.org',
-  password: 'chetnaAdmin2026!',
-  passcodes: ['jsm2026', 'jsm', 'jsmlibrary', 'chetna2026', 'chetna', 'admin']
-};
+const VIEW_MODE_STORAGE_KEY = 'jsm_admin_view_mode';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
-  
-  // RBAC Role: 'admin' | 'visitor' (defaults to admin so library owner has direct full access)
-  const [role, setRole] = useState(() => {
-    return localStorage.getItem('chetna_user_role') || 'admin';
+  const [adminEmails, setAdminEmails] = useState(() => getCachedAdminEmails());
+
+  // View mode preference ONLY applies when an authorized admin is signed in ('admin' | 'visitor')
+  const [viewMode, setViewMode] = useState(() => {
+    try {
+      return localStorage.getItem(VIEW_MODE_STORAGE_KEY) === 'visitor' ? 'visitor' : 'admin';
+    } catch (e) {
+      return 'admin';
+    }
   });
 
   const [isPasscodeModalOpen, setIsPasscodeModalOpen] = useState(false);
 
-  const isAdmin = role === 'admin';
+  const refreshAdminEmails = useCallback(async () => {
+    try {
+      const list = await getAdminEmails();
+      if (Array.isArray(list) && list.length > 0) {
+        setAdminEmails(list);
+      }
+    } catch (e) {
+      console.warn('Could not refresh admin emails:', e);
+    }
+  }, []);
 
   useEffect(() => {
-    // Listen to Supabase Auth State
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      const currentUser = session?.user ?? null;
+    refreshAdminEmails();
+  }, [refreshAdminEmails]);
+
+  useEffect(() => {
+    // Clean up any legacy insecure role keys so visitors never inherit admin state
+    try {
+      localStorage.removeItem('chetna_user_role');
+    } catch (e) {}
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      const currentUser = currentSession?.user ?? null;
       setUser(currentUser);
-      
-      // Auto-set admin role for authenticated users or recognized admin credentials
-      if (currentUser || localStorage.getItem('chetna_user_role') !== 'visitor') {
-        setRole('admin');
-        localStorage.setItem('chetna_user_role', 'admin');
-      }
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      const currentUser = session?.user ?? null;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+      setSession(currentSession);
+      const currentUser = currentSession?.user ?? null;
       setUser(currentUser);
-      if (currentUser || localStorage.getItem('chetna_user_role') !== 'visitor') {
-        setRole('admin');
-        localStorage.setItem('chetna_user_role', 'admin');
+      if (currentUser) {
+        refreshAdminEmails();
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [refreshAdminEmails]);
 
-  // Global Keyboard Shortcut: Ctrl + Shift + A / Cmd + Shift + A
+  const normalizedUserEmail = (user?.email || '').trim().toLowerCase();
+  const isAuthorizedAdmin = Boolean(
+    normalizedUserEmail &&
+    (adminEmails.includes(normalizedUserEmail) || DEFAULT_ADMIN_EMAILS.includes(normalizedUserEmail))
+  );
+
+  // Strictly enforce: a user is in Admin Mode ONLY if they are an authenticated authorized admin AND their viewMode is 'admin'
+  const isAdmin = isAuthorizedAdmin && viewMode === 'admin';
+  const role = isAdmin ? 'admin' : 'visitor';
+
+  // Keyboard shortcut (Ctrl + Shift + A) ONLY works for authenticated authorized admins
   useEffect(() => {
+    if (!isAuthorizedAdmin) return;
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
         e.preventDefault();
-        setIsPasscodeModalOpen((prev) => !prev);
+        setViewMode((prev) => {
+          const next = prev === 'admin' ? 'visitor' : 'admin';
+          try {
+            localStorage.setItem(VIEW_MODE_STORAGE_KEY, next);
+          } catch (err) {}
+          return next;
+        });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isAuthorizedAdmin]);
 
-  const loginAsAdmin = (emailOrPasscode, password) => {
-    const rawInput = (emailOrPasscode || '').trim();
-    const normalizedInput = rawInput.toLowerCase();
+  const toggleAdminRole = () => {
+    if (!isAuthorizedAdmin) return 'visitor';
+    const nextMode = viewMode === 'admin' ? 'visitor' : 'admin';
+    setViewMode(nextMode);
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, nextMode);
+    } catch (e) {}
+    return nextMode;
+  };
+
+  const loginAsAdmin = async (email, password) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
     const trimmedPass = (password || '').trim();
 
-    // Check against Master Passcodes or Admin Email/Password
-    const isPasscodeMatch = ADMIN_CREDENTIALS.passcodes.includes(normalizedInput);
-    const isEmailMatch = (normalizedInput === ADMIN_CREDENTIALS.email || normalizedInput === ADMIN_CREDENTIALS.secondaryEmail) && trimmedPass === ADMIN_CREDENTIALS.password;
-
-    if (isPasscodeMatch || isEmailMatch) {
-      setRole('admin');
-      localStorage.setItem('chetna_user_role', 'admin');
-      return { success: true };
+    if (!cleanEmail || !trimmedPass) {
+      return { success: false, error: 'Please enter your authorized admin email and password.' };
     }
 
-    // Try Supabase auth if provided
-    if (trimmedPass) {
-      return signIn(rawInput, trimmedPass).then(({ user: authUser }) => {
-        setRole('admin');
-        localStorage.setItem('chetna_user_role', 'admin');
-        return { success: true, user: authUser };
-      }).catch((err) => {
-        return { success: false, error: err.message || 'Invalid admin credentials' };
-      });
-    }
+    try {
+      const { user: authUser } = await signIn(cleanEmail, trimmedPass);
+      const latestAdmins = await getAdminEmails();
+      setAdminEmails(latestAdmins);
+      const signedInEmail = (authUser?.email || cleanEmail).toLowerCase();
 
-    return { success: false, error: 'Invalid admin passcode or credentials' };
+      if (!latestAdmins.includes(signedInEmail) && !DEFAULT_ADMIN_EMAILS.includes(signedInEmail)) {
+        return {
+          success: false,
+          error: 'This email does not have administrator privileges.'
+        };
+      }
+
+      setViewMode('admin');
+      try {
+        localStorage.setItem(VIEW_MODE_STORAGE_KEY, 'admin');
+      } catch (e) {}
+      return { success: true, user: authUser };
+    } catch (err) {
+      return { success: false, error: err.message || 'Invalid credentials' };
+    }
   };
 
   const logoutAdmin = () => {
-    setRole('visitor');
-    localStorage.setItem('chetna_user_role', 'visitor');
+    setViewMode('visitor');
+    try {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, 'visitor');
+    } catch (e) {}
   };
 
-  const toggleAdminRole = () => {
-    const nextRole = role === 'admin' ? 'visitor' : 'admin';
-    setRole(nextRole);
-    localStorage.setItem('chetna_user_role', nextRole);
-    return nextRole;
+  const grantAdminAccess = async (newEmail) => {
+    if (!isAuthorizedAdmin) {
+      throw new Error('Only an authorized administrator can grant admin access.');
+    }
+    const updated = await addAdminEmailToRegistry(newEmail);
+    setAdminEmails(updated);
+    return updated;
+  };
+
+  const revokeAdminAccess = async (targetEmail) => {
+    if (!isAuthorizedAdmin) {
+      throw new Error('Only an authorized administrator can revoke admin access.');
+    }
+    const updated = await removeAdminEmailFromRegistry(targetEmail);
+    setAdminEmails(updated);
+    return updated;
   };
 
   const signUp = async (email, password, fullName = '') => {
@@ -152,6 +211,11 @@ export function AuthProvider({ children }) {
         loading,
         role,
         isAdmin,
+        isAuthorizedAdmin,
+        adminEmails,
+        grantAdminAccess,
+        revokeAdminAccess,
+        refreshAdminEmails,
         isPasscodeModalOpen,
         setIsPasscodeModalOpen,
         loginAsAdmin,

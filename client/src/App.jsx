@@ -453,7 +453,7 @@ function MainApp() {
       )}
 
       {/* Upload Modal with Supabase Integration - Admin Only */}
-      {isUploadOpen && (
+      {isAdmin && isUploadOpen && (
         <UploaderModal
           isOpen={isUploadOpen}
           onClose={() => setIsUploadOpen(false)}
@@ -474,7 +474,7 @@ function MainApp() {
       )}
 
       {/* Admin Manage Modal with Supabase CRUD */}
-      {isAdminOpen && (
+      {isAdmin && isAdminOpen && (
         <AdminManageModal
           onClose={() => setIsAdminOpen(false)}
           onOpenUpload={() => {
@@ -497,7 +497,7 @@ function MainApp() {
       )}
 
       {/* Edit Book Metadata Modal (Admin) */}
-      {editingBook && (
+      {isAdmin && editingBook && (
         <EditBookModal
           book={editingBook}
           categories={categories}

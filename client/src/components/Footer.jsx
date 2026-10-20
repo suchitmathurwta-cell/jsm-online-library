@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { AdminOnly } from './AdminGuard';
 
 export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
   return (
@@ -27,20 +28,22 @@ export default function Footer({ lang = 'hi', t, onOpenUpload, onOpenAdmin }) {
               {t.footer?.about || (lang === 'hi' ? 'कालजयी साहित्य, विचार और कविता का खुला डिजिटल पुस्तकालय।' : lang === 'ur' ? 'کلاسیکی ادب اور فکری ورثے کا کھلا ڈیجیٹل کتب خانہ۔' : 'An open-access digital library dedicated to classic literature, poetry, and timeless cultural heritage.')}
             </p>
 
-            <div className="flex items-center gap-2.5 pt-2">
-              <button
-                onClick={onOpenUpload}
-                className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs transition cursor-pointer"
-              >
-                + {t.nav?.uploadBook || 'UPLOAD WORK'}
-              </button>
-              <button
-                onClick={onOpenAdmin}
-                className="px-4 py-2 bg-[#141414] hover:bg-white/[0.08] text-zinc-300 hover:text-white text-xs font-mono uppercase tracking-wider rounded-full transition cursor-pointer border border-white/[0.08]"
-              >
-                ⚙️ {t.nav?.manageLibrary || 'MANAGE'}
-              </button>
-            </div>
+            <AdminOnly>
+              <div className="flex items-center gap-2.5 pt-2">
+                <button
+                  onClick={onOpenUpload}
+                  className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs transition cursor-pointer"
+                >
+                  + {t.nav?.uploadBook || 'UPLOAD WORK'}
+                </button>
+                <button
+                  onClick={onOpenAdmin}
+                  className="px-4 py-2 bg-[#141414] hover:bg-white/[0.08] text-zinc-300 hover:text-white text-xs font-mono uppercase tracking-wider rounded-full transition cursor-pointer border border-white/[0.08]"
+                >
+                  ⚙️ {t.nav?.manageLibrary || 'MANAGE'}
+                </button>
+              </div>
+            </AdminOnly>
           </div>
 
           {/* Col 2: Major Genres */}
