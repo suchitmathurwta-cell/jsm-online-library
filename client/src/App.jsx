@@ -335,7 +335,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-                  onEditBook={(book) => setEditingBook(book)}
+
                   onOpenUpload={() => setIsUploadOpen(true)}
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
@@ -358,7 +358,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-                  onEditBook={(book) => setEditingBook(book)}
+
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                   onActiveSectionChange={setActiveSection}
@@ -377,7 +377,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-                  onEditBook={(book) => setEditingBook(book)}
+
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
@@ -394,7 +394,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-                  onEditBook={(book) => setEditingBook(book)}
+
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
@@ -427,7 +427,7 @@ function MainApp() {
       </div>
 
       {/* Floating Admin Mode Toggle Badge & Shortcut Key Handler */}
-      <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} lang={lang} t={t} />
+      <AdminToggleFloatingBadge onOpenAdminModal={() => setIsAdminOpen(true)} onOpenUpload={() => setIsUploadOpen(true)} lang={lang} t={t} />
       <AdminQuickChallengeModal lang={lang} t={t} />
 
       {/* Detail Modal */}
@@ -440,6 +440,7 @@ function MainApp() {
             handleOpenReader(b);
           }}
           onDownloadBook={handleDownloadBook}
+          onEditBook={(b) => { setSelectedBook(null); setEditingBook(b); }}
           lang={lang}
           t={t}
         />
@@ -451,6 +452,7 @@ function MainApp() {
           book={readingBook}
           onClose={() => setReadingBook(null)}
           onDownloadBook={handleDownloadBook}
+          onEditBook={(b) => { setSelectedBook(null); setEditingBook(b); }}
           lang={lang}
           t={t}
         />
@@ -487,6 +489,7 @@ function MainApp() {
           }}
           onOpenReader={handleOpenReader}
           onDownloadBook={handleDownloadBook}
+          onEditBook={(b) => { setSelectedBook(null); setEditingBook(b); }}
           onEditBook={(book) => {
             setIsAdminOpen(false);
             setEditingBook(book);

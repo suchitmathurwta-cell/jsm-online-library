@@ -201,9 +201,9 @@ export default function StridaSidebar({
                 onClick={() => {
                   if (onOpenAuth) onOpenAuth();
                 }}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-mono font-semibold text-zinc-200 bg-white/[0.06] hover:bg-white/[0.12] rounded-lg border border-white/[0.12] transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono font-extrabold text-black bg-amber-400 hover:bg-amber-300 active:scale-95 rounded-lg border border-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.35)] transition cursor-pointer"
               >
-                <User className="w-3 h-3 text-amber-400" />
+                <User className="w-3.5 h-3.5 text-black stroke-[2.5]" />
                 <span>{t?.nav?.signIn || 'Sign In'}</span>
               </button>
             )}

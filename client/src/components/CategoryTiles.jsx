@@ -303,37 +303,6 @@ export default function CategoryTiles({
                 variants={itemVariants}
                 className="w-full relative group/cat"
               >
-                <AdminOnly>
-                  <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/85 backdrop-blur-md px-2 py-1 rounded-xl border border-white/20 shadow-lg">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setEditingCat(cat);
-                        setEditCatHi(cat.name_hi || '');
-                        setEditCatEn(cat.name_en || '');
-                        setEditCatUr(cat.name_ur || '');
-                      }}
-                      title="Edit Category"
-                      className="p-1 text-zinc-300 hover:text-amber-300 transition cursor-pointer"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setDeletingCat(cat);
-                      }}
-                      title="Delete Category"
-                      className="p-1 text-zinc-300 hover:text-red-400 transition cursor-pointer"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </AdminOnly>
                 <ArchiveCard
                   title={localizedTitle}
                   category={cat.name_en || 'Collection'}
@@ -350,6 +319,37 @@ export default function CategoryTiles({
                     }
                   }}
                 />
+                <AdminOnly>
+                  <div className="absolute top-3 right-3 z-40 flex items-center gap-1.5 bg-black/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-amber-400/50 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setEditingCat(cat);
+                        setEditCatHi(cat.name_hi || '');
+                        setEditCatEn(cat.name_en || '');
+                        setEditCatUr(cat.name_ur || '');
+                      }}
+                      title="Edit Category"
+                      className="p-1 text-amber-300 hover:text-amber-200 transition cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setDeletingCat(cat);
+                      }}
+                      title="Delete Category"
+                      className="p-1 text-red-400 hover:text-red-300 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </AdminOnly>
               </motion.div>
             );
           })}

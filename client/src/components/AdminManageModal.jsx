@@ -125,6 +125,7 @@ export default function AdminManageModal({
     if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteFormat(catId);
+      if (onBookDeleted) onBookDeleted();
       fetchLibraryData();
     } catch (e) {
       alert('Error deleting category: ' + e.message);
@@ -135,6 +136,7 @@ export default function AdminManageModal({
     if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteGenre(catId, genreId);
+      if (onBookDeleted) onBookDeleted();
       fetchLibraryData();
     } catch (e) {
       alert('Error deleting genre: ' + e.message);
@@ -145,6 +147,7 @@ export default function AdminManageModal({
     if (!window.confirm(t.admin.deleteConfirm)) return;
     try {
       await deleteSubgenre(catId, genreId, subId);
+      if (onBookDeleted) onBookDeleted();
       fetchLibraryData();
     } catch (e) {
       alert('Error deleting sub-genre: ' + e.message);
@@ -226,6 +229,7 @@ export default function AdminManageModal({
       }
 
       setEditingItem(null);
+      if (onBookDeleted) onBookDeleted();
       fetchLibraryData();
     } catch (err) {
       alert('Error updating category: ' + err.message);
@@ -285,6 +289,7 @@ export default function AdminManageModal({
       setPreviewHi('');
       setPreviewEn('');
       setPreviewUr('');
+      if (onBookDeleted) onBookDeleted();
       fetchLibraryData();
     } catch (err) {
       alert('Error creating category item: ' + err.message);
@@ -397,7 +402,7 @@ export default function AdminManageModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onOpenUpload}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>{t.nav.uploadBook}</span>

@@ -5,8 +5,10 @@ import {
   Download,
   Share2,
   Quote,
-  Check
+  Check,
+  Edit3
 } from 'lucide-react';
+import { AdminOnly } from './AdminGuard';
 import { getLocalizedEra, getLocalizedLanguage } from '../locales/translations';
 
 export default function BookDetailModal({
@@ -14,6 +16,7 @@ export default function BookDetailModal({
   onClose,
   onOpenReader,
   onDownloadBook,
+  onEditBook,
   lang = 'hi',
   t
 }) {
@@ -124,6 +127,19 @@ export default function BookDetailModal({
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
                   <span>{copiedLink ? t.details?.linkCopied || 'Link Copied' : t.details?.share || 'Share'}</span>
                 </button>
+
+                {onEditBook && (
+                  <AdminOnly>
+                    <button
+                      type="button"
+                      onClick={() => onEditBook(book)}
+                      className="w-full py-2.5 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono font-extrabold uppercase tracking-wider rounded-full flex items-center justify-center gap-1.5 transition cursor-pointer shadow-sm"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      <span>{lang === 'hi' ? 'पुस्तक संपादित / हटाएं' : lang === 'ur' ? 'کتاب میں ترمیم / حذف کریں' : 'Edit / Delete Book'}</span>
+                    </button>
+                  </AdminOnly>
+                )}
               </div>
             </div>
 

@@ -137,6 +137,23 @@ export default function BookCard({
             <span className="tracking-widest">[{book.pages} PP.]</span>
           )}
         </div>
+
+        {/* Mobile-friendly Admin Action Button Row */}
+        {onEditBook && (
+          <AdminOnly>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEditBook(book);
+              }}
+              className="mt-2.5 w-full py-1.5 px-3 rounded-xl bg-amber-400/15 hover:bg-amber-400 hover:text-black text-amber-300 border border-amber-400/40 text-[11px] font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <Edit3 className="w-3 h-3" />
+              <span>{lang === 'hi' ? 'संपादित / हटाएं' : lang === 'ur' ? 'ترمیم / حذف' : 'Edit / Delete'}</span>
+            </button>
+          </AdminOnly>
+        )}
       </div>
 
     </div>
