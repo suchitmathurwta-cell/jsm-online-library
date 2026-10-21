@@ -174,11 +174,18 @@ export default function StridaSidebar({
           {/* Mobile Quick Account / Sign In Button */}
           <div className="lg:hidden flex items-center gap-1.5">
             {user ? (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/[0.12] text-[11px] font-mono text-zinc-200 max-w-[180px]">
-                <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[9px] shrink-0">
-                  {user.email?.[0]?.toUpperCase() || 'U'}
-                </span>
-                <span className="truncate">{user.email}</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.06] border border-white/[0.12] text-[11px] font-mono text-zinc-200 max-w-[195px]">
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth && onOpenAuth()}
+                  className="inline-flex items-center gap-1.5 truncate cursor-pointer hover:text-white"
+                  title="Switch Account / Sign In"
+                >
+                  <span className="w-4 h-4 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[9px] shrink-0">
+                    {user.email?.[0]?.toUpperCase() || 'U'}
+                  </span>
+                  <span className="truncate">{user.email}</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => signOut()}
@@ -405,12 +412,20 @@ export default function StridaSidebar({
         {/* User Profile / Admin Mode Trigger */}
         <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-xs font-mono text-zinc-400">
           {user ? (
-            <div className="flex items-center gap-2 truncate min-w-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileNavOpen(false);
+                if (onOpenAuth) onOpenAuth();
+              }}
+              className="flex items-center gap-2 truncate min-w-0 hover:text-white cursor-pointer text-left"
+              title="Switch Account / Sign In"
+            >
               <div className="w-5 h-5 rounded-full bg-amber-400 text-black font-bold flex items-center justify-center text-[10px] shrink-0">
                 {user.email?.[0]?.toUpperCase() || 'U'}
               </div>
-              <span className="truncate text-[11px] text-zinc-300">{user.email}</span>
-            </div>
+              <span className="truncate text-[11px] text-zinc-300 hover:text-white">{user.email}</span>
+            </button>
           ) : (
             <button
               onClick={() => {

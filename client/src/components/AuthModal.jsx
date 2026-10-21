@@ -217,17 +217,15 @@ export default function AuthModal({
 
             <div>
               <label className="block text-xs font-bold text-stone-700 mb-1.5">
-                {authT.password}
+                {authT.password} <span className="text-[10px] font-normal text-stone-400">({lang === 'hi' ? 'वैकल्पिक / Optional' : lang === 'ur' ? 'اختیاری / Optional' : 'Optional'})</span>
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  required
-                  minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder={authT.passwordPlaceholder}
+                  placeholder={lang === 'hi' ? 'पासवर्ड (वैकल्पिक - केवल ईमेल से भी साइन इन करें)' : lang === 'ur' ? 'پاس ورڈ (اختیاری)' : 'Password (optional — or sign in with email only)'}
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"

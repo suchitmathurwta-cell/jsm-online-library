@@ -336,6 +336,7 @@ function MainApp() {
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
                   onEditBook={(book) => setEditingBook(book)}
+                  onOpenUpload={() => setIsUploadOpen(true)}
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
                   sortBy={sortBy}
@@ -358,6 +359,7 @@ function MainApp() {
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
                   onEditBook={(book) => setEditingBook(book)}
+                  onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                   onActiveSectionChange={setActiveSection}
                 />
@@ -376,6 +378,7 @@ function MainApp() {
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
                   onEditBook={(book) => setEditingBook(book)}
+                  onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
               }
@@ -392,6 +395,7 @@ function MainApp() {
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
                   onEditBook={(book) => setEditingBook(book)}
+                  onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
               }

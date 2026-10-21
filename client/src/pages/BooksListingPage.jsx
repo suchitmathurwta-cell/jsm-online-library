@@ -28,6 +28,7 @@ export default function BooksListingPage({
   onOpenReader,
   onDownloadBook,
   onEditBook,
+  onOpenUpload,
   onRefreshCategories
 }) {
   const { categorySlug, genreSlug, subgenreSlug } = useParams();
@@ -162,9 +163,23 @@ export default function BooksListingPage({
             </p>
           </div>
 
-          <div className="bg-white/[0.03] border border-white/[0.08] px-5 py-3 rounded-[16px] text-center self-start md:self-auto shrink-0">
-            <span className="text-xl font-bold font-mono text-white block">{books.length}</span>
-            <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'Books'}</span>
+          <div className="flex items-center gap-3 self-start md:self-auto shrink-0">
+            <AdminOnly>
+              {onOpenUpload && (
+                <button
+                  type="button"
+                  onClick={onOpenUpload}
+                  className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono uppercase tracking-wider font-extrabold rounded-full shadow-md flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <span>↑</span>
+                  <span>{t?.nav?.uploadBook || 'Upload E-Book'}</span>
+                </button>
+              )}
+            </AdminOnly>
+            <div className="bg-white/[0.03] border border-white/[0.08] px-5 py-3 rounded-[16px] text-center">
+              <span className="text-xl font-bold font-mono text-white block">{books.length}</span>
+              <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'Books'}</span>
+            </div>
           </div>
         </div>
       </div>

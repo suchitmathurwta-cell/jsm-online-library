@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, Download, Eye, Sparkles, FileCheck, Edit3 } from 'lucide-react';
+import { BookOpen, Download, Eye, Sparkles, FileCheck, Edit3, Trash2 } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 
 export default function BookCard({
@@ -73,7 +73,7 @@ export default function BookCard({
           </div>
         ) : null}
 
-        {/* Admin Quick Edit Button */}
+        {/* Admin Quick Edit & Delete Button */}
         {onEditBook && (
           <AdminOnly>
             <button
@@ -81,10 +81,11 @@ export default function BookCard({
                 e.stopPropagation();
                 onEditBook(book);
               }}
-              title={t.admin?.editBtn || 'Edit'}
-              className="absolute top-2.5 right-2.5 p-1.5 bg-black/80 hover:bg-white hover:text-black text-zinc-400 rounded-lg border border-white/[0.1] transition cursor-pointer"
+              title={t.admin?.editBtn || 'Edit / Delete Book'}
+              className="absolute top-2.5 right-2.5 z-20 px-2 py-1 bg-black/90 hover:bg-amber-400 hover:text-black text-amber-300 rounded-lg border border-amber-400/50 transition cursor-pointer flex items-center gap-1 shadow-md"
             >
               <Edit3 className="w-3 h-3" />
+              <Trash2 className="w-3 h-3 text-red-400 group-hover:text-current" />
             </button>
           </AdminOnly>
         )}

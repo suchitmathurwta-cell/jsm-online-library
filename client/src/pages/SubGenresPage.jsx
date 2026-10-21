@@ -30,6 +30,7 @@ export default function SubGenresPage({
   onOpenReader,
   onDownloadBook,
   onEditBook,
+  onOpenUpload,
   onRefreshCategories
 }) {
   const { categorySlug, genreSlug } = useParams();
@@ -216,14 +217,26 @@ export default function SubGenresPage({
           </div>
 
           <AdminOnly>
-            <button
-              type="button"
-              onClick={() => setShowCreateSub(!showCreateSub)}
-              className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>{hl.addSubgenreBtn || '+ ADD SUB-GENRE'}</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setShowCreateSub(!showCreateSub)}
+                className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-full shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{hl.addSubgenreBtn || '+ ADD SUB-GENRE'}</span>
+              </button>
+              {onOpenUpload && (
+                <button
+                  type="button"
+                  onClick={onOpenUpload}
+                  className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono uppercase tracking-wider font-extrabold rounded-full shadow-xs flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <span>↑</span>
+                  <span>{t?.nav?.uploadBook || 'Upload E-Book'}</span>
+                </button>
+              )}
+            </div>
           </AdminOnly>
         </div>
 

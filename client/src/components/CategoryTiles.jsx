@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, ChevronRight, Sparkles } from 'lucide-react';
+import { Plus, ChevronRight, Sparkles, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
-import { createSubgenre } from '../services/supabaseApi';
+import { createSubgenre, createFormat, updateFormat, deleteFormat } from '../services/supabaseApi';
 import { getTrilingualNames, transliterateAll } from '../services/transliterationService';
 import ArchiveCard from './bento/ArchiveCard';
 
@@ -46,9 +46,97 @@ export default function CategoryTiles({
   const [previewTrilingual, setPreviewTrilingual] = useState({ hi: '', en: '', ur: '' });
   const [isSubmittingSub, setIsSubmittingSub] = useState(false);
 
+  // Admin Category CRUD State
+  const [showCreateCategory, setShowCreateCategory] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [catPreviewTrilingual, setCatPreviewTrilingual] = useState({ hi: '', en: '', ur: '' });
+  const [isSubmittingCat, setIsSubmittingCat] = useState(false);
+  const [editingCat, setEditingCat] = useState(null);
+  const [editCatHi, setEditCatHi] = useState('');
+  const [editCatEn, setEditCatEn] = useState('');
+  const [editCatUr, setEditCatUr] = useState('');
+  const [isEditingCat, setIsEditingCat] = useState(false);
+  const [deletingCat, setDeletingCat] = useState(null);
+  const [isDeletingCat, setIsDeletingCat] = useState(false);
+
   // Active Category Object
   const activeCategoryObj = categories.find((c) => c.id === selectedCategory);
   const activeSubGenres = activeCategoryObj?.subgenres || [];
+
+  useEffect(() => {
+    if (!newCatName.trim()) {
+      setCatPreviewTrilingual({ hi: '', en: '', ur: '' });
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await transliterateAll(newCatName.trim());
+        setCatPreviewTrilingual(res);
+      } catch (e) {}
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [newCatName]);
+
+  const handleCreateCategoryInline = async (e) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    setIsSubmittingCat(true);
+    try {
+      const { name_en, name_hi, name_ur } = await getTrilingualNames(newCatName.trim());
+      const catId =
+        (name_en || newCatName.trim())
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '') || 'cat-' + Date.now();
+      await createFormat({
+        id: catId,
+        name_hi: catPreviewTrilingual.hi || name_hi || newCatName.trim(),
+        name_en: catPreviewTrilingual.en || name_en || newCatName.trim(),
+        name_ur: catPreviewTrilingual.ur || name_ur || newCatName.trim()
+      });
+      setNewCatName('');
+      setCatPreviewTrilingual({ hi: '', en: '', ur: '' });
+      setShowCreateCategory(false);
+      if (onRefreshCategories) await onRefreshCategories();
+    } catch (err) {
+      alert('Error creating category: ' + err.message);
+    } finally {
+      setIsSubmittingCat(false);
+    }
+  };
+
+  const handleSaveEditCat = async (e) => {
+    e.preventDefault();
+    if (!editingCat) return;
+    setIsEditingCat(true);
+    try {
+      await updateFormat(editingCat.id, {
+        name_hi: editCatHi.trim(),
+        name_en: editCatEn.trim(),
+        name_ur: editCatUr.trim() || undefined
+      });
+      setEditingCat(null);
+      if (onRefreshCategories) await onRefreshCategories();
+    } catch (err) {
+      alert('Error updating category: ' + err.message);
+    } finally {
+      setIsEditingCat(false);
+    }
+  };
+
+  const handleDeleteCat = async () => {
+    if (!deletingCat) return;
+    setIsDeletingCat(true);
+    try {
+      await deleteFormat(deletingCat.id);
+      setDeletingCat(null);
+      if (onRefreshCategories) await onRefreshCategories();
+    } catch (err) {
+      alert('Error deleting category: ' + err.message);
+    } finally {
+      setIsDeletingCat(false);
+    }
+  };
 
   useEffect(() => {
     if (!newSubName.trim()) {
@@ -121,16 +209,77 @@ export default function CategoryTiles({
                 : 'Explore Collections.'}
             </h1>
           </div>
-          <div className="mt-4 md:mt-0 max-w-sm">
-            <p className="font-mono text-xs text-zinc-400 leading-relaxed uppercase tracking-wider">
+          <div className="mt-4 md:mt-0 max-w-sm flex flex-col items-start md:items-end gap-3">
+            <p className="font-mono text-xs text-zinc-400 leading-relaxed uppercase tracking-wider md:text-right">
               {lang === 'hi'
                 ? 'भारतीय उपमहाद्वीप के कालजयी साहित्य, विचार और दुर्लभ पांडुलिपियों का संरक्षित डिजिटल संग्रह।'
                 : lang === 'ur'
                 ? 'کلاسیکی ادب، فکری مضامین اور نایاب مخطوطات کا محفوظ ڈیجیٹل کتب خانہ۔'
                 : 'Preserving timeless literature, poetry & progressive thought across 9 curated collections.'}
             </p>
+            <AdminOnly>
+              <button
+                type="button"
+                onClick={() => setShowCreateCategory(!showCreateCategory)}
+                className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono uppercase tracking-wider font-extrabold rounded-full shadow-md flex items-center gap-1.5 transition cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>{lang === 'hi' ? '+ नई श्रेणी जोड़ें' : lang === 'ur' ? '+ نئی صنف شامل کریں' : '+ ADD CATEGORY'}</span>
+              </button>
+            </AdminOnly>
           </div>
         </div>
+
+        {/* Inline Admin Create Category Form */}
+        {showCreateCategory && (
+          <AdminOnly>
+            <form
+              onSubmit={handleCreateCategoryInline}
+              className="mb-8 p-4 rounded-2xl bg-[#141418] border-2 border-amber-400/60 space-y-3 animate-fadeIn"
+            >
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <input
+                  type="text"
+                  value={newCatName}
+                  onChange={(e) => setNewCatName(e.target.value)}
+                  placeholder={
+                    lang === 'hi'
+                      ? 'नई मुख्य श्रेणी का नाम हिंदी, अंग्रेज़ी या उर्दू में लिखें...'
+                      : lang === 'ur'
+                      ? 'نئی صنف کا نام اردو، ہندی یا انگریزی میں درج کریں...'
+                      : 'Enter new category name in English, Hindi, or Urdu...'
+                  }
+                  className="flex-1 px-4 py-2.5 text-xs border border-white/[0.15] rounded-xl outline-hidden focus:border-amber-400 bg-black/70 text-white placeholder-zinc-500"
+                  autoFocus
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmittingCat || !newCatName.trim()}
+                    className="flex-1 sm:flex-none px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono uppercase tracking-wider font-extrabold rounded-xl transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmittingCat ? '...' : '+ Create'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateCategory(false)}
+                    className="px-3 py-2.5 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              {newCatName.trim() && (
+                <div className="px-3 py-2 rounded-xl bg-black/60 border border-white/[0.08] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span className="font-mono text-amber-400 font-semibold">AUTO TRILINGUAL:</span>
+                  <span><strong>हिंदी:</strong> {catPreviewTrilingual.hi || '...'}</span>
+                  <span><strong>English:</strong> {catPreviewTrilingual.en || '...'}</span>
+                  <span><strong>اردو:</strong> {catPreviewTrilingual.ur || '...'}</span>
+                </div>
+              )}
+            </form>
+          </AdminOnly>
+        )}
 
         {/* Uniform, Neat & Tidy Grid */}
         <motion.div
@@ -152,8 +301,39 @@ export default function CategoryTiles({
               <motion.div
                 key={cat.id}
                 variants={itemVariants}
-                className="w-full"
+                className="w-full relative group/cat"
               >
+                <AdminOnly>
+                  <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 bg-black/85 backdrop-blur-md px-2 py-1 rounded-xl border border-white/20 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setEditingCat(cat);
+                        setEditCatHi(cat.name_hi || '');
+                        setEditCatEn(cat.name_en || '');
+                        setEditCatUr(cat.name_ur || '');
+                      }}
+                      title="Edit Category"
+                      className="p-1 text-zinc-300 hover:text-amber-300 transition cursor-pointer"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setDeletingCat(cat);
+                      }}
+                      title="Delete Category"
+                      className="p-1 text-zinc-300 hover:text-red-400 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </AdminOnly>
                 <ArchiveCard
                   title={localizedTitle}
                   category={cat.name_en || 'Collection'}
@@ -288,6 +468,112 @@ export default function CategoryTiles({
               </form>
             )}
           </motion.div>
+        )}
+
+        {/* Edit Category Modal */}
+        {editingCat && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] text-black">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
+                <h3 className="text-base font-bold text-[#111111] font-sans">Edit Category</h3>
+                <button
+                  type="button"
+                  onClick={() => setEditingCat(null)}
+                  className="p-1 rounded-full text-zinc-400 hover:text-black cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <form onSubmit={handleSaveEditCat} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                    Name (Hindi / Devanagari)
+                  </label>
+                  <input
+                    type="text"
+                    value={editCatHi}
+                    onChange={(e) => setEditCatHi(e.target.value)}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                    Name (English / Roman)
+                  </label>
+                  <input
+                    type="text"
+                    value={editCatEn}
+                    onChange={(e) => setEditCatEn(e.target.value)}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                    Name (Urdu / اردو)
+                  </label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={editCatUr}
+                    onChange={(e) => setEditCatUr(e.target.value)}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+                  <button
+                    type="button"
+                    onClick={() => setEditingCat(null)}
+                    className="px-4 py-2 border border-zinc-200 rounded-full font-medium text-zinc-600 hover:text-black cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isEditingCat}
+                    className="px-5 py-2 bg-[#111111] hover:bg-black text-white font-medium rounded-full cursor-pointer disabled:opacity-50"
+                  >
+                    {isEditingCat ? '...' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Category Modal */}
+        {deletingCat && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-black/[0.08] text-center text-black">
+              <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
+              <h3 className="text-base font-bold text-[#111111] font-sans">Delete Category</h3>
+              <p className="text-xs text-zinc-500 mt-2 font-sans">
+                Are you sure you want to delete{' '}
+                <span className="font-bold text-[#111111]">
+                  "{deletingCat.name_hi || deletingCat.name_en}"
+                </span>
+                ?
+              </p>
+              <div className="flex justify-center gap-2 mt-5">
+                <button
+                  type="button"
+                  onClick={() => setDeletingCat(null)}
+                  className="px-4 py-2 border border-zinc-200 rounded-full text-xs font-medium text-zinc-600 hover:text-black cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteCat}
+                  disabled={isDeletingCat}
+                  className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-full cursor-pointer disabled:opacity-50"
+                >
+                  {isDeletingCat ? '...' : 'Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </section>

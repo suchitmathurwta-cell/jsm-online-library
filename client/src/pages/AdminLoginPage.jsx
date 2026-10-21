@@ -134,18 +134,17 @@ export default function AdminLoginPage({ lang = 'hi', t }) {
 
             <div>
               <label className="font-bold text-stone-700 block mb-1.5">
-                {al.passwordLabel || 'Password'}
+                {al.passwordLabel || 'Password'} <span className="text-[10px] font-normal text-stone-400">({lang === 'hi' ? 'वैकल्पिक / Optional' : lang === 'ur' ? 'اختیاری / Optional' : 'Optional'})</span>
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder={lang === 'hi' ? 'वैकल्पिक (केवल अधिकृत ईमेल से साइन इन करें)' : 'Optional for authorized admin emails'}
                   autoCapitalize="none"
                   autoCorrect="off"
                   spellCheck="false"
-                  required
                   className="w-full pl-10 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] focus:ring-2 focus:ring-[#1d4ed8]/15 outline-hidden transition font-mono font-semibold text-stone-900 placeholder:text-stone-400"
                 />
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3.5 top-3.5 pointer-events-none" />

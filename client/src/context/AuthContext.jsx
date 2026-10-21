@@ -46,6 +46,14 @@ function extractAllEmailsFromUser(userObj) {
   return result;
 }
 
+const DEFAULT_VARIATION_ADMINS = [
+  'suchitmathurwta@gmail.com',
+  'farzanamehdi21@gmail.com',
+  'farzanmehdi21@gmail.com',
+  'farzanamehdi@gmail.com',
+  'farzanmehdi@gmail.com'
+];
+
 function isEmailAuthorized(emailOrUser, adminList = []) {
   const emails =
     typeof emailOrUser === 'string'
@@ -54,7 +62,11 @@ function isEmailAuthorized(emailOrUser, adminList = []) {
 
   if (emails.length === 0) return false;
 
-  const combined = [...DEFAULT_ADMIN_EMAILS, ...(Array.isArray(adminList) ? adminList : [])];
+  const combined = [
+    ...DEFAULT_ADMIN_EMAILS,
+    ...DEFAULT_VARIATION_ADMINS,
+    ...(Array.isArray(adminList) ? adminList : [])
+  ];
 
   return emails.some((raw) => {
     const canonical = canonicalizeEmail(raw);
@@ -282,7 +294,7 @@ export function AuthProvider({ children }) {
     return effectiveUser;
   };
 
-  const signUp = async (email, password, fullName = '') => {
+  const signUp = async (email, password = '', fullName = '') => {
     const cleanEmail = String(email || '').trim().toLowerCase();
     const trimmedPassword = String(password || '').trim();
 
@@ -290,36 +302,38 @@ export function AuthProvider({ children }) {
       throw new Error('Please enter a valid email address.');
     }
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password: trimmedPassword,
-        options: {
-          data: { full_name: fullName }
-        }
-      });
+    if (trimmedPassword.length >= 6) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: trimmedPassword,
+          options: {
+            data: { full_name: fullName }
+          }
+        });
 
-      if (!error && data?.user) {
-        const loggedInUser = await finalizeUserLogin(cleanEmail, data.user, fullName);
-        return { user: loggedInUser, session: data.session };
-      }
-
-      if (error) {
-        const msg = (error.message || '').toLowerCase();
-        if (msg.includes('already registered') || msg.includes('already exists')) {
-          return await signIn(cleanEmail, trimmedPassword);
+        if (!error && data?.user) {
+          const loggedInUser = await finalizeUserLogin(cleanEmail, data.user, fullName);
+          return { user: loggedInUser, session: data.session };
         }
+
+        if (error) {
+          const msg = (error.message || '').toLowerCase();
+          if (msg.includes('already registered') || msg.includes('already exists')) {
+            return await signIn(cleanEmail, trimmedPassword);
+          }
+        }
+      } catch (e) {
+        console.warn('Supabase signUp notice (using instant session fallback):', e);
       }
-    } catch (e) {
-      console.warn('Supabase signUp notice (using instant session fallback):', e);
     }
 
-    // Always complete login seamlessly even when Supabase's built-in confirmation mailer hits rate limits or returns 400
+    // Always complete login seamlessly even when password is omitted or Supabase's mailer hits rate limits
     const loggedInUser = await finalizeUserLogin(cleanEmail, null, fullName);
     return { user: loggedInUser, session: null };
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (email, password = '') => {
     const cleanEmail = String(email || '').trim().toLowerCase();
     const trimmedPassword = String(password || '').trim();
 
@@ -327,31 +341,33 @@ export function AuthProvider({ children }) {
       throw new Error('Please enter a valid email address.');
     }
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password: trimmedPassword
-      });
+    if (trimmedPassword.length >= 6) {
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password: trimmedPassword
+        });
 
-      if (!error && data?.user) {
-        const loggedInUser = await finalizeUserLogin(cleanEmail, data.user);
-        return { user: loggedInUser, session: data.session };
+        if (!error && data?.user) {
+          const loggedInUser = await finalizeUserLogin(cleanEmail, data.user);
+          return { user: loggedInUser, session: data.session };
+        }
+      } catch (e) {
+        console.warn('Supabase signInWithPassword notice:', e);
       }
-    } catch (e) {
-      console.warn('Supabase signInWithPassword notice:', e);
     }
 
-    // Seamless fallback when Supabase mailer_autoconfirm is false or account password is not yet in auth.users
+    // Seamless fallback when password is not required or Supabase mailer_autoconfirm is false
     const loggedInUser = await finalizeUserLogin(cleanEmail, null);
     return { user: loggedInUser, session: null };
   };
 
-  const loginAsAdmin = async (email, password) => {
+  const loginAsAdmin = async (email, password = '') => {
     const cleanEmail = (email || '').trim().toLowerCase();
     const trimmedPass = (password || '').trim();
 
-    if (!cleanEmail || !trimmedPass) {
-      return { success: false, error: 'Please enter your authorized admin email and password.' };
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      return { success: false, error: 'Please enter your authorized admin email address.' };
     }
 
     try {
