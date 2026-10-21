@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, User, Settings, Sparkles, Menu, ChevronRight, Globe, Check, ArrowUpRight, LogOut, ShieldCheck, Eye } from 'lucide-react';
+import { Search, X, User, Settings, Sparkles, Menu, Globe, Check, ArrowUpRight, LogOut, ShieldCheck, Eye } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { useAuth } from '../context/AuthContext';
 import { getCategoryColor } from '../data/categoryColors';
@@ -43,10 +43,20 @@ export default function StridaSidebar({
     return 'English (ENG)';
   };
 
+  const handleMobilePillClick = (catId) => {
+    setIsMobileNavOpen(false);
+    const targetElement = document.getElementById(`section-${catId}`);
+    if (targetElement) {
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      navigate(`/category/${catId}`);
+    }
+  };
+
   return (
-    <aside className="w-full lg:w-[380px] xl:w-[420px] lg:h-screen lg:sticky lg:top-0 p-6 sm:p-8 lg:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/[0.08] bg-[#0E0E0E] z-40 lg:overflow-y-auto">
+    <aside className="w-full lg:w-[380px] xl:w-[420px] lg:h-screen lg:sticky lg:top-0 p-5 sm:p-8 lg:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/[0.08] bg-[#0E0E0E] z-40 lg:overflow-y-auto">
       {/* Top: Identity & Status */}
-      <div className="space-y-5">
+      <div className="space-y-4 sm:space-y-5">
         <div className="flex items-center justify-between">
           <Link
             className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5 group"
@@ -274,7 +284,22 @@ export default function StridaSidebar({
               type="text"
               placeholder={t?.nav?.searchPlaceholder || 'Search library catalog...'}
               value={searchQuery || ''}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSearchQuery(v);
+                if (v.trim() && location.pathname !== '/') {
+                  navigate('/');
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  if (location.pathname !== '/') navigate('/');
+                  setTimeout(() => {
+                    const catEl = document.getElementById('catalog');
+                    if (catEl) catEl.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }
+              }}
               className="w-full pl-8 pr-7 py-2.5 text-xs bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] border border-white/[0.08] focus:border-amber-500/50 rounded-xl outline-hidden text-white placeholder-zinc-500 font-mono transition-all"
             />
             {searchQuery && (
@@ -288,6 +313,43 @@ export default function StridaSidebar({
             )}
           </div>
         )}
+
+        {/* Mobile 1-Tap Category Quick-Jump Strip */}
+        {categories.length > 0 && (
+          <div className="lg:hidden flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar">
+            {categories.map((cat) => {
+              const isActive = activeSection === cat.id || location.pathname.startsWith(`/category/${cat.id}`);
+              const color = getCategoryColor(cat.id);
+              const catName = cat['name_' + lang] || cat.name_hi || cat.name_en || cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => handleMobilePillClick(cat.id)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-sans font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 border transition cursor-pointer ${
+                    isActive
+                      ? 'text-white shadow-sm'
+                      : 'bg-white/[0.04] text-zinc-300 border-white/[0.08] hover:text-white'
+                  }`}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: `${color.hex}25`,
+                          borderColor: color.hex,
+                        }
+                      : {}
+                  }
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  <span>{catName}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Middle: Active Navigation / Browse Collections */}
@@ -296,18 +358,19 @@ export default function StridaSidebar({
           <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-zinc-400 block font-bold">
             {t?.nav?.browseCategories || (lang === 'hi' ? 'श्रेणियाँ देखें' : lang === 'ur' ? 'اصناف دیکھیں' : 'EXPLORE COLLECTIONS')}
           </span>
-          <span className="text-[10px] font-mono text-zinc-500">
-            [{categories.length}]
-          </span>
+          <AdminOnly>
+            <span className="text-[10px] font-mono text-zinc-500">
+              [{categories.length}]
+            </span>
+          </AdminOnly>
         </div>
 
         <nav className="space-y-1.5 max-h-[46vh] overflow-y-auto pr-1 scrollbar-thin">
           {categories.map((cat, idx) => {
-            // Exactly ONE highlight strip strictly relative to the main content stream
             const isActive = activeSection ? activeSection === cat.id : (location.pathname.startsWith(`/category/${cat.id}`) || idx === 0);
             const color = getCategoryColor(cat.id);
             const catName = cat['name_' + lang] || cat.name_en || cat.name_hi || cat.id;
-            // Smooth scroll directly to category section if present on page
+
             const handleCategoryClick = (e) => {
               setIsMobileNavOpen(false);
               const targetElement = document.getElementById(`section-${cat.id}`);
@@ -343,7 +406,6 @@ export default function StridaSidebar({
                   }
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
-                    {/* Glowing Accent Dot */}
                     <span
                       className="w-2 h-2 rounded-full shrink-0 transition-transform group-hover:scale-125"
                       style={{
@@ -356,20 +418,18 @@ export default function StridaSidebar({
                     </span>
                   </span>
 
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    {/* Deep dive arrow */}
-                    <Link
-                      to={`/category/${cat.id}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setIsMobileNavOpen(false);
-                      }}
-                      title={`Jump directly to ${cat.name_en}`}
-                      className="opacity-0 group-hover:opacity-100 hover:text-white text-zinc-500 p-0.5 transition-opacity"
-                    >
-                      <ArrowUpRight className="w-3.5 h-3.5" style={{ color: color.hex }} />
-                    </Link>
-                  </div>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setIsMobileNavOpen(false);
+                      navigate(`/category/${cat.id}`);
+                    }}
+                    title={`Jump directly to ${cat.name_en}`}
+                    className="opacity-70 lg:opacity-0 group-hover:opacity-100 hover:text-white text-zinc-500 p-0.5 transition-opacity shrink-0 ml-2"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5" style={{ color: color.hex }} />
+                  </span>
                 </Link>
               </div>
             );

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Download, CheckCircle2, Loader2, X } from 'lucide-react';
-import Header from './components/Header';
+import { CheckCircle2, Loader2, X } from 'lucide-react';
 import StridaSidebar from './components/StridaSidebar';
 import FluidRibbonBackdrop from './components/FluidRibbonBackdrop';
 import HomePage from './pages/HomePage';
@@ -10,10 +9,8 @@ import SubGenresPage from './pages/SubGenresPage';
 import BooksListingPage from './pages/BooksListingPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import ReaderPage from './pages/ReaderPage';
-import DedicatedReaderPage from './pages/DedicatedReaderPage';
 import BookDetailModal from './components/BookDetailModal';
 import HikmahPdfReader from './components/HikmahPdfReader';
-import UploadBookModal from './components/UploadBookModal';
 import UploaderModal from './components/admin/UploaderModal';
 import AdminManageModal from './components/AdminManageModal';
 import EditBookModal from './components/EditBookModal';
@@ -37,7 +34,7 @@ function MainApp() {
   const t = translations[lang] || translations.hi;
   const isRtl = lang === 'ur';
 
-  const [downloadStatus, setDownloadStatus] = useState(null); // { book, state: 'downloading' | 'completed' | 'error' }
+  const [downloadStatus, setDownloadStatus] = useState(null);
   const [downloadReadyBook, setDownloadReadyBook] = useState(null);
 
   useEffect(() => {
@@ -120,7 +117,6 @@ function MainApp() {
       setDownloadStatus({ book, state: 'downloading' });
       incrementDownloads(book.id).catch(console.error);
 
-      // Fetch the file as a Blob to ensure same-origin native download in browser
       const res = await fetch(book.file_url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const blob = await res.blob();
@@ -172,7 +168,6 @@ function MainApp() {
   const handleDownloadBook = (book) => {
     if (!book) return;
     if (!user) {
-      // Save pending download and current UI state in localStorage for OAuth redirects & page reloads
       try {
         localStorage.setItem('chetna_pending_download', JSON.stringify(book));
         if (selectedBook) {
@@ -212,14 +207,12 @@ function MainApp() {
   // Auto-trigger pending download and restore view when user signs in (including Google OAuth redirect)
   useEffect(() => {
     if (user) {
-      // 1. Restore previous subroute if redirected to origin
       const savedPath = localStorage.getItem('chetna_auth_redirect_path');
       if (savedPath && savedPath !== location.pathname) {
         localStorage.removeItem('chetna_auth_redirect_path');
         navigate(savedPath, { replace: true });
       }
 
-      // 2. Restore active book modal or reader
       const storedSelected = localStorage.getItem('chetna_pending_selected_book');
       if (storedSelected) {
         try {
@@ -238,7 +231,6 @@ function MainApp() {
         localStorage.removeItem('chetna_pending_reading_book');
       }
 
-      // 3. Open DownloadReadyModal and execute pending download
       const storedPending = localStorage.getItem('chetna_pending_download');
       if (storedPending) {
         try {
@@ -303,7 +295,7 @@ function MainApp() {
       dir={isRtl ? 'rtl' : 'ltr'}
       className={`min-h-screen bg-[#0E0E0E] text-[#FAFAFA] flex flex-col lg:flex-row font-sans selection:bg-white selection:text-black ${isRtl ? 'font-urdu' : ''}`}
     >
-      {/* LEFT COLUMN: Fixed Sticky Sidebar (w-full lg:w-[380px] xl:w-[420px] lg:h-screen lg:sticky lg:top-0) */}
+      {/* LEFT COLUMN: Fixed Sticky Sidebar */}
       <StridaSidebar
         categories={categories}
         lang={lang}
@@ -318,10 +310,10 @@ function MainApp() {
         activeSection={activeSection}
       />
 
-      {/* RIGHT COLUMN: Scrollable Content Stream (flex-1 min-h-screen p-6 sm:p-12 lg:p-16 max-w-6xl) */}
+      {/* RIGHT COLUMN: Scrollable Content Stream */}
       <div className="flex-1 min-h-screen flex flex-col justify-between overflow-x-hidden w-full relative">
         <FluidRibbonBackdrop activeSection={activeSection} />
-        <main className="flex-1 p-6 sm:p-10 lg:p-12 xl:p-16 space-y-12 max-w-6xl w-full relative z-10">
+        <main className="flex-1 p-5 sm:p-10 lg:p-12 xl:p-16 space-y-12 max-w-6xl w-full relative z-10">
           <Routes>
             <Route
               path="/"
@@ -335,7 +327,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-
+                  onEditBook={(book) => setEditingBook(book)}
                   onOpenUpload={() => setIsUploadOpen(true)}
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
@@ -358,7 +350,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-
+                  onEditBook={(book) => setEditingBook(book)}
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                   onActiveSectionChange={setActiveSection}
@@ -377,7 +369,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-
+                  onEditBook={(book) => setEditingBook(book)}
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
@@ -394,7 +386,7 @@ function MainApp() {
                   onSelectBook={(book) => setSelectedBook(book)}
                   onOpenReader={handleOpenReader}
                   onDownloadBook={handleDownloadBook}
-
+                  onEditBook={(book) => setEditingBook(book)}
                   onOpenUpload={() => setIsUploadOpen(true)}
                   onRefreshCategories={fetchCategories}
                 />
@@ -489,7 +481,6 @@ function MainApp() {
           }}
           onOpenReader={handleOpenReader}
           onDownloadBook={handleDownloadBook}
-          onEditBook={(b) => { setSelectedBook(null); setEditingBook(b); }}
           onEditBook={(book) => {
             setIsAdminOpen(false);
             setEditingBook(book);
@@ -544,7 +535,7 @@ function MainApp() {
           } catch (e) {}
         }}
         onSuccess={handleAuthSuccess}
-        bookTitle={pendingDownloadBook?.[ `title_${lang}` ] || pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
+        bookTitle={pendingDownloadBook?.[`title_${lang}`] || pendingDownloadBook?.title_hi || pendingDownloadBook?.title_en || ''}
         lang={lang}
         t={t}
       />

@@ -1,21 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   FolderOpen,
-  ChevronRight,
   ArrowRight,
   Plus,
-  Layers,
   Trash2,
   Edit2,
   X,
-  Check,
-  AlertTriangle
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { createSubgenre, deleteSubgenre, updateSubgenre } from '../services/supabaseApi';
-import { getTrilingualNames } from '../services/transliterationService';
+import {
+  getTrilingualNames,
+  transliterateAll,
+  clientSideTransliterateFallback,
+  enforceScript
+} from '../services/transliterationService';
 import BookCard from '../components/BookCard';
 import { AdminOnly } from '../components/AdminGuard';
 import { containerVariants, itemVariants } from '../components/BentoGrid';
@@ -46,28 +49,62 @@ export default function SubGenresPage({
   const [editSubEn, setEditSubEn] = useState('');
   const [editSubUr, setEditSubUr] = useState('');
   const [isEditingSub, setIsEditingSub] = useState(false);
+  const editTimeoutRef = useRef(null);
 
   // Delete Sub-genre State
   const [deletingSub, setDeletingSub] = useState(null);
   const [isDeletingSub, setIsDeletingSub] = useState(false);
 
   useEffect(() => {
-    if (!newSubName.trim()) {
+    const trimmed = newSubName.trim();
+    if (!trimmed) {
       setPreviewTrilingual({ hi: '', en: '', ur: '' });
       return;
     }
+    const sync = clientSideTransliterateFallback(trimmed);
+    setPreviewTrilingual({
+      hi: enforceScript(sync.hi, 'hi'),
+      en: enforceScript(sync.en, 'en'),
+      ur: enforceScript(sync.ur, 'ur')
+    });
     const timer = setTimeout(async () => {
       try {
-        const res = await getTrilingualNames(newSubName.trim());
+        const res = await getTrilingualNames(trimmed);
         setPreviewTrilingual({
           hi: res.name_hi,
           en: res.name_en,
           ur: res.name_ur
         });
       } catch (e) {}
-    }, 200);
+    }, 220);
     return () => clearTimeout(timer);
   }, [newSubName]);
+
+  const handleEditSubInput = (boxLang, val) => {
+    if (boxLang === 'hi') setEditSubHi(val);
+    if (boxLang === 'en') setEditSubEn(val);
+    if (boxLang === 'ur') setEditSubUr(val);
+
+    if (editTimeoutRef.current) clearTimeout(editTimeoutRef.current);
+    const trimmed = (val || '').trim();
+    if (!trimmed) return;
+
+    const sync = clientSideTransliterateFallback(trimmed);
+    if (boxLang !== 'hi') setEditSubHi(enforceScript(sync.hi, 'hi'));
+    if (boxLang !== 'en') setEditSubEn(enforceScript(sync.en, 'en'));
+    if (boxLang !== 'ur') setEditSubUr(enforceScript(sync.ur, 'ur'));
+
+    editTimeoutRef.current = setTimeout(async () => {
+      try {
+        const trans = await transliterateAll(trimmed, boxLang);
+        if (trans) {
+          if (boxLang !== 'hi' && trans.hi) setEditSubHi(trans.hi);
+          if (boxLang !== 'en' && trans.en) setEditSubEn(trans.en);
+          if (boxLang !== 'ur' && trans.ur) setEditSubUr(trans.ur);
+        }
+      } catch (e) {}
+    }, 280);
+  };
 
   const category = categories.find((c) => c.id === categorySlug) || {
     id: categorySlug,
@@ -245,9 +282,9 @@ export default function SubGenresPage({
           <AdminOnly>
             <form
               onSubmit={handleCreateSubGenre}
-              className="mb-4 p-3 bg-black/50 rounded-2xl border border-white/[0.08] space-y-2.5 animate-fadeIn"
+              className="relative z-10 mb-4 p-3 bg-black/70 rounded-2xl border border-white/[0.12] space-y-2.5 animate-fadeIn"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <input
                   type="text"
                   value={newSubName}
@@ -259,23 +296,25 @@ export default function SubGenresPage({
                       ? 'نئے موضوع کا نام اردو، ہندی یا انگریزی میں درج کریں...'
                       : 'Enter new sub-genre in English, Hindi, or Urdu...'
                   }
-                  className="flex-1 px-3 py-2 text-xs border border-white/[0.1] rounded-xl outline-hidden focus:border-white bg-black/60 text-white placeholder-zinc-500"
+                  className="flex-1 px-3 py-2 text-xs border border-white/[0.15] rounded-xl outline-hidden focus:border-white bg-black/80 text-white placeholder-zinc-500"
                   autoFocus
                 />
-                <button
-                  type="submit"
-                  disabled={isSubmitting || !newSubName.trim()}
-                  className="px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
-                >
-                  {isSubmitting ? '...' : '+ Create'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCreateSub(false)}
-                  className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
-                >
-                  Cancel
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || !newSubName.trim()}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-white text-black text-xs font-mono uppercase tracking-wider font-semibold rounded-xl transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isSubmitting ? '...' : '+ Create'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateSub(false)}
+                    className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
               {newSubName.trim() && (
                 <div className="px-3 py-1.5 rounded-xl bg-black/60 border border-white/[0.08] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -291,8 +330,8 @@ export default function SubGenresPage({
 
         {/* Horizontal Quick-Filter Pills for Themes */}
         {subgenres.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 mr-1">
+          <div className="relative z-10 flex flex-wrap items-center gap-2 pt-2">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-400 mr-1">
               {lang === 'hi' ? 'विषय:' : lang === 'ur' ? 'موضوعات:' : 'JUMP TO:'}
             </span>
             {subgenres.map((sg) => {
@@ -301,10 +340,12 @@ export default function SubGenresPage({
                 <button
                   key={sg.id}
                   onClick={() => navigate(`/category/${categorySlug}/${genreSlug}/${sg.id}`)}
-                  className="px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-white/[0.04] hover:bg-white/[0.08] text-zinc-300 hover:text-white border border-white/[0.08] transition cursor-pointer flex items-center gap-1.5"
+                  className="px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-white/[0.06] hover:bg-white/[0.12] text-zinc-200 hover:text-white border border-white/[0.1] transition cursor-pointer flex items-center gap-1.5"
                 >
                   <span>{sgTitle}</span>
-                  <span className="text-[10px] font-mono opacity-50">[{sg.count || 0}]</span>
+                  <AdminOnly>
+                    <span className="text-[10px] font-mono opacity-60">[{sg.count || 0}]</span>
+                  </AdminOnly>
                 </button>
               );
             })}
@@ -321,9 +362,11 @@ export default function SubGenresPage({
               {hl.layer3Heading || (lang === 'hi' ? 'प्रमुख विषय व श्रेणियाँ' : lang === 'ur' ? 'اہم موضوعات' : 'THEMES & TOPICS IN')} {genreTitle}
             </h2>
           </div>
-          <span className="text-xs text-zinc-500 font-mono hidden sm:inline tracking-wider">
-            [{subgenres.length} {lang === 'hi' ? 'विषय' : lang === 'ur' ? 'موضوعات' : 'THEMES'}]
-          </span>
+          <AdminOnly>
+            <span className="text-xs text-zinc-500 font-mono tracking-wider">
+              [{subgenres.length} {lang === 'hi' ? 'विषय' : lang === 'ur' ? 'موضوعات' : 'THEMES'}]
+            </span>
+          </AdminOnly>
         </div>
 
         {subgenres.length > 0 ? (
@@ -347,42 +390,40 @@ export default function SubGenresPage({
                   }`}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
-                        {sg.count || 0} {t.sections?.worksUnit || (lang === 'hi' ? 'रचनाएँ' : lang === 'ur' ? 'کتب' : 'BOOKS')}
-                      </span>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <h3 className="text-base sm:text-lg font-bold text-white font-sans tracking-tight leading-snug">
+                        {sgTitle}
+                      </h3>
 
-                      {/* Admin Only: Edit & Delete */}
+                      {/* Admin Only: Count + Edit & Delete */}
                       <AdminOnly>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/[0.06] text-zinc-300 border border-white/[0.08]">
+                            {sg.count || 0}
+                          </span>
                           <button
                             type="button"
                             onClick={(e) => openEditModal(sg, e)}
                             title={t.admin?.editBtn || 'Edit'}
-                            className="p-1 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.06] transition cursor-pointer"
+                            className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-white/[0.08] transition cursor-pointer"
                           >
-                            <Edit2 className="w-3 h-3" />
+                            <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
                             type="button"
                             onClick={(e) => openDeleteModal(sg, e)}
                             title={t.admin?.deleteBtn || 'Delete'}
-                            className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-950/40 transition cursor-pointer"
+                            className="p-1.5 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-950/40 transition cursor-pointer"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </AdminOnly>
                     </div>
-
-                    <h3 className="text-base font-bold text-white font-sans tracking-tight leading-snug">
-                      {sgTitle}
-                    </h3>
                   </div>
 
-                  <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono uppercase tracking-wider text-white">
-                    <span>{hl.layer3Browse || (lang === 'hi' ? 'पुस्तकें देखें →' : lang === 'ur' ? 'کتب دیکھیں ←' : 'Browse Books →')}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white group-hover:translate-x-1 transition-transform" />
+                  <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-end text-xs font-mono uppercase tracking-wider text-white">
+                    <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-white group-hover:translate-x-1 transition-transform" />
                   </div>
                 </motion.div>
               );
@@ -407,17 +448,19 @@ export default function SubGenresPage({
 
       {/* Featured Works under this Genre */}
       {genreBooks.length > 0 && (
-        <div className="mt-14 pt-8 border-t border-black/[0.06]">
+        <div className="mt-14 pt-8 border-t border-white/[0.08]">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#111111] rounded-full inline-block"></span>
-              <h2 className="text-sm font-mono uppercase tracking-wider text-[#111111]">
+              <span className="w-1.5 h-1.5 bg-white rounded-full inline-block" />
+              <h2 className="text-sm font-mono uppercase tracking-wider text-white">
                 {hl.layer2WorksHeading || 'Books in'} {genreTitle}
               </h2>
             </div>
-            <span className="text-xs font-mono text-zinc-400">
-              {genreBooks.length} {t.sections?.worksUnit || 'books'}
-            </span>
+            <AdminOnly>
+              <span className="text-xs font-mono text-zinc-400">
+                [{genreBooks.length} {t.sections?.worksUnit || 'BOOKS'}]
+              </span>
+            </AdminOnly>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -439,11 +482,15 @@ export default function SubGenresPage({
 
       {/* Edit Sub-genre Modal */}
       {editingSub && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] animate-scaleUp">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] animate-scaleUp text-black">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
-              <h3 className="text-base font-bold text-[#111111] font-sans">
-                Edit Sub-Genre
+              <h3 className="text-base font-bold text-[#111111] font-sans flex items-center gap-2">
+                <span>Edit Sub-Genre</span>
+                <span className="text-[10px] font-mono text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>Auto-Translate</span>
+                </span>
               </h3>
               <button
                 onClick={() => setEditingSub(null)}
@@ -456,25 +503,25 @@ export default function SubGenresPage({
             <form onSubmit={handleSaveEditSub} className="space-y-3.5 text-xs">
               <div>
                 <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
-                  Name (Hindi/Devanagari)
+                  Name (Hindi / Devanagari)
                 </label>
                 <input
                   type="text"
                   value={editSubHi}
-                  onChange={(e) => setEditSubHi(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans"
+                  onChange={(e) => handleEditSubInput('hi', e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
-                  Name (English/Roman)
+                  Name (English / Roman)
                 </label>
                 <input
                   type="text"
                   value={editSubEn}
-                  onChange={(e) => setEditSubEn(e.target.value)}
+                  onChange={(e) => handleEditSubInput('en', e.target.value)}
                   className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
                   required
                 />
@@ -488,8 +535,8 @@ export default function SubGenresPage({
                   type="text"
                   dir="rtl"
                   value={editSubUr}
-                  onChange={(e) => setEditSubUr(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black"
+                  onChange={(e) => handleEditSubInput('ur', e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black text-right"
                 />
               </div>
 
@@ -516,8 +563,8 @@ export default function SubGenresPage({
 
       {/* Delete Sub-genre Modal */}
       {deletingSub && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-black/[0.08] text-center animate-scaleUp">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-black/[0.08] text-center animate-scaleUp text-black">
             <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
             <h3 className="text-base font-bold text-[#111111] font-sans">
               Delete Sub-Genre

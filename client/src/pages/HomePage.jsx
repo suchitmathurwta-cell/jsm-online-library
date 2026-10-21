@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, BookOpen, Layers, Edit2, Trash2, AlertTriangle, X } from 'lucide-react';
+import { ArrowRight, Edit2, Trash2, AlertTriangle, X, Sparkles } from 'lucide-react';
 import HeroSection from '../components/HeroSection';
 import CategoryTiles from '../components/CategoryTiles';
 import BookCard from '../components/BookCard';
 import BookGrid from '../components/BookGrid';
 import { AdminOnly } from '../components/AdminGuard';
 import { createGenre, deleteGenre, updateGenre } from '../services/supabaseApi';
-import { getTrilingualNames } from '../services/transliterationService';
+import {
+  getTrilingualNames,
+  transliterateAll,
+  clientSideTransliterateFallback,
+  enforceScript
+} from '../services/transliterationService';
 import { getCategoryColor } from '../data/categoryColors';
 
 export default function HomePage({
@@ -43,28 +48,62 @@ export default function HomePage({
   const [editNameUr, setEditNameUr] = useState('');
   const [editDescHi, setEditDescHi] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const editTimeoutRef = useRef(null);
 
   // Delete Genre State (Admin)
   const [deletingGenre, setDeletingGenre] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    if (!newGenreName.trim()) {
+    const trimmed = newGenreName.trim();
+    if (!trimmed) {
       setPreviewTrilingual({ hi: '', en: '', ur: '' });
       return;
     }
+    const sync = clientSideTransliterateFallback(trimmed);
+    setPreviewTrilingual({
+      hi: enforceScript(sync.hi, 'hi'),
+      en: enforceScript(sync.en, 'en'),
+      ur: enforceScript(sync.ur, 'ur')
+    });
     const timer = setTimeout(async () => {
       try {
-        const res = await getTrilingualNames(newGenreName.trim());
+        const res = await getTrilingualNames(trimmed);
         setPreviewTrilingual({
           hi: res.name_hi,
           en: res.name_en,
           ur: res.name_ur
         });
       } catch (e) {}
-    }, 200);
+    }, 220);
     return () => clearTimeout(timer);
   }, [newGenreName]);
+
+  const handleEditGenreInput = (boxLang, val) => {
+    if (boxLang === 'hi') setEditNameHi(val);
+    if (boxLang === 'en') setEditNameEn(val);
+    if (boxLang === 'ur') setEditNameUr(val);
+
+    if (editTimeoutRef.current) clearTimeout(editTimeoutRef.current);
+    const trimmed = (val || '').trim();
+    if (!trimmed) return;
+
+    const sync = clientSideTransliterateFallback(trimmed);
+    if (boxLang !== 'hi') setEditNameHi(enforceScript(sync.hi, 'hi'));
+    if (boxLang !== 'en') setEditNameEn(enforceScript(sync.en, 'en'));
+    if (boxLang !== 'ur') setEditNameUr(enforceScript(sync.ur, 'ur'));
+
+    editTimeoutRef.current = setTimeout(async () => {
+      try {
+        const trans = await transliterateAll(trimmed, boxLang);
+        if (trans) {
+          if (boxLang !== 'hi' && trans.hi) setEditNameHi(trans.hi);
+          if (boxLang !== 'en' && trans.en) setEditNameEn(trans.en);
+          if (boxLang !== 'ur' && trans.ur) setEditNameUr(trans.ur);
+        }
+      } catch (e) {}
+    }, 280);
+  };
 
   const handleCreateGenre = async (e, catId) => {
     e.preventDefault();
@@ -231,7 +270,7 @@ export default function HomePage({
                 {lang === 'hi' ? 'विशेष संग्रह • समस्त श्रेणियाँ' : lang === 'ur' ? 'نمایاں مجموعات • تمام اصناف' : 'FEATURED COLLECTIONS • BROWSE ALL GENRES'}
               </span>
             </div>
-            <span className="font-mono text-xs text-zinc-400">
+            <span className="font-mono text-xs text-zinc-400 hidden sm:inline">
               {lang === 'hi' ? '[सभी श्रेणियों को देखने हेतु नीचे स्क्रॉल करें]' : lang === 'ur' ? '[تمام اصناف دیکھنے کے لیے نیچے اسکرول کریں]' : '[SCROLL TO EXPLORE ALL COLLECTIONS]'}
             </span>
           </div>
@@ -307,7 +346,7 @@ export default function HomePage({
                             boxShadow: `0 0 20px ${color.hex}50`,
                           }}
                         >
-                          <span>+ + ADD NEW GENRE</span>
+                          <span>+ ADD NEW GENRE</span>
                         </button>
                       </AdminOnly>
 
@@ -340,7 +379,7 @@ export default function HomePage({
                         onSubmit={(e) => handleCreateGenre(e, cat.id)}
                         className="mt-6 pt-5 border-t border-white/[0.12] space-y-2.5 animate-fadeIn relative z-20"
                       >
-                        <div className="flex flex-col sm:flex-row gap-2.5 items-center">
+                        <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
                           <input
                             type="text"
                             value={newGenreName}
@@ -355,21 +394,23 @@ export default function HomePage({
                             className="w-full sm:flex-1 px-4 py-2 text-xs bg-black/80 border border-white/20 text-white rounded-xl outline-hidden focus:border-white"
                             autoFocus
                           />
-                          <button
-                            type="submit"
-                            disabled={isSubmitting || !newGenreName.trim()}
-                            className="w-full sm:w-auto px-5 py-2 text-black text-xs font-mono uppercase tracking-wider font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
-                            style={{ backgroundColor: color.hex }}
-                          >
-                            {isSubmitting ? '...' : '+ Create'}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setShowCreateGenreForCat(null)}
-                            className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
-                          >
-                            Cancel
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="submit"
+                              disabled={isSubmitting || !newGenreName.trim()}
+                              className="flex-1 sm:flex-none px-5 py-2 text-black text-xs font-mono uppercase tracking-wider font-bold rounded-xl transition cursor-pointer disabled:opacity-50"
+                              style={{ backgroundColor: color.hex }}
+                            >
+                              {isSubmitting ? '...' : '+ Create'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setShowCreateGenreForCat(null)}
+                              className="px-3 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                         {newGenreName.trim() && (
                           <div className="px-3.5 py-2 rounded-xl bg-black/60 border border-white/[0.12] text-[11px] text-zinc-300 flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -570,11 +611,15 @@ export default function HomePage({
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Edit2 className="w-4 h-4 text-amber-400" />
                 <span>{t.admin?.editGenreTitle || 'Edit Literary Genre'}</span>
+                <span className="text-[9.5px] font-mono text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>Auto-Translate</span>
+                </span>
               </h3>
               <button
                 type="button"
                 onClick={() => setEditingGenre(null)}
-                className="text-zinc-400 hover:text-white"
+                className="text-zinc-400 hover:text-white cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -587,7 +632,7 @@ export default function HomePage({
                 <input
                   type="text"
                   value={editNameHi}
-                  onChange={(e) => setEditNameHi(e.target.value)}
+                  onChange={(e) => handleEditGenreInput('hi', e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden"
                 />
               </div>
@@ -598,7 +643,7 @@ export default function HomePage({
                 <input
                   type="text"
                   value={editNameEn}
-                  onChange={(e) => setEditNameEn(e.target.value)}
+                  onChange={(e) => handleEditGenreInput('en', e.target.value)}
                   className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden"
                 />
               </div>
@@ -610,8 +655,8 @@ export default function HomePage({
                   type="text"
                   dir="rtl"
                   value={editNameUr}
-                  onChange={(e) => setEditNameUr(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden font-urdu"
+                  onChange={(e) => handleEditGenreInput('ur', e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-black/50 border border-white/[0.1] text-white rounded-lg focus:border-white outline-hidden font-urdu text-right"
                 />
               </div>
               <div>
@@ -629,14 +674,14 @@ export default function HomePage({
                 <button
                   type="button"
                   onClick={() => setEditingGenre(null)}
-                  className="px-4 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white"
+                  className="px-4 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isEditing}
-                  className="px-5 py-2 bg-white text-black text-xs font-mono uppercase font-bold rounded-lg hover:bg-zinc-200"
+                  className="px-5 py-2 bg-white text-black text-xs font-mono uppercase font-bold rounded-lg hover:bg-zinc-200 cursor-pointer"
                 >
                   {isEditing ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -665,7 +710,7 @@ export default function HomePage({
               <button
                 type="button"
                 onClick={() => setDeletingGenre(null)}
-                className="px-4 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white"
+                className="px-4 py-2 text-xs font-mono uppercase text-zinc-400 hover:text-white cursor-pointer"
               >
                 Cancel
               </button>
@@ -673,7 +718,7 @@ export default function HomePage({
                 type="button"
                 onClick={handleDeleteGenre}
                 disabled={isDeleting}
-                className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-mono uppercase font-bold rounded-lg"
+                className="px-5 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-mono uppercase font-bold rounded-lg cursor-pointer"
               >
                 {isDeleting ? 'Deleting...' : 'Confirm Delete'}
               </button>

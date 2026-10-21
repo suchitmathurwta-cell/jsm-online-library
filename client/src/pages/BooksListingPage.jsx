@@ -1,21 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
-  Filter,
   ArrowUpDown,
   Search,
   Globe,
   Calendar,
   FileText,
   Trash2,
-  ChevronRight,
-  Layers,
+  Edit2,
+  X,
   Sparkles
 } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import BookCard from '../components/BookCard';
-import { getBooks, deleteSubgenre } from '../services/supabaseApi';
+import { getBooks, deleteSubgenre, updateSubgenre } from '../services/supabaseApi';
+import {
+  transliterateAll,
+  clientSideTransliterateFallback,
+  enforceScript
+} from '../services/transliterationService';
 import { AdminOnly } from '../components/AdminGuard';
 import { getLocalizedEra } from '../locales/translations';
 import { getCategoryGraphic } from '../data/categoryGraphics';
@@ -44,7 +48,14 @@ export default function BooksListingPage({
   const [formatFilter, setFormatFilter] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
 
-  // Admin Delete State
+  // Admin Edit & Delete Sub-Genre State
+  const [showEditSubModal, setShowEditSubModal] = useState(false);
+  const [editSubHi, setEditSubHi] = useState('');
+  const [editSubEn, setEditSubEn] = useState('');
+  const [editSubUr, setEditSubUr] = useState('');
+  const [isEditingSub, setIsEditingSub] = useState(false);
+  const editTimeoutRef = useRef(null);
+
   const [showDeleteSubModal, setShowDeleteSubModal] = useState(false);
   const [isDeletingSub, setIsDeletingSub] = useState(false);
 
@@ -94,7 +105,58 @@ export default function BooksListingPage({
 
   useEffect(() => {
     fetchSubgenreBooks();
-  }, [categorySlug, genreSlug, subgenreSlug, searchFilter, languageFilter, eraFilter, formatFilter, sortBy]);
+  }, [categorySlug, genreSlug, subgenreSlug, searchFilter, languageFilter, eraFilter, formatFilter, sortBy, categories]);
+
+  const handleOpenEditSub = () => {
+    setEditSubHi(subgenre.name_hi || '');
+    setEditSubEn(subgenre.name_en || '');
+    setEditSubUr(subgenre.name_ur || '');
+    setShowEditSubModal(true);
+  };
+
+  const handleEditSubInput = (boxLang, val) => {
+    if (boxLang === 'hi') setEditSubHi(val);
+    if (boxLang === 'en') setEditSubEn(val);
+    if (boxLang === 'ur') setEditSubUr(val);
+
+    if (editTimeoutRef.current) clearTimeout(editTimeoutRef.current);
+    const trimmed = (val || '').trim();
+    if (!trimmed) return;
+
+    const sync = clientSideTransliterateFallback(trimmed);
+    if (boxLang !== 'hi') setEditSubHi(enforceScript(sync.hi, 'hi'));
+    if (boxLang !== 'en') setEditSubEn(enforceScript(sync.en, 'en'));
+    if (boxLang !== 'ur') setEditSubUr(enforceScript(sync.ur, 'ur'));
+
+    editTimeoutRef.current = setTimeout(async () => {
+      try {
+        const trans = await transliterateAll(trimmed, boxLang);
+        if (trans) {
+          if (boxLang !== 'hi' && trans.hi) setEditSubHi(trans.hi);
+          if (boxLang !== 'en' && trans.en) setEditSubEn(trans.en);
+          if (boxLang !== 'ur' && trans.ur) setEditSubUr(trans.ur);
+        }
+      } catch (e) {}
+    }, 280);
+  };
+
+  const handleSaveEditSub = async (e) => {
+    e.preventDefault();
+    setIsEditingSub(true);
+    try {
+      await updateSubgenre(categorySlug, genreSlug, subgenreSlug, {
+        name_hi: editSubHi.trim(),
+        name_en: editSubEn.trim(),
+        name_ur: editSubUr.trim() || undefined
+      });
+      setShowEditSubModal(false);
+      if (onRefreshCategories) await onRefreshCategories();
+    } catch (err) {
+      alert('Error updating sub-genre: ' + err.message);
+    } finally {
+      setIsEditingSub(false);
+    }
+  };
 
   const handleDeleteSubGenre = async () => {
     setIsDeletingSub(true);
@@ -142,16 +204,27 @@ export default function BooksListingPage({
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.05] text-zinc-400 text-[10px] font-mono tracking-[0.2em] uppercase border border-white/[0.08]">
               <span>{hl.layer4Badge || (lang === 'hi' ? 'पुस्तक संग्रह' : lang === 'ur' ? 'کتب کی فہرست' : 'BOOK COLLECTION')}</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold font-sans tracking-tight text-white flex flex-wrap items-center gap-2.5">
               <span>{subgenreTitle}</span>
               <AdminOnly>
-                <button
-                  onClick={() => setShowDeleteSubModal(true)}
-                  title={t.admin?.deleteBtn || 'Delete'}
-                  className="p-1.5 rounded-full text-zinc-500 hover:text-red-400 hover:bg-white/[0.05] transition cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="inline-flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={handleOpenEditSub}
+                    title={t.admin?.editBtn || 'Edit Sub-Genre'}
+                    className="p-1.5 rounded-full text-zinc-400 hover:text-amber-300 hover:bg-white/[0.08] transition cursor-pointer"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteSubModal(true)}
+                    title={t.admin?.deleteBtn || 'Delete Sub-Genre'}
+                    className="p-1.5 rounded-full text-zinc-400 hover:text-red-400 hover:bg-white/[0.08] transition cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </AdminOnly>
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 font-sans leading-relaxed">
@@ -163,7 +236,7 @@ export default function BooksListingPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 self-start md:self-auto shrink-0">
+          <div className="flex flex-wrap items-center gap-3 self-start md:self-auto shrink-0">
             <AdminOnly>
               {onOpenUpload && (
                 <button
@@ -175,11 +248,11 @@ export default function BooksListingPage({
                   <span>{t?.nav?.uploadBook || 'Upload E-Book'}</span>
                 </button>
               )}
+              <div className="bg-white/[0.03] border border-white/[0.08] px-5 py-3 rounded-[16px] text-center">
+                <span className="text-xl font-bold font-mono text-white block">{books.length}</span>
+                <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'Books'}</span>
+              </div>
             </AdminOnly>
-            <div className="bg-white/[0.03] border border-white/[0.08] px-5 py-3 rounded-[16px] text-center">
-              <span className="text-xl font-bold font-mono text-white block">{books.length}</span>
-              <span className="text-[10px] font-mono uppercase tracking-[0.15em] text-zinc-400">{lang === 'hi' ? 'पुस्तकें' : lang === 'ur' ? 'کتب' : 'Books'}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -188,18 +261,18 @@ export default function BooksListingPage({
       <div className="mt-6 p-4 rounded-[24px] bg-[#141414] border border-white/[0.08] flex flex-wrap items-center justify-between gap-3 text-xs">
         
         {/* Left Filter Dropdowns */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           
           {/* Search inside Subgenre */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <input
               type="text"
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
               placeholder={hl.searchPlaceholder || (lang === 'hi' ? 'इस संग्रह में खोजें...' : lang === 'ur' ? 'اس مجموعے میں تلاش کریں...' : 'Search in this collection...')}
-              className="pl-8 pr-3 py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full outline-hidden focus:border-white/30 text-white placeholder:text-zinc-500 w-48 sm:w-56 font-sans text-xs"
+              className="pl-8 pr-3 py-2 sm:py-1.5 bg-white/[0.04] border border-white/[0.08] rounded-full outline-hidden focus:border-white/30 text-white placeholder:text-zinc-500 w-full sm:w-56 font-sans text-xs"
             />
-            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-2 pointer-events-none" />
+            <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
 
           {/* Language Filter */}
@@ -295,20 +368,115 @@ export default function BooksListingPage({
             <p className="text-xs text-zinc-400 mb-5 leading-relaxed font-sans">
               {hl.noWorksDesc || (lang === 'hi' ? 'फ़िल्टर या खोज शब्द बदलकर पुनः प्रयास करें।' : lang === 'ur' ? 'فلٹرز یا تلاش کے الفاظ تبدیل کر کے دوبارہ کوشش کریں۔' : 'Try adjusting the active filters or search terms.')}
             </p>
-            <button
-              onClick={() => {
-                setSearchFilter('');
-                setLanguageFilter('all');
-                setEraFilter('all');
-                setFormatFilter('all');
-              }}
-              className="px-5 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded-full shadow-xs transition cursor-pointer"
-            >
-              {hl.resetFilters || 'Reset Filters'}
-            </button>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <button
+                onClick={() => {
+                  setSearchFilter('');
+                  setLanguageFilter('all');
+                  setEraFilter('all');
+                  setFormatFilter('all');
+                }}
+                className="px-5 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded-full shadow-xs transition cursor-pointer"
+              >
+                {hl.resetFilters || 'Reset Filters'}
+              </button>
+              <AdminOnly>
+                {onOpenUpload && (
+                  <button
+                    type="button"
+                    onClick={onOpenUpload}
+                    className="px-5 py-2 bg-amber-400 hover:bg-amber-300 text-black text-xs font-mono uppercase tracking-wider font-extrabold rounded-full shadow-xs transition cursor-pointer"
+                  >
+                    ↑ {t?.nav?.uploadBook || 'Upload E-Book'}
+                  </button>
+                )}
+              </AdminOnly>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Edit Sub-Genre Modal (Admin Only) */}
+      {showEditSubModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] animate-scaleUp text-black">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
+              <h3 className="text-base font-bold text-[#111111] font-sans flex items-center gap-2">
+                <span>Edit Sub-Genre</span>
+                <span className="text-[10px] font-mono text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  <span>Auto-Translate</span>
+                </span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowEditSubModal(false)}
+                className="p-1 rounded-full text-zinc-400 hover:text-black cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditSub} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (Hindi / Devanagari)
+                </label>
+                <input
+                  type="text"
+                  value={editSubHi}
+                  onChange={(e) => handleEditSubInput('hi', e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (English / Roman)
+                </label>
+                <input
+                  type="text"
+                  value={editSubEn}
+                  onChange={(e) => handleEditSubInput('en', e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-zinc-500 mb-1 font-mono uppercase text-[10px]">
+                  Name (Urdu / اردو)
+                </label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={editSubUr}
+                  onChange={(e) => handleEditSubInput('ur', e.target.value)}
+                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black text-right"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setShowEditSubModal(false)}
+                  className="px-4 py-2 border border-zinc-200 rounded-full font-medium text-zinc-600 hover:text-black cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isEditingSub}
+                  className="px-5 py-2 bg-[#111111] hover:bg-black text-white font-medium rounded-full cursor-pointer disabled:opacity-50"
+                >
+                  {isEditingSub ? '...' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Delete Sub-Genre Confirmation Modal (Admin Only) */}
       {showDeleteSubModal && (

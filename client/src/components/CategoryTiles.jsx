@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, ChevronRight, Sparkles, Edit2, Trash2, X, AlertTriangle } from 'lucide-react';
 import { AdminOnly } from './AdminGuard';
 import { createSubgenre, createFormat, updateFormat, deleteFormat } from '../services/supabaseApi';
-import { getTrilingualNames, transliterateAll } from '../services/transliterationService';
+import {
+  getTrilingualNames,
+  transliterateAll,
+  clientSideTransliterateFallback,
+  enforceScript
+} from '../services/transliterationService';
 import ArchiveCard from './bento/ArchiveCard';
 
 const containerVariants = {
@@ -58,24 +63,58 @@ export default function CategoryTiles({
   const [isEditingCat, setIsEditingCat] = useState(false);
   const [deletingCat, setDeletingCat] = useState(null);
   const [isDeletingCat, setIsDeletingCat] = useState(false);
+  const editTimeoutRef = useRef(null);
 
   // Active Category Object
   const activeCategoryObj = categories.find((c) => c.id === selectedCategory);
   const activeSubGenres = activeCategoryObj?.subgenres || [];
 
   useEffect(() => {
-    if (!newCatName.trim()) {
+    const trimmed = newCatName.trim();
+    if (!trimmed) {
       setCatPreviewTrilingual({ hi: '', en: '', ur: '' });
       return;
     }
+    const sync = clientSideTransliterateFallback(trimmed);
+    setCatPreviewTrilingual({
+      hi: enforceScript(sync.hi, 'hi'),
+      en: enforceScript(sync.en, 'en'),
+      ur: enforceScript(sync.ur, 'ur')
+    });
     const timer = setTimeout(async () => {
       try {
-        const res = await transliterateAll(newCatName.trim());
+        const res = await transliterateAll(trimmed);
         setCatPreviewTrilingual(res);
       } catch (e) {}
-    }, 200);
+    }, 220);
     return () => clearTimeout(timer);
   }, [newCatName]);
+
+  const handleEditCatInput = (boxLang, val) => {
+    if (boxLang === 'hi') setEditCatHi(val);
+    if (boxLang === 'en') setEditCatEn(val);
+    if (boxLang === 'ur') setEditCatUr(val);
+
+    if (editTimeoutRef.current) clearTimeout(editTimeoutRef.current);
+    const trimmed = (val || '').trim();
+    if (!trimmed) return;
+
+    const sync = clientSideTransliterateFallback(trimmed);
+    if (boxLang !== 'hi') setEditCatHi(enforceScript(sync.hi, 'hi'));
+    if (boxLang !== 'en') setEditCatEn(enforceScript(sync.en, 'en'));
+    if (boxLang !== 'ur') setEditCatUr(enforceScript(sync.ur, 'ur'));
+
+    editTimeoutRef.current = setTimeout(async () => {
+      try {
+        const trans = await transliterateAll(trimmed, boxLang);
+        if (trans) {
+          if (boxLang !== 'hi' && trans.hi) setEditCatHi(trans.hi);
+          if (boxLang !== 'en' && trans.en) setEditCatEn(trans.en);
+          if (boxLang !== 'ur' && trans.ur) setEditCatUr(trans.ur);
+        }
+      } catch (e) {}
+    }, 280);
+  };
 
   const handleCreateCategoryInline = async (e) => {
     e.preventDefault();
@@ -139,16 +178,23 @@ export default function CategoryTiles({
   };
 
   useEffect(() => {
-    if (!newSubName.trim()) {
+    const trimmed = newSubName.trim();
+    if (!trimmed) {
       setPreviewTrilingual({ hi: '', en: '', ur: '' });
       return;
     }
+    const sync = clientSideTransliterateFallback(trimmed);
+    setPreviewTrilingual({
+      hi: enforceScript(sync.hi, 'hi'),
+      en: enforceScript(sync.en, 'en'),
+      ur: enforceScript(sync.ur, 'ur')
+    });
     const timer = setTimeout(async () => {
       try {
-        const res = await transliterateAll(newSubName.trim());
+        const res = await transliterateAll(trimmed);
         setPreviewTrilingual(res);
       } catch (e) {}
-    }, 200);
+    }, 220);
     return () => clearTimeout(timer);
   }, [newSubName]);
 
@@ -289,7 +335,6 @@ export default function CategoryTiles({
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {categories.map((cat, idx) => {
-            // Language uniformity: strictly one language at a time matching active selection
             const localizedTitle =
               lang === 'hi'
                 ? (cat.name_hi || cat.name_en)
@@ -415,13 +460,15 @@ export default function CategoryTiles({
                     }`}
                   >
                     <span>{sgName}</span>
-                    {sg.count !== undefined && (
-                      <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                        isSgActive ? 'bg-black/20 text-black' : 'bg-white/[0.08] text-zinc-400'
-                      }`}>
-                        {sg.count}
-                      </span>
-                    )}
+                    <AdminOnly>
+                      {sg.count !== undefined && (
+                        <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
+                          isSgActive ? 'bg-black/20 text-black' : 'bg-white/[0.08] text-zinc-400'
+                        }`}>
+                          {sg.count}
+                        </span>
+                      )}
+                    </AdminOnly>
                   </button>
                 );
               })}
@@ -475,7 +522,13 @@ export default function CategoryTiles({
           <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-black/[0.08] text-black">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-100">
-                <h3 className="text-base font-bold text-[#111111] font-sans">Edit Category</h3>
+                <h3 className="text-base font-bold text-[#111111] font-sans flex items-center gap-2">
+                  <span>Edit Category</span>
+                  <span className="text-[10px] font-mono text-amber-600 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    <span>Auto-Translate</span>
+                  </span>
+                </h3>
                 <button
                   type="button"
                   onClick={() => setEditingCat(null)}
@@ -492,7 +545,7 @@ export default function CategoryTiles({
                   <input
                     type="text"
                     value={editCatHi}
-                    onChange={(e) => setEditCatHi(e.target.value)}
+                    onChange={(e) => handleEditCatInput('hi', e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
                     required
                   />
@@ -504,7 +557,7 @@ export default function CategoryTiles({
                   <input
                     type="text"
                     value={editCatEn}
-                    onChange={(e) => setEditCatEn(e.target.value)}
+                    onChange={(e) => handleEditCatInput('en', e.target.value)}
                     className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-sans text-black"
                     required
                   />
@@ -517,8 +570,8 @@ export default function CategoryTiles({
                     type="text"
                     dir="rtl"
                     value={editCatUr}
-                    onChange={(e) => setEditCatUr(e.target.value)}
-                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black"
+                    onChange={(e) => handleEditCatInput('ur', e.target.value)}
+                    className="w-full px-3 py-2 border border-zinc-200 rounded-xl outline-hidden focus:border-black font-urdu text-black text-right"
                   />
                 </div>
                 <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100">
@@ -579,4 +632,3 @@ export default function CategoryTiles({
     </section>
   );
 }
-

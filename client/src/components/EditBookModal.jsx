@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Trash2, Sparkles, BookOpen, AlertTriangle, Check, Loader2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, Save, Trash2, Sparkles, BookOpen, AlertTriangle, Loader2 } from 'lucide-react';
 import { updateBookRecord, deleteBookRecord } from '../services/supabaseApi';
-import { transliterateAll } from '../services/transliterationService';
+import {
+  transliterateAll,
+  clientSideTransliterateFallback,
+  enforceScript
+} from '../services/transliterationService';
 
 export default function EditBookModal({
   book,
@@ -43,38 +47,68 @@ export default function EditBookModal({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [translatingField, setTranslatingField] = useState(null);
-  const translationTimeoutRef = useRef(null);
+  const titleTimeoutRef = useRef(null);
+  const authorTimeoutRef = useRef(null);
 
   const selectedCategoryObj = categories.find((c) => c.id === formData.category);
   const availableGenres = selectedCategoryObj?.genres || [];
-  const selectedGenreObj = availableGenres.find((g) => g.id === formData.genre || g.name_en === formData.genre || g.name_hi === formData.genre);
+  const selectedGenreObj = availableGenres.find(
+    (g) =>
+      g.id === formData.genre ||
+      g.name_en === formData.genre ||
+      g.name_hi === formData.genre ||
+      g.name_ur === formData.genre
+  );
   const availableSubgenres = selectedGenreObj?.subgenres || [];
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAutoTranslateField = (fieldName, text, sourceLanguage) => {
-    if (!text || text.trim().length < 2) return;
-    if (translationTimeoutRef.current) clearTimeout(translationTimeoutRef.current);
+  /**
+   * Non-destructive trilingual auto-translate:
+   * 1. Immediately updates the active input (`boxLang`)
+   * 2. Synchronously populates the OTHER two scripts (0ms latency)
+   * 3. Refines the OTHER two scripts via async API after 300ms without ever overwriting `boxLang`
+   */
+  const handleFieldInput = (fieldBase, boxLang, val) => {
+    const activeFieldKey = `${fieldBase}_${boxLang}`;
+    const timeoutRef = fieldBase === 'title' ? titleTimeoutRef : authorTimeoutRef;
 
-    setTranslatingField(fieldName);
-    translationTimeoutRef.current = setTimeout(async () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    const trimmed = (val || '').trim();
+    if (!trimmed) {
+      setFormData((prev) => ({ ...prev, [activeFieldKey]: val }));
+      setTranslatingField(null);
+      return;
+    }
+
+    const syncTrans = clientSideTransliterateFallback(trimmed);
+    const syncUpdates = { [activeFieldKey]: val };
+    if (boxLang !== 'hi') syncUpdates[`${fieldBase}_hi`] = enforceScript(syncTrans.hi, 'hi');
+    if (boxLang !== 'en') syncUpdates[`${fieldBase}_en`] = enforceScript(syncTrans.en, 'en');
+    if (boxLang !== 'ur') syncUpdates[`${fieldBase}_ur`] = enforceScript(syncTrans.ur, 'ur');
+
+    setFormData((prev) => ({ ...prev, ...syncUpdates }));
+
+    if (trimmed.length < 2) return;
+
+    setTranslatingField(fieldBase);
+    timeoutRef.current = setTimeout(async () => {
       try {
-        const trans = await transliterateAll(text.trim(), sourceLanguage);
+        const trans = await transliterateAll(trimmed, boxLang);
         if (trans) {
-          setFormData(prev => {
-            const updates = {};
-            if (fieldName === 'title') {
-              if (sourceLanguage !== 'hi') updates.title_hi = trans.hi;
-              if (sourceLanguage !== 'en') updates.title_en = trans.en;
-              if (sourceLanguage !== 'ur') updates.title_ur = trans.ur;
-            } else if (fieldName === 'author') {
-              if (sourceLanguage !== 'hi') updates.author_hi = trans.hi;
-              if (sourceLanguage !== 'en') updates.author_en = trans.en;
-              if (sourceLanguage !== 'ur') updates.author_ur = trans.ur;
-            }
-            return { ...prev, ...updates };
+          setFormData((prev) => {
+            if ((prev[activeFieldKey] || '').trim() !== trimmed) return prev;
+            const asyncUpdates = {};
+            if (boxLang !== 'hi' && trans.hi) asyncUpdates[`${fieldBase}_hi`] = trans.hi;
+            if (boxLang !== 'en' && trans.en) asyncUpdates[`${fieldBase}_en`] = trans.en;
+            if (boxLang !== 'ur' && trans.ur) asyncUpdates[`${fieldBase}_ur`] = trans.ur;
+            return { ...prev, ...asyncUpdates };
           });
         }
       } catch (e) {
@@ -82,12 +116,39 @@ export default function EditBookModal({
       } finally {
         setTranslatingField(null);
       }
-    }, 350);
+    }, 300);
+  };
+
+  const handleExplicitAutoFill = async (fieldBase) => {
+    const hiVal = (formData[`${fieldBase}_hi`] || '').trim();
+    const enVal = (formData[`${fieldBase}_en`] || '').trim();
+    const urVal = (formData[`${fieldBase}_ur`] || '').trim();
+
+    const sourceText = hiVal || enVal || urVal;
+    const sourceLang = hiVal ? 'hi' : enVal ? 'en' : urVal ? 'ur' : 'en';
+    if (!sourceText) return;
+
+    setTranslatingField(fieldBase);
+    try {
+      const trans = await transliterateAll(sourceText, sourceLang);
+      if (trans) {
+        setFormData((prev) => ({
+          ...prev,
+          [`${fieldBase}_hi`]: trans.hi || prev[`${fieldBase}_hi`],
+          [`${fieldBase}_en`]: trans.en || prev[`${fieldBase}_en`],
+          [`${fieldBase}_ur`]: trans.ur || prev[`${fieldBase}_ur`]
+        }));
+      }
+    } catch (e) {
+      console.warn('Explicit auto-translate failed:', e);
+    } finally {
+      setTranslatingField(null);
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!formData.title_hi.trim() && !formData.title_en.trim()) {
+    if (!formData.title_hi.trim() && !formData.title_en.trim() && !formData.title_ur.trim()) {
       setErrorMsg('Book title is required');
       return;
     }
@@ -95,8 +156,36 @@ export default function EditBookModal({
     setIsSaving(true);
     setErrorMsg('');
     try {
+      let finalTitleHi = formData.title_hi.trim();
+      let finalTitleEn = formData.title_en.trim();
+      let finalTitleUr = formData.title_ur.trim();
+      const anyTitle = finalTitleHi || finalTitleEn || finalTitleUr;
+      if (anyTitle && (!finalTitleHi || !finalTitleEn || !finalTitleUr)) {
+        const trans = await transliterateAll(anyTitle);
+        finalTitleHi = finalTitleHi || trans.hi || anyTitle;
+        finalTitleEn = finalTitleEn || trans.en || anyTitle;
+        finalTitleUr = finalTitleUr || trans.ur || anyTitle;
+      }
+
+      let finalAuthorHi = formData.author_hi.trim();
+      let finalAuthorEn = formData.author_en.trim();
+      let finalAuthorUr = formData.author_ur.trim();
+      const anyAuthor = finalAuthorHi || finalAuthorEn || finalAuthorUr;
+      if (anyAuthor && (!finalAuthorHi || !finalAuthorEn || !finalAuthorUr)) {
+        const trans = await transliterateAll(anyAuthor);
+        finalAuthorHi = finalAuthorHi || trans.hi || anyAuthor;
+        finalAuthorEn = finalAuthorEn || trans.en || anyAuthor;
+        finalAuthorUr = finalAuthorUr || trans.ur || anyAuthor;
+      }
+
       const payload = {
         ...formData,
+        title_hi: finalTitleHi,
+        title_en: finalTitleEn,
+        title_ur: finalTitleUr,
+        author_hi: finalAuthorHi,
+        author_en: finalAuthorEn,
+        author_ur: finalAuthorUr,
         pages: formData.pages ? parseInt(formData.pages) : null,
         year: formData.year ? parseInt(formData.year) : null
       };
@@ -127,19 +216,19 @@ export default function EditBookModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-5 bg-black/75 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
       <div
-        className="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-stone-200 my-auto overflow-hidden animate-in zoom-in-95 duration-200"
+        className="relative bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-stone-200 my-auto overflow-hidden animate-in zoom-in-95 duration-200 text-stone-900"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#1d4ed8] text-white">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-stone-200 bg-stone-50">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 rounded-xl bg-[#1d4ed8] text-white shrink-0">
               <BookOpen className="w-5 h-5" />
             </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-stone-900 font-rekhta-serif">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-lg font-bold text-stone-900 font-rekhta-serif truncate">
                 {eb.title || 'Edit Book Metadata'}
               </h2>
               <p className="text-xs text-stone-500 font-medium truncate max-w-md">
@@ -150,14 +239,14 @@ export default function EditBookModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-xl transition cursor-pointer"
+            className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 rounded-xl transition cursor-pointer shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body Form */}
-        <form onSubmit={handleSave} className="p-6 max-h-[75vh] overflow-y-auto space-y-4 text-xs">
+        <form onSubmit={handleSave} className="p-4 sm:p-6 max-h-[80vh] overflow-y-auto space-y-4 text-xs">
           {errorMsg && (
             <div className="p-3 bg-red-50 text-red-700 rounded-xl border border-red-200 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -167,122 +256,116 @@ export default function EditBookModal({
 
           {/* Titles in 3 Languages */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="font-bold text-stone-700 block">
-                {eb.title || 'Book Title'} ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
+                {eb.title || 'Book Title'} ({lang === 'hi' ? 'हिंदी • English • اردو' : lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu'})
               </label>
-              {translatingField === 'title' && (
-                <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Transliterating...</span>
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {translatingField === 'title' && (
+                  <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Transliterating...</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleExplicitAutoFill('title')}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] border border-blue-200 text-[10.5px] font-bold transition cursor-pointer active:scale-95"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>{lang === 'hi' ? 'ऑटो-अनुवाद' : lang === 'ur' ? 'خودکار ترجمہ' : 'Auto-Translate'}</span>
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.titleHi || 'Title (Hindi) *'}
                   value={formData.title_hi}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('title_hi', v);
-                    handleAutoTranslateField('title', v, 'hi');
-                  }}
-                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
-                  required
+                  onChange={(e) => handleFieldInput('title', 'hi', e.target.value)}
+                  className="w-full pl-3 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif text-stone-900"
                 />
-                <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                <span className="absolute top-2.5 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
               </div>
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.titleEn || 'Title (English)'}
                   value={formData.title_en}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('title_en', v);
-                    handleAutoTranslateField('title', v, 'en');
-                  }}
-                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                  onChange={(e) => handleFieldInput('title', 'en', e.target.value)}
+                  className="w-full pl-3 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
                 />
-                <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                <span className="absolute top-2.5 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
               </div>
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.titleUr || 'Title (Urdu)'}
                   value={formData.title_ur}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('title_ur', v);
-                    handleAutoTranslateField('title', v, 'ur');
-                  }}
+                  onChange={(e) => handleFieldInput('title', 'ur', e.target.value)}
                   dir="rtl"
-                  className="w-full pr-3 pl-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right"
+                  className="w-full pr-3 pl-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right text-stone-900"
                 />
-                <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                <span className="absolute top-2.5 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
               </div>
             </div>
           </div>
 
           {/* Authors in 3 Languages */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <label className="font-bold text-stone-700 block">
-                {eb.author || 'Author Name'} ({lang === 'hi' ? 'हिंदी • English • اردو' : (lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu')})
+                {eb.author || 'Author Name'} ({lang === 'hi' ? 'हिंदी • English • اردو' : lang === 'ur' ? 'ہندی • انگریزی • اردو' : 'Hindi • English • Urdu'})
               </label>
-              {translatingField === 'author' && (
-                <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Transliterating...</span>
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {translatingField === 'author' && (
+                  <span className="text-[10.5px] text-[#1d4ed8] flex items-center gap-1 font-semibold animate-pulse">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Transliterating...</span>
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleExplicitAutoFill('author')}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1d4ed8] border border-blue-200 text-[10.5px] font-bold transition cursor-pointer active:scale-95"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>{lang === 'hi' ? 'ऑटो-अनुवाद' : lang === 'ur' ? 'خودکار ترجمہ' : 'Auto-Translate'}</span>
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.authorHi || 'Author Name (Hindi) *'}
                   value={formData.author_hi}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('author_hi', v);
-                    handleAutoTranslateField('author', v, 'hi');
-                  }}
-                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif"
-                  required
+                  onChange={(e) => handleFieldInput('author', 'hi', e.target.value)}
+                  className="w-full pl-3 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-hindi-serif text-stone-900"
                 />
-                <span className="absolute top-2 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
+                <span className="absolute top-2.5 right-2 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded pointer-events-none">HIN</span>
               </div>
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.authorEn || 'Author Name (English)'}
                   value={formData.author_en}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('author_en', v);
-                    handleAutoTranslateField('author', v, 'en');
-                  }}
-                  className="w-full pl-3 pr-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                  onChange={(e) => handleFieldInput('author', 'en', e.target.value)}
+                  className="w-full pl-3 pr-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
                 />
-                <span className="absolute top-2 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
+                <span className="absolute top-2.5 right-2 text-[9px] font-bold text-blue-700 bg-blue-50 border border-blue-200/80 px-1.5 py-0.5 rounded pointer-events-none">ENG</span>
               </div>
               <div className="relative">
                 <input
                   type="text"
                   placeholder={eb.authorUr || 'Author Name (Urdu)'}
                   value={formData.author_ur}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    handleInputChange('author_ur', v);
-                    handleAutoTranslateField('author', v, 'ur');
-                  }}
+                  onChange={(e) => handleFieldInput('author', 'ur', e.target.value)}
                   dir="rtl"
-                  className="w-full pr-3 pl-10 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right"
+                  className="w-full pr-3 pl-11 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden font-urdu text-right text-stone-900"
                 />
-                <span className="absolute top-2 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
+                <span className="absolute top-2.5 left-2 text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.5 rounded pointer-events-none">URD</span>
               </div>
             </div>
           </div>
@@ -295,8 +378,19 @@ export default function EditBookModal({
               </label>
               <select
                 value={formData.category}
-                onChange={(e) => handleInputChange('category', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer"
+                onChange={(e) => {
+                  const newCat = e.target.value;
+                  const catObj = categories.find((c) => c.id === newCat);
+                  const firstGenre = catObj?.genres?.[0];
+                  const firstSub = firstGenre?.subgenres?.[0];
+                  setFormData((prev) => ({
+                    ...prev,
+                    category: newCat,
+                    genre: firstGenre ? (firstGenre.name_hi || firstGenre.name_en || firstGenre.id) : prev.genre,
+                    subgenre: firstSub ? (firstSub.name_hi || firstSub.name_en || firstSub.id) : prev.subgenre
+                  }));
+                }}
+                className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer text-stone-900"
               >
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -310,38 +404,62 @@ export default function EditBookModal({
               <label className="font-bold text-stone-700 block mb-1">
                 {eb.genre || 'Genre (Layer 2)'}
               </label>
-              <input
-                type="text"
-                value={formData.genre}
-                onChange={(e) => handleInputChange('genre', e.target.value)}
-                placeholder="e.g. Social Realism, Ghazal"
-                list="genre-options"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
-              />
-              <datalist id="genre-options">
-                {availableGenres.map((g) => (
-                  <option key={g.id} value={g[`name_${lang}`] || g.name_hi || g.name_en} />
-                ))}
-              </datalist>
+              {availableGenres.length > 0 ? (
+                <select
+                  value={formData.genre}
+                  onChange={(e) => handleInputChange('genre', e.target.value)}
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer text-stone-900"
+                >
+                  <option value={formData.genre}>{formData.genre || 'Select Genre'}</option>
+                  {availableGenres.map((g) => {
+                    const label = g[`name_${lang}`] || g.name_hi || g.name_en;
+                    return (
+                      <option key={g.id} value={g.name_hi || g.name_en || g.id}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.genre}
+                  onChange={(e) => handleInputChange('genre', e.target.value)}
+                  placeholder="e.g. Social Realism, Ghazal"
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
+                />
+              )}
             </div>
 
             <div>
               <label className="font-bold text-stone-700 block mb-1">
                 {eb.subgenre || 'Sub-Genre (Layer 3)'}
               </label>
-              <input
-                type="text"
-                value={formData.subgenre}
-                onChange={(e) => handleInputChange('subgenre', e.target.value)}
-                placeholder="e.g. Agrarian Struggles"
-                list="subgenre-options"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
-              />
-              <datalist id="subgenre-options">
-                {availableSubgenres.map((sg) => (
-                  <option key={sg.id} value={sg[`name_${lang}`] || sg.name_hi || sg.name_en} />
-                ))}
-              </datalist>
+              {availableSubgenres.length > 0 ? (
+                <select
+                  value={formData.subgenre}
+                  onChange={(e) => handleInputChange('subgenre', e.target.value)}
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden cursor-pointer text-stone-900"
+                >
+                  <option value={formData.subgenre}>{formData.subgenre || 'Select Sub-Genre'}</option>
+                  {availableSubgenres.map((sg) => {
+                    const label = sg[`name_${lang}`] || sg.name_hi || sg.name_en;
+                    return (
+                      <option key={sg.id} value={sg.name_hi || sg.name_en || sg.id}>
+                        {label}
+                      </option>
+                    );
+                  })}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.subgenre}
+                  onChange={(e) => handleInputChange('subgenre', e.target.value)}
+                  placeholder="e.g. Agrarian Struggles"
+                  className="w-full px-3 py-2.5 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
+                />
+              )}
             </div>
           </div>
 
@@ -353,7 +471,7 @@ export default function EditBookModal({
                 type="text"
                 value={formData.language}
                 onChange={(e) => handleInputChange('language', e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
               />
             </div>
             <div>
@@ -363,7 +481,7 @@ export default function EditBookModal({
                 value={formData.era}
                 onChange={(e) => handleInputChange('era', e.target.value)}
                 placeholder="e.g. Progressive Era (1936)"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
               />
             </div>
             <div>
@@ -373,7 +491,7 @@ export default function EditBookModal({
                 value={formData.year}
                 onChange={(e) => handleInputChange('year', e.target.value)}
                 placeholder="e.g. 1936"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
               />
             </div>
             <div>
@@ -383,7 +501,7 @@ export default function EditBookModal({
                 value={formData.pages}
                 onChange={(e) => handleInputChange('pages', e.target.value)}
                 placeholder="e.g. 340"
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden"
+                className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden text-stone-900"
               />
             </div>
           </div>
@@ -397,7 +515,7 @@ export default function EditBookModal({
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows="3"
-              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden leading-relaxed"
+              className="w-full px-3 py-2 bg-stone-50 border border-stone-300 rounded-xl focus:bg-white focus:border-[#1d4ed8] outline-hidden leading-relaxed text-stone-900"
             />
           </div>
 
@@ -431,7 +549,7 @@ export default function EditBookModal({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-stone-200">
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-4 border-t border-stone-200">
             <div>
               {showDeleteConfirm ? (
                 <div className="flex items-center gap-2 bg-red-50 p-1.5 rounded-xl border border-red-200">
@@ -440,14 +558,14 @@ export default function EditBookModal({
                     type="button"
                     onClick={handleDelete}
                     disabled={isDeleting}
-                    className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10.5px] transition"
+                    className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10.5px] transition cursor-pointer"
                   >
                     {isDeleting ? (eb.deleting || '...') : (eb.confirmBtn || 'Confirm')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowDeleteConfirm(false)}
-                    className="px-2 py-1 bg-stone-200 text-stone-700 rounded-lg text-[10.5px]"
+                    className="px-2 py-1 bg-stone-200 text-stone-700 rounded-lg text-[10.5px] cursor-pointer"
                   >
                     {eb.cancelBtn || 'Cancel'}
                   </button>
